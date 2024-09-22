@@ -1,0 +1,1581 @@
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"main.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Core/Src/main.c"
+  18              		.section	.text.MX_GPIO_Init,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	MX_GPIO_Init:
+  25              	.LFB72:
+   1:Core/Src/main.c **** /* USER CODE BEGIN Header */
+   2:Core/Src/main.c **** /**
+   3:Core/Src/main.c ****   ******************************************************************************
+   4:Core/Src/main.c ****   * @file           : main.c
+   5:Core/Src/main.c ****   * @brief          : Main program body
+   6:Core/Src/main.c ****   ******************************************************************************
+   7:Core/Src/main.c ****   * @attention
+   8:Core/Src/main.c ****   *
+   9:Core/Src/main.c ****   * Copyright (c) 2024 STMicroelectronics.
+  10:Core/Src/main.c ****   * All rights reserved.
+  11:Core/Src/main.c ****   *
+  12:Core/Src/main.c ****   * This software is licensed under terms that can be found in the LICENSE file
+  13:Core/Src/main.c ****   * in the root directory of this software component.
+  14:Core/Src/main.c ****   * If no LICENSE file comes with this software, it is provided AS-IS.
+  15:Core/Src/main.c ****   *
+  16:Core/Src/main.c ****   ******************************************************************************
+  17:Core/Src/main.c ****   */
+  18:Core/Src/main.c **** /* USER CODE END Header */
+  19:Core/Src/main.c **** /* Includes ------------------------------------------------------------------*/
+  20:Core/Src/main.c **** #include "main.h"
+  21:Core/Src/main.c **** 
+  22:Core/Src/main.c **** /* Private includes ----------------------------------------------------------*/
+  23:Core/Src/main.c **** /* USER CODE BEGIN Includes */
+  24:Core/Src/main.c **** #include "BME280_STM32.h"
+  25:Core/Src/main.c **** #include "stdio.h"
+  26:Core/Src/main.c **** #include "math.h"
+  27:Core/Src/main.c **** #include "string.h"
+  28:Core/Src/main.c **** 
+  29:Core/Src/main.c **** /* USER CODE END Includes */
+  30:Core/Src/main.c **** 
+  31:Core/Src/main.c **** /* Private typedef -----------------------------------------------------------*/
+  32:Core/Src/main.c **** /* USER CODE BEGIN PTD */
+  33:Core/Src/main.c **** 
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 2
+
+
+  34:Core/Src/main.c **** /* USER CODE END PTD */
+  35:Core/Src/main.c **** 
+  36:Core/Src/main.c **** /* Private define ------------------------------------------------------------*/
+  37:Core/Src/main.c **** /* USER CODE BEGIN PD */
+  38:Core/Src/main.c **** 
+  39:Core/Src/main.c **** /* USER CODE END PD */
+  40:Core/Src/main.c **** 
+  41:Core/Src/main.c **** /* Private macro -------------------------------------------------------------*/
+  42:Core/Src/main.c **** /* USER CODE BEGIN PM */
+  43:Core/Src/main.c **** 
+  44:Core/Src/main.c **** /* USER CODE END PM */
+  45:Core/Src/main.c **** 
+  46:Core/Src/main.c **** /* Private variables ---------------------------------------------------------*/
+  47:Core/Src/main.c **** I2C_HandleTypeDef hi2c1;
+  48:Core/Src/main.c **** 
+  49:Core/Src/main.c **** UART_HandleTypeDef huart2;
+  50:Core/Src/main.c **** 
+  51:Core/Src/main.c **** /* USER CODE BEGIN PV */
+  52:Core/Src/main.c **** 
+  53:Core/Src/main.c **** /* USER CODE END PV */
+  54:Core/Src/main.c **** 
+  55:Core/Src/main.c **** /* Private function prototypes -----------------------------------------------*/
+  56:Core/Src/main.c **** void SystemClock_Config(void);
+  57:Core/Src/main.c **** static void MX_GPIO_Init(void);
+  58:Core/Src/main.c **** static void MX_I2C1_Init(void);
+  59:Core/Src/main.c **** static void MX_USART2_UART_Init(void);
+  60:Core/Src/main.c **** /* USER CODE BEGIN PFP */
+  61:Core/Src/main.c **** 
+  62:Core/Src/main.c **** /* USER CODE END PFP */
+  63:Core/Src/main.c **** 
+  64:Core/Src/main.c **** /* Private user code ---------------------------------------------------------*/
+  65:Core/Src/main.c **** /* USER CODE BEGIN 0 */
+  66:Core/Src/main.c **** float Temperature, Pressure, Humidity;
+  67:Core/Src/main.c **** extern int32_t tRaw, pRaw, hRaw; // Đảm bảo các biến này được định nghĩa ở đâu
+  68:Core/Src/main.c **** int data_int = 3;
+  69:Core/Src/main.c **** float data_float = 3.9;
+  70:Core/Src/main.c **** 
+  71:Core/Src/main.c **** // #ifdef __GNUC__
+  72:Core/Src/main.c **** // #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+  73:Core/Src/main.c **** // #else
+  74:Core/Src/main.c **** // #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+  75:Core/Src/main.c **** // #endif /* __GNUC__ */
+  76:Core/Src/main.c **** // /**
+  77:Core/Src/main.c **** //  * @brief  Retargets the C library printf function to the USART.
+  78:Core/Src/main.c **** //  * @param None
+  79:Core/Src/main.c **** //  * @retval None
+  80:Core/Src/main.c **** //  */
+  81:Core/Src/main.c **** // PUTCHAR_PROTOTYPE
+  82:Core/Src/main.c **** // {
+  83:Core/Src/main.c **** //   HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+  84:Core/Src/main.c **** //   return ch;
+  85:Core/Src/main.c **** // }
+  86:Core/Src/main.c **** 
+  87:Core/Src/main.c **** 
+  88:Core/Src/main.c **** /* USER CODE END 0 */
+  89:Core/Src/main.c **** 
+  90:Core/Src/main.c **** /**
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 3
+
+
+  91:Core/Src/main.c ****   * @brief  The application entry point.
+  92:Core/Src/main.c ****   * @retval int
+  93:Core/Src/main.c ****   */
+  94:Core/Src/main.c **** int main(void)
+  95:Core/Src/main.c **** {
+  96:Core/Src/main.c **** 
+  97:Core/Src/main.c ****   /* USER CODE BEGIN 1 */
+  98:Core/Src/main.c **** 
+  99:Core/Src/main.c ****   /* USER CODE END 1 */
+ 100:Core/Src/main.c **** 
+ 101:Core/Src/main.c ****   /* MCU Configuration--------------------------------------------------------*/
+ 102:Core/Src/main.c **** 
+ 103:Core/Src/main.c ****   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+ 104:Core/Src/main.c ****   HAL_Init();
+ 105:Core/Src/main.c **** 
+ 106:Core/Src/main.c ****   /* USER CODE BEGIN Init */
+ 107:Core/Src/main.c **** 
+ 108:Core/Src/main.c ****   /* USER CODE END Init */
+ 109:Core/Src/main.c **** 
+ 110:Core/Src/main.c ****   /* Configure the system clock */
+ 111:Core/Src/main.c ****   SystemClock_Config();
+ 112:Core/Src/main.c **** 
+ 113:Core/Src/main.c ****   /* USER CODE BEGIN SysInit */
+ 114:Core/Src/main.c **** 
+ 115:Core/Src/main.c ****   /* USER CODE END SysInit */
+ 116:Core/Src/main.c **** 
+ 117:Core/Src/main.c ****   /* Initialize all configured peripherals */
+ 118:Core/Src/main.c ****   MX_GPIO_Init();
+ 119:Core/Src/main.c ****   MX_I2C1_Init();
+ 120:Core/Src/main.c ****   MX_USART2_UART_Init();
+ 121:Core/Src/main.c ****   /* USER CODE BEGIN 2 */
+ 122:Core/Src/main.c **** 
+ 123:Core/Src/main.c ****   // Kiểm tra cảm biến BME280
+ 124:Core/Src/main.c ****   if (HAL_I2C_IsDeviceReady(&hi2c1, 0xEC, 3, HAL_MAX_DELAY) != HAL_OK)
+ 125:Core/Src/main.c ****   {
+ 126:Core/Src/main.c ****     printf("Error! No BMP Sensor Detected!!!\n");
+ 127:Core/Src/main.c ****   }
+ 128:Core/Src/main.c ****   else
+ 129:Core/Src/main.c ****   {
+ 130:Core/Src/main.c ****     printf("BME280 Sensor Detected!\n");
+ 131:Core/Src/main.c ****     BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
+ 132:Core/Src/main.c ****   }
+ 133:Core/Src/main.c ****   /* USER CODE END 2 */
+ 134:Core/Src/main.c **** 
+ 135:Core/Src/main.c ****   /* Infinite loop */
+ 136:Core/Src/main.c ****   /* USER CODE BEGIN WHILE */
+ 137:Core/Src/main.c ****   while (1)
+ 138:Core/Src/main.c ****   {
+ 139:Core/Src/main.c ****     /* USER CODE END WHILE */
+ 140:Core/Src/main.c **** 
+ 141:Core/Src/main.c ****     /* USER CODE BEGIN 3 */
+ 142:Core/Src/main.c ****     BME280_Measure();
+ 143:Core/Src/main.c ****     // checkChipID();
+ 144:Core/Src/main.c ****        
+ 145:Core/Src/main.c ****     // In giá trị thô
+ 146:Core/Src/main.c ****     // printf("Raw Temperature: %ld\n", tRaw);
+ 147:Core/Src/main.c ****     // printf("Raw Pressure: %ld\n", pRaw);
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 4
+
+
+ 148:Core/Src/main.c ****     // printf("Raw Humidity: %ld\n", hRaw);
+ 149:Core/Src/main.c ****     // printf("Sending Value: %.3f\n", myValue);
+ 150:Core/Src/main.c ****     UART_SendFloat(3.14);
+ 151:Core/Src/main.c ****     HAL_UART_Transmit(&huart2, (uint8_t *)"Hello\r\n", 7, HAL_MAX_DELAY);
+ 152:Core/Src/main.c ****     UART_SendFloat(data_float);
+ 153:Core/Src/main.c ****     if (Temperature != 0) // Kiểm tra nếu nhiệt độ hợp lệ
+ 154:Core/Src/main.c ****     {
+ 155:Core/Src/main.c ****       // printf("Temperature: %f\n", Temperature);
+ 156:Core/Src/main.c ****       // // UART_SendFloat(data);
+ 157:Core/Src/main.c ****       // //UART_SendInt(data_2);
+ 158:Core/Src/main.c ****       // UART_Transmit_Float(&huart2, data);
+ 159:Core/Src/main.c ****     }
+ 160:Core/Src/main.c ****     else
+ 161:Core/Src/main.c ****     {
+ 162:Core/Src/main.c ****       printf("Temperature measurement failed!\n");
+ 163:Core/Src/main.c ****     }
+ 164:Core/Src/main.c ****     // printf("Temperature: %ld\n", Temperature);
+ 165:Core/Src/main.c ****     // printf("Pressure: %ld\n", Pressure);
+ 166:Core/Src/main.c ****     // printf("Humidity: %ld\n", Humidity);
+ 167:Core/Src/main.c ****     HAL_Delay(1000);
+ 168:Core/Src/main.c ****   }
+ 169:Core/Src/main.c ****   /* USER CODE END 3 */
+ 170:Core/Src/main.c **** }
+ 171:Core/Src/main.c **** 
+ 172:Core/Src/main.c **** /**
+ 173:Core/Src/main.c ****   * @brief System Clock Configuration
+ 174:Core/Src/main.c ****   * @retval None
+ 175:Core/Src/main.c ****   */
+ 176:Core/Src/main.c **** void SystemClock_Config(void)
+ 177:Core/Src/main.c **** {
+ 178:Core/Src/main.c ****   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+ 179:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 180:Core/Src/main.c **** 
+ 181:Core/Src/main.c ****   /** Initializes the RCC Oscillators according to the specified parameters
+ 182:Core/Src/main.c ****   * in the RCC_OscInitTypeDef structure.
+ 183:Core/Src/main.c ****   */
+ 184:Core/Src/main.c ****   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+ 185:Core/Src/main.c ****   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+ 186:Core/Src/main.c ****   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+ 187:Core/Src/main.c ****   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+ 188:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+ 189:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+ 190:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+ 191:Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 192:Core/Src/main.c ****   {
+ 193:Core/Src/main.c ****     Error_Handler();
+ 194:Core/Src/main.c ****   }
+ 195:Core/Src/main.c **** 
+ 196:Core/Src/main.c ****   /** Initializes the CPU, AHB and APB buses clocks
+ 197:Core/Src/main.c ****   */
+ 198:Core/Src/main.c ****   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+ 199:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+ 200:Core/Src/main.c ****   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+ 201:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 202:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+ 203:Core/Src/main.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 204:Core/Src/main.c **** 
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 5
+
+
+ 205:Core/Src/main.c ****   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+ 206:Core/Src/main.c ****   {
+ 207:Core/Src/main.c ****     Error_Handler();
+ 208:Core/Src/main.c ****   }
+ 209:Core/Src/main.c **** }
+ 210:Core/Src/main.c **** 
+ 211:Core/Src/main.c **** /**
+ 212:Core/Src/main.c ****   * @brief I2C1 Initialization Function
+ 213:Core/Src/main.c ****   * @param None
+ 214:Core/Src/main.c ****   * @retval None
+ 215:Core/Src/main.c ****   */
+ 216:Core/Src/main.c **** static void MX_I2C1_Init(void)
+ 217:Core/Src/main.c **** {
+ 218:Core/Src/main.c **** 
+ 219:Core/Src/main.c ****   /* USER CODE BEGIN I2C1_Init 0 */
+ 220:Core/Src/main.c **** 
+ 221:Core/Src/main.c ****   /* USER CODE END I2C1_Init 0 */
+ 222:Core/Src/main.c **** 
+ 223:Core/Src/main.c ****   /* USER CODE BEGIN I2C1_Init 1 */
+ 224:Core/Src/main.c **** 
+ 225:Core/Src/main.c ****   /* USER CODE END I2C1_Init 1 */
+ 226:Core/Src/main.c ****   hi2c1.Instance = I2C1;
+ 227:Core/Src/main.c ****   hi2c1.Init.ClockSpeed = 100000;
+ 228:Core/Src/main.c ****   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+ 229:Core/Src/main.c ****   hi2c1.Init.OwnAddress1 = 0;
+ 230:Core/Src/main.c ****   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+ 231:Core/Src/main.c ****   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+ 232:Core/Src/main.c ****   hi2c1.Init.OwnAddress2 = 0;
+ 233:Core/Src/main.c ****   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+ 234:Core/Src/main.c ****   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+ 235:Core/Src/main.c ****   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+ 236:Core/Src/main.c ****   {
+ 237:Core/Src/main.c ****     Error_Handler();
+ 238:Core/Src/main.c ****   }
+ 239:Core/Src/main.c ****   /* USER CODE BEGIN I2C1_Init 2 */
+ 240:Core/Src/main.c **** 
+ 241:Core/Src/main.c ****   /* USER CODE END I2C1_Init 2 */
+ 242:Core/Src/main.c **** 
+ 243:Core/Src/main.c **** }
+ 244:Core/Src/main.c **** 
+ 245:Core/Src/main.c **** /**
+ 246:Core/Src/main.c ****   * @brief USART2 Initialization Function
+ 247:Core/Src/main.c ****   * @param None
+ 248:Core/Src/main.c ****   * @retval None
+ 249:Core/Src/main.c ****   */
+ 250:Core/Src/main.c **** static void MX_USART2_UART_Init(void)
+ 251:Core/Src/main.c **** {
+ 252:Core/Src/main.c **** 
+ 253:Core/Src/main.c ****   /* USER CODE BEGIN USART2_Init 0 */
+ 254:Core/Src/main.c **** 
+ 255:Core/Src/main.c ****   /* USER CODE END USART2_Init 0 */
+ 256:Core/Src/main.c **** 
+ 257:Core/Src/main.c ****   /* USER CODE BEGIN USART2_Init 1 */
+ 258:Core/Src/main.c **** 
+ 259:Core/Src/main.c ****   /* USER CODE END USART2_Init 1 */
+ 260:Core/Src/main.c ****   huart2.Instance = USART2;
+ 261:Core/Src/main.c ****   huart2.Init.BaudRate = 115200;
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 6
+
+
+ 262:Core/Src/main.c ****   huart2.Init.WordLength = UART_WORDLENGTH_8B;
+ 263:Core/Src/main.c ****   huart2.Init.StopBits = UART_STOPBITS_1;
+ 264:Core/Src/main.c ****   huart2.Init.Parity = UART_PARITY_NONE;
+ 265:Core/Src/main.c ****   huart2.Init.Mode = UART_MODE_TX_RX;
+ 266:Core/Src/main.c ****   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 267:Core/Src/main.c ****   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+ 268:Core/Src/main.c ****   if (HAL_UART_Init(&huart2) != HAL_OK)
+ 269:Core/Src/main.c ****   {
+ 270:Core/Src/main.c ****     Error_Handler();
+ 271:Core/Src/main.c ****   }
+ 272:Core/Src/main.c ****   /* USER CODE BEGIN USART2_Init 2 */
+ 273:Core/Src/main.c **** 
+ 274:Core/Src/main.c ****   /* USER CODE END USART2_Init 2 */
+ 275:Core/Src/main.c **** 
+ 276:Core/Src/main.c **** }
+ 277:Core/Src/main.c **** 
+ 278:Core/Src/main.c **** /**
+ 279:Core/Src/main.c ****   * @brief GPIO Initialization Function
+ 280:Core/Src/main.c ****   * @param None
+ 281:Core/Src/main.c ****   * @retval None
+ 282:Core/Src/main.c ****   */
+ 283:Core/Src/main.c **** static void MX_GPIO_Init(void)
+ 284:Core/Src/main.c **** {
+  26              		.loc 1 284 1 view -0
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 32
+  29              		@ frame_needed = 0, uses_anonymous_args = 0
+  30 0000 30B5     		push	{r4, r5, lr}
+  31              	.LCFI0:
+  32              		.cfi_def_cfa_offset 12
+  33              		.cfi_offset 4, -12
+  34              		.cfi_offset 5, -8
+  35              		.cfi_offset 14, -4
+  36 0002 89B0     		sub	sp, sp, #36
+  37              	.LCFI1:
+  38              		.cfi_def_cfa_offset 48
+ 285:Core/Src/main.c ****   GPIO_InitTypeDef GPIO_InitStruct = {0};
+  39              		.loc 1 285 3 view .LVU1
+  40              		.loc 1 285 20 is_stmt 0 view .LVU2
+  41 0004 0024     		movs	r4, #0
+  42 0006 0494     		str	r4, [sp, #16]
+  43 0008 0594     		str	r4, [sp, #20]
+  44 000a 0694     		str	r4, [sp, #24]
+  45 000c 0794     		str	r4, [sp, #28]
+ 286:Core/Src/main.c **** /* USER CODE BEGIN MX_GPIO_Init_1 */
+ 287:Core/Src/main.c **** /* USER CODE END MX_GPIO_Init_1 */
+ 288:Core/Src/main.c **** 
+ 289:Core/Src/main.c ****   /* GPIO Ports Clock Enable */
+ 290:Core/Src/main.c ****   __HAL_RCC_GPIOC_CLK_ENABLE();
+  46              		.loc 1 290 3 is_stmt 1 view .LVU3
+  47              	.LBB4:
+  48              		.loc 1 290 3 view .LVU4
+  49              		.loc 1 290 3 view .LVU5
+  50 000e 1D4B     		ldr	r3, .L3
+  51 0010 9A69     		ldr	r2, [r3, #24]
+  52 0012 42F01002 		orr	r2, r2, #16
+  53 0016 9A61     		str	r2, [r3, #24]
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 7
+
+
+  54              		.loc 1 290 3 view .LVU6
+  55 0018 9A69     		ldr	r2, [r3, #24]
+  56 001a 02F01002 		and	r2, r2, #16
+  57 001e 0092     		str	r2, [sp]
+  58              		.loc 1 290 3 view .LVU7
+  59 0020 009A     		ldr	r2, [sp]
+  60              	.LBE4:
+  61              		.loc 1 290 3 view .LVU8
+ 291:Core/Src/main.c ****   __HAL_RCC_GPIOD_CLK_ENABLE();
+  62              		.loc 1 291 3 view .LVU9
+  63              	.LBB5:
+  64              		.loc 1 291 3 view .LVU10
+  65              		.loc 1 291 3 view .LVU11
+  66 0022 9A69     		ldr	r2, [r3, #24]
+  67 0024 42F02002 		orr	r2, r2, #32
+  68 0028 9A61     		str	r2, [r3, #24]
+  69              		.loc 1 291 3 view .LVU12
+  70 002a 9A69     		ldr	r2, [r3, #24]
+  71 002c 02F02002 		and	r2, r2, #32
+  72 0030 0192     		str	r2, [sp, #4]
+  73              		.loc 1 291 3 view .LVU13
+  74 0032 019A     		ldr	r2, [sp, #4]
+  75              	.LBE5:
+  76              		.loc 1 291 3 view .LVU14
+ 292:Core/Src/main.c ****   __HAL_RCC_GPIOA_CLK_ENABLE();
+  77              		.loc 1 292 3 view .LVU15
+  78              	.LBB6:
+  79              		.loc 1 292 3 view .LVU16
+  80              		.loc 1 292 3 view .LVU17
+  81 0034 9A69     		ldr	r2, [r3, #24]
+  82 0036 42F00402 		orr	r2, r2, #4
+  83 003a 9A61     		str	r2, [r3, #24]
+  84              		.loc 1 292 3 view .LVU18
+  85 003c 9A69     		ldr	r2, [r3, #24]
+  86 003e 02F00402 		and	r2, r2, #4
+  87 0042 0292     		str	r2, [sp, #8]
+  88              		.loc 1 292 3 view .LVU19
+  89 0044 029A     		ldr	r2, [sp, #8]
+  90              	.LBE6:
+  91              		.loc 1 292 3 view .LVU20
+ 293:Core/Src/main.c ****   __HAL_RCC_GPIOB_CLK_ENABLE();
+  92              		.loc 1 293 3 view .LVU21
+  93              	.LBB7:
+  94              		.loc 1 293 3 view .LVU22
+  95              		.loc 1 293 3 view .LVU23
+  96 0046 9A69     		ldr	r2, [r3, #24]
+  97 0048 42F00802 		orr	r2, r2, #8
+  98 004c 9A61     		str	r2, [r3, #24]
+  99              		.loc 1 293 3 view .LVU24
+ 100 004e 9B69     		ldr	r3, [r3, #24]
+ 101 0050 03F00803 		and	r3, r3, #8
+ 102 0054 0393     		str	r3, [sp, #12]
+ 103              		.loc 1 293 3 view .LVU25
+ 104 0056 039B     		ldr	r3, [sp, #12]
+ 105              	.LBE7:
+ 106              		.loc 1 293 3 view .LVU26
+ 294:Core/Src/main.c **** 
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 8
+
+
+ 295:Core/Src/main.c ****   /*Configure GPIO pin Output Level */
+ 296:Core/Src/main.c ****   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+ 107              		.loc 1 296 3 view .LVU27
+ 108 0058 0B4D     		ldr	r5, .L3+4
+ 109 005a 2246     		mov	r2, r4
+ 110 005c 4FF40051 		mov	r1, #8192
+ 111 0060 2846     		mov	r0, r5
+ 112 0062 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 113              	.LVL0:
+ 297:Core/Src/main.c **** 
+ 298:Core/Src/main.c ****   /*Configure GPIO pin : PC13 */
+ 299:Core/Src/main.c ****   GPIO_InitStruct.Pin = GPIO_PIN_13;
+ 114              		.loc 1 299 3 view .LVU28
+ 115              		.loc 1 299 23 is_stmt 0 view .LVU29
+ 116 0066 4FF40053 		mov	r3, #8192
+ 117 006a 0493     		str	r3, [sp, #16]
+ 300:Core/Src/main.c ****   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+ 118              		.loc 1 300 3 is_stmt 1 view .LVU30
+ 119              		.loc 1 300 24 is_stmt 0 view .LVU31
+ 120 006c 0123     		movs	r3, #1
+ 121 006e 0593     		str	r3, [sp, #20]
+ 301:Core/Src/main.c ****   GPIO_InitStruct.Pull = GPIO_NOPULL;
+ 122              		.loc 1 301 3 is_stmt 1 view .LVU32
+ 123              		.loc 1 301 24 is_stmt 0 view .LVU33
+ 124 0070 0694     		str	r4, [sp, #24]
+ 302:Core/Src/main.c ****   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+ 125              		.loc 1 302 3 is_stmt 1 view .LVU34
+ 126              		.loc 1 302 25 is_stmt 0 view .LVU35
+ 127 0072 0223     		movs	r3, #2
+ 128 0074 0793     		str	r3, [sp, #28]
+ 303:Core/Src/main.c ****   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+ 129              		.loc 1 303 3 is_stmt 1 view .LVU36
+ 130 0076 04A9     		add	r1, sp, #16
+ 131 0078 2846     		mov	r0, r5
+ 132 007a FFF7FEFF 		bl	HAL_GPIO_Init
+ 133              	.LVL1:
+ 304:Core/Src/main.c **** 
+ 305:Core/Src/main.c **** /* USER CODE BEGIN MX_GPIO_Init_2 */
+ 306:Core/Src/main.c **** /* USER CODE END MX_GPIO_Init_2 */
+ 307:Core/Src/main.c **** }
+ 134              		.loc 1 307 1 is_stmt 0 view .LVU37
+ 135 007e 09B0     		add	sp, sp, #36
+ 136              	.LCFI2:
+ 137              		.cfi_def_cfa_offset 12
+ 138              		@ sp needed
+ 139 0080 30BD     		pop	{r4, r5, pc}
+ 140              	.L4:
+ 141 0082 00BF     		.align	2
+ 142              	.L3:
+ 143 0084 00100240 		.word	1073876992
+ 144 0088 00100140 		.word	1073811456
+ 145              		.cfi_endproc
+ 146              	.LFE72:
+ 148              		.section	.rodata.UART_Transmit_Float.str1.4,"aMS",%progbits,1
+ 149              		.align	2
+ 150              	.LC0:
+ 151 0000 25640D0A 		.ascii	"%d\015\012\000"
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 9
+
+
+ 151      00
+ 152              		.section	.text.UART_Transmit_Float,"ax",%progbits
+ 153              		.align	1
+ 154              		.global	UART_Transmit_Float
+ 155              		.syntax unified
+ 156              		.thumb
+ 157              		.thumb_func
+ 159              	UART_Transmit_Float:
+ 160              	.LVL2:
+ 161              	.LFB73:
+ 308:Core/Src/main.c **** 
+ 309:Core/Src/main.c **** /* USER CODE BEGIN 4 */
+ 310:Core/Src/main.c **** // void UART_SendFloat(float value)
+ 311:Core/Src/main.c **** // {
+ 312:Core/Src/main.c **** //   char buffer[32];
+ 313:Core/Src/main.c **** //   snprintf(buffer, sizeof(buffer), "%f\r\n", value); // Sử dụng %.2f để định dạng
+ 314:Core/Src/main.c **** //   printf("Sending: %s", buffer);                       // In ra buffer trước khi gửi
+ 315:Core/Src/main.c **** //   if (HAL_UART_Transmit(&huart2, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 316:Core/Src/main.c **** //   {
+ 317:Core/Src/main.c **** //     printf("Error transmitting float value!\n");
+ 318:Core/Src/main.c **** //   }
+ 319:Core/Src/main.c **** // }
+ 320:Core/Src/main.c **** 
+ 321:Core/Src/main.c **** 
+ 322:Core/Src/main.c **** void UART_Transmit_Float(UART_HandleTypeDef *huart, int data)
+ 323:Core/Src/main.c **** {
+ 162              		.loc 1 323 1 is_stmt 1 view -0
+ 163              		.cfi_startproc
+ 164              		@ args = 0, pretend = 0, frame = 56
+ 165              		@ frame_needed = 0, uses_anonymous_args = 0
+ 166              		.loc 1 323 1 is_stmt 0 view .LVU39
+ 167 0000 00B5     		push	{lr}
+ 168              	.LCFI3:
+ 169              		.cfi_def_cfa_offset 4
+ 170              		.cfi_offset 14, -4
+ 171 0002 8FB0     		sub	sp, sp, #60
+ 172              	.LCFI4:
+ 173              		.cfi_def_cfa_offset 64
+ 324:Core/Src/main.c ****   char buffer[50]; // Tạo buffer chứa chuỗi dữ liệu
+ 174              		.loc 1 324 3 is_stmt 1 view .LVU40
+ 325:Core/Src/main.c ****   int realNumber;
+ 175              		.loc 1 325 3 view .LVU41
+ 326:Core/Src/main.c ****   snprintf(buffer, sizeof(buffer), "%d\r\n", realNumber);
+ 176              		.loc 1 326 3 view .LVU42
+ 177 0004 0023     		movs	r3, #0
+ 178 0006 094A     		ldr	r2, .L7
+ 179 0008 3221     		movs	r1, #50
+ 180              	.LVL3:
+ 181              		.loc 1 326 3 is_stmt 0 view .LVU43
+ 182 000a 01A8     		add	r0, sp, #4
+ 183              	.LVL4:
+ 184              		.loc 1 326 3 view .LVU44
+ 185 000c FFF7FEFF 		bl	snprintf
+ 186              	.LVL5:
+ 327:Core/Src/main.c ****   HAL_UART_Transmit(&huart2, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+ 187              		.loc 1 327 3 is_stmt 1 view .LVU45
+ 188              		.loc 1 327 49 is_stmt 0 view .LVU46
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 10
+
+
+ 189 0010 01A8     		add	r0, sp, #4
+ 190 0012 FFF7FEFF 		bl	strlen
+ 191              	.LVL6:
+ 192              		.loc 1 327 3 discriminator 1 view .LVU47
+ 193 0016 4FF0FF33 		mov	r3, #-1
+ 194 001a 82B2     		uxth	r2, r0
+ 195 001c 01A9     		add	r1, sp, #4
+ 196 001e 0448     		ldr	r0, .L7+4
+ 197 0020 FFF7FEFF 		bl	HAL_UART_Transmit
+ 198              	.LVL7:
+ 328:Core/Src/main.c **** }
+ 199              		.loc 1 328 1 view .LVU48
+ 200 0024 0FB0     		add	sp, sp, #60
+ 201              	.LCFI5:
+ 202              		.cfi_def_cfa_offset 4
+ 203              		@ sp needed
+ 204 0026 5DF804FB 		ldr	pc, [sp], #4
+ 205              	.L8:
+ 206 002a 00BF     		.align	2
+ 207              	.L7:
+ 208 002c 00000000 		.word	.LC0
+ 209 0030 00000000 		.word	huart2
+ 210              		.cfi_endproc
+ 211              	.LFE73:
+ 213              		.section	.text.UART_SendInt,"ax",%progbits
+ 214              		.align	1
+ 215              		.global	UART_SendInt
+ 216              		.syntax unified
+ 217              		.thumb
+ 218              		.thumb_func
+ 220              	UART_SendInt:
+ 221              	.LVL8:
+ 222              	.LFB74:
+ 329:Core/Src/main.c **** 
+ 330:Core/Src/main.c **** 
+ 331:Core/Src/main.c **** void UART_SendInt(int value)
+ 332:Core/Src/main.c **** {
+ 223              		.loc 1 332 1 is_stmt 1 view -0
+ 224              		.cfi_startproc
+ 225              		@ args = 0, pretend = 0, frame = 32
+ 226              		@ frame_needed = 0, uses_anonymous_args = 0
+ 227              		.loc 1 332 1 is_stmt 0 view .LVU50
+ 228 0000 00B5     		push	{lr}
+ 229              	.LCFI6:
+ 230              		.cfi_def_cfa_offset 4
+ 231              		.cfi_offset 14, -4
+ 232 0002 89B0     		sub	sp, sp, #36
+ 233              	.LCFI7:
+ 234              		.cfi_def_cfa_offset 40
+ 235 0004 0346     		mov	r3, r0
+ 333:Core/Src/main.c ****   char buffer[32];
+ 236              		.loc 1 333 3 is_stmt 1 view .LVU51
+ 334:Core/Src/main.c ****   snprintf(buffer, sizeof(buffer), "%d\r\n", value);
+ 237              		.loc 1 334 3 view .LVU52
+ 238 0006 094A     		ldr	r2, .L11
+ 239 0008 2021     		movs	r1, #32
+ 240 000a 6846     		mov	r0, sp
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 11
+
+
+ 241              	.LVL9:
+ 242              		.loc 1 334 3 is_stmt 0 view .LVU53
+ 243 000c FFF7FEFF 		bl	snprintf
+ 244              	.LVL10:
+ 335:Core/Src/main.c ****   HAL_UART_Transmit(&huart2, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+ 245              		.loc 1 335 3 is_stmt 1 view .LVU54
+ 246              		.loc 1 335 49 is_stmt 0 view .LVU55
+ 247 0010 6846     		mov	r0, sp
+ 248 0012 FFF7FEFF 		bl	strlen
+ 249              	.LVL11:
+ 250              		.loc 1 335 3 discriminator 1 view .LVU56
+ 251 0016 4FF0FF33 		mov	r3, #-1
+ 252 001a 82B2     		uxth	r2, r0
+ 253 001c 6946     		mov	r1, sp
+ 254 001e 0448     		ldr	r0, .L11+4
+ 255 0020 FFF7FEFF 		bl	HAL_UART_Transmit
+ 256              	.LVL12:
+ 336:Core/Src/main.c **** }
+ 257              		.loc 1 336 1 view .LVU57
+ 258 0024 09B0     		add	sp, sp, #36
+ 259              	.LCFI8:
+ 260              		.cfi_def_cfa_offset 4
+ 261              		@ sp needed
+ 262 0026 5DF804FB 		ldr	pc, [sp], #4
+ 263              	.L12:
+ 264 002a 00BF     		.align	2
+ 265              	.L11:
+ 266 002c 00000000 		.word	.LC0
+ 267 0030 00000000 		.word	huart2
+ 268              		.cfi_endproc
+ 269              	.LFE74:
+ 271              		.global	__aeabi_f2d
+ 272              		.section	.rodata.UART_SendFloat.str1.4,"aMS",%progbits,1
+ 273              		.align	2
+ 274              	.LC1:
+ 275 0000 252E3366 		.ascii	"%.3f\015\012\000"
+ 275      0D0A00
+ 276              		.section	.text.UART_SendFloat,"ax",%progbits
+ 277              		.align	1
+ 278              		.global	UART_SendFloat
+ 279              		.syntax unified
+ 280              		.thumb
+ 281              		.thumb_func
+ 283              	UART_SendFloat:
+ 284              	.LVL13:
+ 285              	.LFB75:
+ 337:Core/Src/main.c **** void UART_SendFloat(float value)
+ 338:Core/Src/main.c **** {
+ 286              		.loc 1 338 1 is_stmt 1 view -0
+ 287              		.cfi_startproc
+ 288              		@ args = 0, pretend = 0, frame = 32
+ 289              		@ frame_needed = 0, uses_anonymous_args = 0
+ 290              		.loc 1 338 1 is_stmt 0 view .LVU59
+ 291 0000 00B5     		push	{lr}
+ 292              	.LCFI9:
+ 293              		.cfi_def_cfa_offset 4
+ 294              		.cfi_offset 14, -4
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 12
+
+
+ 295 0002 89B0     		sub	sp, sp, #36
+ 296              	.LCFI10:
+ 297              		.cfi_def_cfa_offset 40
+ 339:Core/Src/main.c ****   char buffer[32];
+ 298              		.loc 1 339 3 is_stmt 1 view .LVU60
+ 340:Core/Src/main.c ****   // Chuyển số thực thành chuỗi
+ 341:Core/Src/main.c ****   sprintf(buffer, "%.3f\r\n", value);
+ 299              		.loc 1 341 3 view .LVU61
+ 300 0004 FFF7FEFF 		bl	__aeabi_f2d
+ 301              	.LVL14:
+ 302              		.loc 1 341 3 is_stmt 0 view .LVU62
+ 303 0008 0246     		mov	r2, r0
+ 304 000a 0B46     		mov	r3, r1
+ 305 000c 0849     		ldr	r1, .L15
+ 306 000e 6846     		mov	r0, sp
+ 307 0010 FFF7FEFF 		bl	sprintf
+ 308              	.LVL15:
+ 342:Core/Src/main.c ****   // Truyền chuỗi qua UART
+ 343:Core/Src/main.c ****   HAL_UART_Transmit(&huart2, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+ 309              		.loc 1 343 3 is_stmt 1 view .LVU63
+ 310              		.loc 1 343 49 is_stmt 0 view .LVU64
+ 311 0014 6846     		mov	r0, sp
+ 312 0016 FFF7FEFF 		bl	strlen
+ 313              	.LVL16:
+ 314              		.loc 1 343 3 discriminator 1 view .LVU65
+ 315 001a 4FF0FF33 		mov	r3, #-1
+ 316 001e 82B2     		uxth	r2, r0
+ 317 0020 6946     		mov	r1, sp
+ 318 0022 0448     		ldr	r0, .L15+4
+ 319 0024 FFF7FEFF 		bl	HAL_UART_Transmit
+ 320              	.LVL17:
+ 344:Core/Src/main.c **** }
+ 321              		.loc 1 344 1 view .LVU66
+ 322 0028 09B0     		add	sp, sp, #36
+ 323              	.LCFI11:
+ 324              		.cfi_def_cfa_offset 4
+ 325              		@ sp needed
+ 326 002a 5DF804FB 		ldr	pc, [sp], #4
+ 327              	.L16:
+ 328 002e 00BF     		.align	2
+ 329              	.L15:
+ 330 0030 00000000 		.word	.LC1
+ 331 0034 00000000 		.word	huart2
+ 332              		.cfi_endproc
+ 333              	.LFE75:
+ 335              		.section	.text.Error_Handler,"ax",%progbits
+ 336              		.align	1
+ 337              		.global	Error_Handler
+ 338              		.syntax unified
+ 339              		.thumb
+ 340              		.thumb_func
+ 342              	Error_Handler:
+ 343              	.LFB76:
+ 345:Core/Src/main.c **** 
+ 346:Core/Src/main.c **** /* USER CODE END 4 */
+ 347:Core/Src/main.c **** 
+ 348:Core/Src/main.c **** /**
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 13
+
+
+ 349:Core/Src/main.c ****   * @brief  This function is executed in case of error occurrence.
+ 350:Core/Src/main.c ****   * @retval None
+ 351:Core/Src/main.c ****   */
+ 352:Core/Src/main.c **** void Error_Handler(void)
+ 353:Core/Src/main.c **** {
+ 344              		.loc 1 353 1 is_stmt 1 view -0
+ 345              		.cfi_startproc
+ 346              		@ Volatile: function does not return.
+ 347              		@ args = 0, pretend = 0, frame = 0
+ 348              		@ frame_needed = 0, uses_anonymous_args = 0
+ 349              		@ link register save eliminated.
+ 354:Core/Src/main.c ****   /* USER CODE BEGIN Error_Handler_Debug */
+ 355:Core/Src/main.c ****   /* User can add his own implementation to report the HAL error return state */
+ 356:Core/Src/main.c ****   __disable_irq();
+ 350              		.loc 1 356 3 view .LVU68
+ 351              	.LBB8:
+ 352              	.LBI8:
+ 353              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
+   1:Drivers/CMSIS/Include/cmsis_gcc.h **** /**************************************************************************//**
+   2:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @version  V5.0.4
+   5:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @date     09. April 2018
+   6:Drivers/CMSIS/Include/cmsis_gcc.h ****  ******************************************************************************/
+   7:Drivers/CMSIS/Include/cmsis_gcc.h **** /*
+   8:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+   9:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  10:Drivers/CMSIS/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  12:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:Drivers/CMSIS/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:Drivers/CMSIS/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  16:Drivers/CMSIS/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  18:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:Drivers/CMSIS/Include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:Drivers/CMSIS/Include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:Drivers/CMSIS/Include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:Drivers/CMSIS/Include/cmsis_gcc.h ****  * limitations under the License.
+  23:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+  24:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  25:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  28:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+  32:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  34:Drivers/CMSIS/Include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __has_builtin
+  36:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  38:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  39:Drivers/CMSIS/Include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 14
+
+
+  40:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ASM
+  41:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  43:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __INLINE
+  44:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  46:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  49:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE                 
+  50:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  51:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif                                           
+  52:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  55:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __USED
+  56:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  58:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __WEAK
+  59:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  60:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  61:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED
+  62:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  63:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  64:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  67:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  70:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  72:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:Drivers/CMSIS/Include/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+  75:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  78:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  80:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  86:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  89:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  94:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 15
+
+
+  97:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 102:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 108:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 109:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 110:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 112:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 113:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 115:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 116:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 117:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 118:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 119:Drivers/CMSIS/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 120:Drivers/CMSIS/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 121:Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
+ 122:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 123:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 124:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 125:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 126:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 127:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 128:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 129:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 130:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 131:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+ 132:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 133:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 134:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 135:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 136:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Disable IRQ Interrupts
+ 137:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Disables IRQ interrupts by setting the I-bit in the CPSR.
+ 138:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 139:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 140:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
+ 354              		.loc 2 140 27 view .LVU69
+ 355              	.LBB9:
+ 141:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 142:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
+ 356              		.loc 2 142 3 view .LVU70
+ 357              		.syntax unified
+ 358              	@ 142 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 359 0000 72B6     		cpsid i
+ 360              	@ 0 "" 2
+ 361              		.thumb
+ 362              		.syntax unified
+ 363              	.L18:
+ 364              	.LBE9:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 16
+
+
+ 365              	.LBE8:
+ 357:Core/Src/main.c ****   while (1)
+ 366              		.loc 1 357 3 view .LVU71
+ 358:Core/Src/main.c ****   {
+ 359:Core/Src/main.c ****   }
+ 367              		.loc 1 359 3 view .LVU72
+ 357:Core/Src/main.c ****   while (1)
+ 368              		.loc 1 357 9 view .LVU73
+ 369 0002 FEE7     		b	.L18
+ 370              		.cfi_endproc
+ 371              	.LFE76:
+ 373              		.section	.text.MX_I2C1_Init,"ax",%progbits
+ 374              		.align	1
+ 375              		.syntax unified
+ 376              		.thumb
+ 377              		.thumb_func
+ 379              	MX_I2C1_Init:
+ 380              	.LFB70:
+ 217:Core/Src/main.c **** 
+ 381              		.loc 1 217 1 view -0
+ 382              		.cfi_startproc
+ 383              		@ args = 0, pretend = 0, frame = 0
+ 384              		@ frame_needed = 0, uses_anonymous_args = 0
+ 385 0000 08B5     		push	{r3, lr}
+ 386              	.LCFI12:
+ 387              		.cfi_def_cfa_offset 8
+ 388              		.cfi_offset 3, -8
+ 389              		.cfi_offset 14, -4
+ 226:Core/Src/main.c ****   hi2c1.Init.ClockSpeed = 100000;
+ 390              		.loc 1 226 3 view .LVU75
+ 226:Core/Src/main.c ****   hi2c1.Init.ClockSpeed = 100000;
+ 391              		.loc 1 226 18 is_stmt 0 view .LVU76
+ 392 0002 0A48     		ldr	r0, .L23
+ 393 0004 0A4B     		ldr	r3, .L23+4
+ 394 0006 0360     		str	r3, [r0]
+ 227:Core/Src/main.c ****   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+ 395              		.loc 1 227 3 is_stmt 1 view .LVU77
+ 227:Core/Src/main.c ****   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+ 396              		.loc 1 227 25 is_stmt 0 view .LVU78
+ 397 0008 0A4B     		ldr	r3, .L23+8
+ 398 000a 4360     		str	r3, [r0, #4]
+ 228:Core/Src/main.c ****   hi2c1.Init.OwnAddress1 = 0;
+ 399              		.loc 1 228 3 is_stmt 1 view .LVU79
+ 228:Core/Src/main.c ****   hi2c1.Init.OwnAddress1 = 0;
+ 400              		.loc 1 228 24 is_stmt 0 view .LVU80
+ 401 000c 0023     		movs	r3, #0
+ 402 000e 8360     		str	r3, [r0, #8]
+ 229:Core/Src/main.c ****   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+ 403              		.loc 1 229 3 is_stmt 1 view .LVU81
+ 229:Core/Src/main.c ****   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+ 404              		.loc 1 229 26 is_stmt 0 view .LVU82
+ 405 0010 C360     		str	r3, [r0, #12]
+ 230:Core/Src/main.c ****   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+ 406              		.loc 1 230 3 is_stmt 1 view .LVU83
+ 230:Core/Src/main.c ****   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+ 407              		.loc 1 230 29 is_stmt 0 view .LVU84
+ 408 0012 4FF48042 		mov	r2, #16384
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 17
+
+
+ 409 0016 0261     		str	r2, [r0, #16]
+ 231:Core/Src/main.c ****   hi2c1.Init.OwnAddress2 = 0;
+ 410              		.loc 1 231 3 is_stmt 1 view .LVU85
+ 231:Core/Src/main.c ****   hi2c1.Init.OwnAddress2 = 0;
+ 411              		.loc 1 231 30 is_stmt 0 view .LVU86
+ 412 0018 4361     		str	r3, [r0, #20]
+ 232:Core/Src/main.c ****   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+ 413              		.loc 1 232 3 is_stmt 1 view .LVU87
+ 232:Core/Src/main.c ****   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+ 414              		.loc 1 232 26 is_stmt 0 view .LVU88
+ 415 001a 8361     		str	r3, [r0, #24]
+ 233:Core/Src/main.c ****   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+ 416              		.loc 1 233 3 is_stmt 1 view .LVU89
+ 233:Core/Src/main.c ****   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+ 417              		.loc 1 233 30 is_stmt 0 view .LVU90
+ 418 001c C361     		str	r3, [r0, #28]
+ 234:Core/Src/main.c ****   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+ 419              		.loc 1 234 3 is_stmt 1 view .LVU91
+ 234:Core/Src/main.c ****   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+ 420              		.loc 1 234 28 is_stmt 0 view .LVU92
+ 421 001e 0362     		str	r3, [r0, #32]
+ 235:Core/Src/main.c ****   {
+ 422              		.loc 1 235 3 is_stmt 1 view .LVU93
+ 235:Core/Src/main.c ****   {
+ 423              		.loc 1 235 7 is_stmt 0 view .LVU94
+ 424 0020 FFF7FEFF 		bl	HAL_I2C_Init
+ 425              	.LVL18:
+ 235:Core/Src/main.c ****   {
+ 426              		.loc 1 235 6 discriminator 1 view .LVU95
+ 427 0024 00B9     		cbnz	r0, .L22
+ 243:Core/Src/main.c **** 
+ 428              		.loc 1 243 1 view .LVU96
+ 429 0026 08BD     		pop	{r3, pc}
+ 430              	.L22:
+ 237:Core/Src/main.c ****   }
+ 431              		.loc 1 237 5 is_stmt 1 view .LVU97
+ 432 0028 FFF7FEFF 		bl	Error_Handler
+ 433              	.LVL19:
+ 434              	.L24:
+ 435              		.align	2
+ 436              	.L23:
+ 437 002c 00000000 		.word	hi2c1
+ 438 0030 00540040 		.word	1073763328
+ 439 0034 A0860100 		.word	100000
+ 440              		.cfi_endproc
+ 441              	.LFE70:
+ 443              		.section	.text.MX_USART2_UART_Init,"ax",%progbits
+ 444              		.align	1
+ 445              		.syntax unified
+ 446              		.thumb
+ 447              		.thumb_func
+ 449              	MX_USART2_UART_Init:
+ 450              	.LFB71:
+ 251:Core/Src/main.c **** 
+ 451              		.loc 1 251 1 view -0
+ 452              		.cfi_startproc
+ 453              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 18
+
+
+ 454              		@ frame_needed = 0, uses_anonymous_args = 0
+ 455 0000 08B5     		push	{r3, lr}
+ 456              	.LCFI13:
+ 457              		.cfi_def_cfa_offset 8
+ 458              		.cfi_offset 3, -8
+ 459              		.cfi_offset 14, -4
+ 260:Core/Src/main.c ****   huart2.Init.BaudRate = 115200;
+ 460              		.loc 1 260 3 view .LVU99
+ 260:Core/Src/main.c ****   huart2.Init.BaudRate = 115200;
+ 461              		.loc 1 260 19 is_stmt 0 view .LVU100
+ 462 0002 0A48     		ldr	r0, .L29
+ 463 0004 0A4B     		ldr	r3, .L29+4
+ 464 0006 0360     		str	r3, [r0]
+ 261:Core/Src/main.c ****   huart2.Init.WordLength = UART_WORDLENGTH_8B;
+ 465              		.loc 1 261 3 is_stmt 1 view .LVU101
+ 261:Core/Src/main.c ****   huart2.Init.WordLength = UART_WORDLENGTH_8B;
+ 466              		.loc 1 261 24 is_stmt 0 view .LVU102
+ 467 0008 4FF4E133 		mov	r3, #115200
+ 468 000c 4360     		str	r3, [r0, #4]
+ 262:Core/Src/main.c ****   huart2.Init.StopBits = UART_STOPBITS_1;
+ 469              		.loc 1 262 3 is_stmt 1 view .LVU103
+ 262:Core/Src/main.c ****   huart2.Init.StopBits = UART_STOPBITS_1;
+ 470              		.loc 1 262 26 is_stmt 0 view .LVU104
+ 471 000e 0023     		movs	r3, #0
+ 472 0010 8360     		str	r3, [r0, #8]
+ 263:Core/Src/main.c ****   huart2.Init.Parity = UART_PARITY_NONE;
+ 473              		.loc 1 263 3 is_stmt 1 view .LVU105
+ 263:Core/Src/main.c ****   huart2.Init.Parity = UART_PARITY_NONE;
+ 474              		.loc 1 263 24 is_stmt 0 view .LVU106
+ 475 0012 C360     		str	r3, [r0, #12]
+ 264:Core/Src/main.c ****   huart2.Init.Mode = UART_MODE_TX_RX;
+ 476              		.loc 1 264 3 is_stmt 1 view .LVU107
+ 264:Core/Src/main.c ****   huart2.Init.Mode = UART_MODE_TX_RX;
+ 477              		.loc 1 264 22 is_stmt 0 view .LVU108
+ 478 0014 0361     		str	r3, [r0, #16]
+ 265:Core/Src/main.c ****   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 479              		.loc 1 265 3 is_stmt 1 view .LVU109
+ 265:Core/Src/main.c ****   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 480              		.loc 1 265 20 is_stmt 0 view .LVU110
+ 481 0016 0C22     		movs	r2, #12
+ 482 0018 4261     		str	r2, [r0, #20]
+ 266:Core/Src/main.c ****   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+ 483              		.loc 1 266 3 is_stmt 1 view .LVU111
+ 266:Core/Src/main.c ****   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+ 484              		.loc 1 266 25 is_stmt 0 view .LVU112
+ 485 001a 8361     		str	r3, [r0, #24]
+ 267:Core/Src/main.c ****   if (HAL_UART_Init(&huart2) != HAL_OK)
+ 486              		.loc 1 267 3 is_stmt 1 view .LVU113
+ 267:Core/Src/main.c ****   if (HAL_UART_Init(&huart2) != HAL_OK)
+ 487              		.loc 1 267 28 is_stmt 0 view .LVU114
+ 488 001c C361     		str	r3, [r0, #28]
+ 268:Core/Src/main.c ****   {
+ 489              		.loc 1 268 3 is_stmt 1 view .LVU115
+ 268:Core/Src/main.c ****   {
+ 490              		.loc 1 268 7 is_stmt 0 view .LVU116
+ 491 001e FFF7FEFF 		bl	HAL_UART_Init
+ 492              	.LVL20:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 19
+
+
+ 268:Core/Src/main.c ****   {
+ 493              		.loc 1 268 6 discriminator 1 view .LVU117
+ 494 0022 00B9     		cbnz	r0, .L28
+ 276:Core/Src/main.c **** 
+ 495              		.loc 1 276 1 view .LVU118
+ 496 0024 08BD     		pop	{r3, pc}
+ 497              	.L28:
+ 270:Core/Src/main.c ****   }
+ 498              		.loc 1 270 5 is_stmt 1 view .LVU119
+ 499 0026 FFF7FEFF 		bl	Error_Handler
+ 500              	.LVL21:
+ 501              	.L30:
+ 502 002a 00BF     		.align	2
+ 503              	.L29:
+ 504 002c 00000000 		.word	huart2
+ 505 0030 00440040 		.word	1073759232
+ 506              		.cfi_endproc
+ 507              	.LFE71:
+ 509              		.section	.text.SystemClock_Config,"ax",%progbits
+ 510              		.align	1
+ 511              		.global	SystemClock_Config
+ 512              		.syntax unified
+ 513              		.thumb
+ 514              		.thumb_func
+ 516              	SystemClock_Config:
+ 517              	.LFB69:
+ 177:Core/Src/main.c ****   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+ 518              		.loc 1 177 1 view -0
+ 519              		.cfi_startproc
+ 520              		@ args = 0, pretend = 0, frame = 64
+ 521              		@ frame_needed = 0, uses_anonymous_args = 0
+ 522 0000 00B5     		push	{lr}
+ 523              	.LCFI14:
+ 524              		.cfi_def_cfa_offset 4
+ 525              		.cfi_offset 14, -4
+ 526 0002 91B0     		sub	sp, sp, #68
+ 527              	.LCFI15:
+ 528              		.cfi_def_cfa_offset 72
+ 178:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 529              		.loc 1 178 3 view .LVU121
+ 178:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 530              		.loc 1 178 22 is_stmt 0 view .LVU122
+ 531 0004 2822     		movs	r2, #40
+ 532 0006 0021     		movs	r1, #0
+ 533 0008 06A8     		add	r0, sp, #24
+ 534 000a FFF7FEFF 		bl	memset
+ 535              	.LVL22:
+ 179:Core/Src/main.c **** 
+ 536              		.loc 1 179 3 is_stmt 1 view .LVU123
+ 179:Core/Src/main.c **** 
+ 537              		.loc 1 179 22 is_stmt 0 view .LVU124
+ 538 000e 0023     		movs	r3, #0
+ 539 0010 0193     		str	r3, [sp, #4]
+ 540 0012 0293     		str	r3, [sp, #8]
+ 541 0014 0393     		str	r3, [sp, #12]
+ 542 0016 0493     		str	r3, [sp, #16]
+ 543 0018 0593     		str	r3, [sp, #20]
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 20
+
+
+ 184:Core/Src/main.c ****   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+ 544              		.loc 1 184 3 is_stmt 1 view .LVU125
+ 184:Core/Src/main.c ****   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+ 545              		.loc 1 184 36 is_stmt 0 view .LVU126
+ 546 001a 0122     		movs	r2, #1
+ 547 001c 0692     		str	r2, [sp, #24]
+ 185:Core/Src/main.c ****   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+ 548              		.loc 1 185 3 is_stmt 1 view .LVU127
+ 185:Core/Src/main.c ****   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+ 549              		.loc 1 185 30 is_stmt 0 view .LVU128
+ 550 001e 4FF48033 		mov	r3, #65536
+ 551 0022 0793     		str	r3, [sp, #28]
+ 186:Core/Src/main.c ****   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+ 552              		.loc 1 186 3 is_stmt 1 view .LVU129
+ 187:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+ 553              		.loc 1 187 3 view .LVU130
+ 187:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+ 554              		.loc 1 187 30 is_stmt 0 view .LVU131
+ 555 0024 0A92     		str	r2, [sp, #40]
+ 188:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+ 556              		.loc 1 188 3 is_stmt 1 view .LVU132
+ 188:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+ 557              		.loc 1 188 34 is_stmt 0 view .LVU133
+ 558 0026 0222     		movs	r2, #2
+ 559 0028 0D92     		str	r2, [sp, #52]
+ 189:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+ 560              		.loc 1 189 3 is_stmt 1 view .LVU134
+ 189:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+ 561              		.loc 1 189 35 is_stmt 0 view .LVU135
+ 562 002a 0E93     		str	r3, [sp, #56]
+ 190:Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 563              		.loc 1 190 3 is_stmt 1 view .LVU136
+ 190:Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 564              		.loc 1 190 32 is_stmt 0 view .LVU137
+ 565 002c 4FF4E013 		mov	r3, #1835008
+ 566 0030 0F93     		str	r3, [sp, #60]
+ 191:Core/Src/main.c ****   {
+ 567              		.loc 1 191 3 is_stmt 1 view .LVU138
+ 191:Core/Src/main.c ****   {
+ 568              		.loc 1 191 7 is_stmt 0 view .LVU139
+ 569 0032 06A8     		add	r0, sp, #24
+ 570 0034 FFF7FEFF 		bl	HAL_RCC_OscConfig
+ 571              	.LVL23:
+ 191:Core/Src/main.c ****   {
+ 572              		.loc 1 191 6 discriminator 1 view .LVU140
+ 573 0038 80B9     		cbnz	r0, .L35
+ 198:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+ 574              		.loc 1 198 3 is_stmt 1 view .LVU141
+ 198:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+ 575              		.loc 1 198 31 is_stmt 0 view .LVU142
+ 576 003a 0F23     		movs	r3, #15
+ 577 003c 0193     		str	r3, [sp, #4]
+ 200:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 578              		.loc 1 200 3 is_stmt 1 view .LVU143
+ 200:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 579              		.loc 1 200 34 is_stmt 0 view .LVU144
+ 580 003e 0221     		movs	r1, #2
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 21
+
+
+ 581 0040 0291     		str	r1, [sp, #8]
+ 201:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+ 582              		.loc 1 201 3 is_stmt 1 view .LVU145
+ 201:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+ 583              		.loc 1 201 35 is_stmt 0 view .LVU146
+ 584 0042 0023     		movs	r3, #0
+ 585 0044 0393     		str	r3, [sp, #12]
+ 202:Core/Src/main.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 586              		.loc 1 202 3 is_stmt 1 view .LVU147
+ 202:Core/Src/main.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 587              		.loc 1 202 36 is_stmt 0 view .LVU148
+ 588 0046 4FF48062 		mov	r2, #1024
+ 589 004a 0492     		str	r2, [sp, #16]
+ 203:Core/Src/main.c **** 
+ 590              		.loc 1 203 3 is_stmt 1 view .LVU149
+ 203:Core/Src/main.c **** 
+ 591              		.loc 1 203 36 is_stmt 0 view .LVU150
+ 592 004c 0593     		str	r3, [sp, #20]
+ 205:Core/Src/main.c ****   {
+ 593              		.loc 1 205 3 is_stmt 1 view .LVU151
+ 205:Core/Src/main.c ****   {
+ 594              		.loc 1 205 7 is_stmt 0 view .LVU152
+ 595 004e 01A8     		add	r0, sp, #4
+ 596 0050 FFF7FEFF 		bl	HAL_RCC_ClockConfig
+ 597              	.LVL24:
+ 205:Core/Src/main.c ****   {
+ 598              		.loc 1 205 6 discriminator 1 view .LVU153
+ 599 0054 20B9     		cbnz	r0, .L36
+ 209:Core/Src/main.c **** 
+ 600              		.loc 1 209 1 view .LVU154
+ 601 0056 11B0     		add	sp, sp, #68
+ 602              	.LCFI16:
+ 603              		.cfi_remember_state
+ 604              		.cfi_def_cfa_offset 4
+ 605              		@ sp needed
+ 606 0058 5DF804FB 		ldr	pc, [sp], #4
+ 607              	.L35:
+ 608              	.LCFI17:
+ 609              		.cfi_restore_state
+ 193:Core/Src/main.c ****   }
+ 610              		.loc 1 193 5 is_stmt 1 view .LVU155
+ 611 005c FFF7FEFF 		bl	Error_Handler
+ 612              	.LVL25:
+ 613              	.L36:
+ 207:Core/Src/main.c ****   }
+ 614              		.loc 1 207 5 view .LVU156
+ 615 0060 FFF7FEFF 		bl	Error_Handler
+ 616              	.LVL26:
+ 617              		.cfi_endproc
+ 618              	.LFE69:
+ 620              		.section	.rodata.main.str1.4,"aMS",%progbits,1
+ 621              		.align	2
+ 622              	.LC2:
+ 623 0000 4572726F 		.ascii	"Error! No BMP Sensor Detected!!!\000"
+ 623      7221204E 
+ 623      6F20424D 
+ 623      50205365 
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 22
+
+
+ 623      6E736F72 
+ 624 0021 000000   		.align	2
+ 625              	.LC3:
+ 626 0024 424D4532 		.ascii	"BME280 Sensor Detected!\000"
+ 626      38302053 
+ 626      656E736F 
+ 626      72204465 
+ 626      74656374 
+ 627              		.align	2
+ 628              	.LC4:
+ 629 003c 48656C6C 		.ascii	"Hello\015\012\000"
+ 629      6F0D0A00 
+ 630              		.global	__aeabi_fcmpeq
+ 631              		.align	2
+ 632              	.LC5:
+ 633 0044 54656D70 		.ascii	"Temperature measurement failed!\000"
+ 633      65726174 
+ 633      75726520 
+ 633      6D656173 
+ 633      7572656D 
+ 634              		.section	.text.main,"ax",%progbits
+ 635              		.align	1
+ 636              		.global	main
+ 637              		.syntax unified
+ 638              		.thumb
+ 639              		.thumb_func
+ 641              	main:
+ 642              	.LFB68:
+  95:Core/Src/main.c **** 
+ 643              		.loc 1 95 1 view -0
+ 644              		.cfi_startproc
+ 645              		@ Volatile: function does not return.
+ 646              		@ args = 0, pretend = 0, frame = 0
+ 647              		@ frame_needed = 0, uses_anonymous_args = 0
+ 648 0000 00B5     		push	{lr}
+ 649              	.LCFI18:
+ 650              		.cfi_def_cfa_offset 4
+ 651              		.cfi_offset 14, -4
+ 652 0002 83B0     		sub	sp, sp, #12
+ 653              	.LCFI19:
+ 654              		.cfi_def_cfa_offset 16
+ 104:Core/Src/main.c **** 
+ 655              		.loc 1 104 3 view .LVU158
+ 656 0004 FFF7FEFF 		bl	HAL_Init
+ 657              	.LVL27:
+ 111:Core/Src/main.c **** 
+ 658              		.loc 1 111 3 view .LVU159
+ 659 0008 FFF7FEFF 		bl	SystemClock_Config
+ 660              	.LVL28:
+ 118:Core/Src/main.c ****   MX_I2C1_Init();
+ 661              		.loc 1 118 3 view .LVU160
+ 662 000c FFF7FEFF 		bl	MX_GPIO_Init
+ 663              	.LVL29:
+ 119:Core/Src/main.c ****   MX_USART2_UART_Init();
+ 664              		.loc 1 119 3 view .LVU161
+ 665 0010 FFF7FEFF 		bl	MX_I2C1_Init
+ 666              	.LVL30:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 23
+
+
+ 120:Core/Src/main.c ****   /* USER CODE BEGIN 2 */
+ 667              		.loc 1 120 3 view .LVU162
+ 668 0014 FFF7FEFF 		bl	MX_USART2_UART_Init
+ 669              	.LVL31:
+ 124:Core/Src/main.c ****   {
+ 670              		.loc 1 124 3 view .LVU163
+ 124:Core/Src/main.c ****   {
+ 671              		.loc 1 124 7 is_stmt 0 view .LVU164
+ 672 0018 4FF0FF33 		mov	r3, #-1
+ 673 001c 0322     		movs	r2, #3
+ 674 001e EC21     		movs	r1, #236
+ 675 0020 1F48     		ldr	r0, .L44+8
+ 676 0022 FFF7FEFF 		bl	HAL_I2C_IsDeviceReady
+ 677              	.LVL32:
+ 124:Core/Src/main.c ****   {
+ 678              		.loc 1 124 6 discriminator 1 view .LVU165
+ 679 0026 18B1     		cbz	r0, .L38
+ 126:Core/Src/main.c ****   }
+ 680              		.loc 1 126 5 is_stmt 1 view .LVU166
+ 681 0028 1E48     		ldr	r0, .L44+12
+ 682 002a FFF7FEFF 		bl	puts
+ 683              	.LVL33:
+ 684 002e 14E0     		b	.L39
+ 685              	.L38:
+ 130:Core/Src/main.c ****     BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
+ 686              		.loc 1 130 5 view .LVU167
+ 687 0030 1D48     		ldr	r0, .L44+16
+ 688 0032 FFF7FEFF 		bl	puts
+ 689              	.LVL34:
+ 131:Core/Src/main.c ****   }
+ 690              		.loc 1 131 5 view .LVU168
+ 691 0036 0423     		movs	r3, #4
+ 692 0038 0193     		str	r3, [sp, #4]
+ 693 003a 0023     		movs	r3, #0
+ 694 003c 0093     		str	r3, [sp]
+ 695 003e 0323     		movs	r3, #3
+ 696 0040 0122     		movs	r2, #1
+ 697 0042 0521     		movs	r1, #5
+ 698 0044 0220     		movs	r0, #2
+ 699 0046 FFF7FEFF 		bl	BME280_Config
+ 700              	.LVL35:
+ 701 004a 06E0     		b	.L39
+ 702              	.L43:
+ 703              	.LBB10:
+ 162:Core/Src/main.c ****     }
+ 704              		.loc 1 162 7 view .LVU169
+ 705 004c 1748     		ldr	r0, .L44+20
+ 706 004e FFF7FEFF 		bl	puts
+ 707              	.LVL36:
+ 708              	.L41:
+ 167:Core/Src/main.c ****   }
+ 709              		.loc 1 167 5 view .LVU170
+ 710 0052 4FF47A70 		mov	r0, #1000
+ 711 0056 FFF7FEFF 		bl	HAL_Delay
+ 712              	.LVL37:
+ 713              	.LBE10:
+ 137:Core/Src/main.c ****   {
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 24
+
+
+ 714              		.loc 1 137 9 view .LVU171
+ 715              	.L39:
+ 137:Core/Src/main.c ****   {
+ 716              		.loc 1 137 3 view .LVU172
+ 717              	.LBB11:
+ 142:Core/Src/main.c ****     // checkChipID();
+ 718              		.loc 1 142 5 view .LVU173
+ 719 005a FFF7FEFF 		bl	BME280_Measure
+ 720              	.LVL38:
+ 150:Core/Src/main.c ****     HAL_UART_Transmit(&huart2, (uint8_t *)"Hello\r\n", 7, HAL_MAX_DELAY);
+ 721              		.loc 1 150 5 view .LVU174
+ 722 005e 0EA1     		adr	r1, .L44
+ 723 0060 D1E90001 		ldrd	r0, [r1]
+ 724 0064 FFF7FEFF 		bl	UART_SendFloat
+ 725              	.LVL39:
+ 151:Core/Src/main.c ****     UART_SendFloat(data_float);
+ 726              		.loc 1 151 5 view .LVU175
+ 727 0068 4FF0FF33 		mov	r3, #-1
+ 728 006c 0722     		movs	r2, #7
+ 729 006e 1049     		ldr	r1, .L44+24
+ 730 0070 1048     		ldr	r0, .L44+28
+ 731 0072 FFF7FEFF 		bl	HAL_UART_Transmit
+ 732              	.LVL40:
+ 152:Core/Src/main.c ****     if (Temperature != 0) // Kiểm tra nếu nhiệt độ hợp lệ
+ 733              		.loc 1 152 5 view .LVU176
+ 734 0076 104B     		ldr	r3, .L44+32
+ 735 0078 1868     		ldr	r0, [r3]	@ float
+ 736 007a FFF7FEFF 		bl	__aeabi_f2d
+ 737              	.LVL41:
+ 738 007e FFF7FEFF 		bl	UART_SendFloat
+ 739              	.LVL42:
+ 153:Core/Src/main.c ****     {
+ 740              		.loc 1 153 5 view .LVU177
+ 153:Core/Src/main.c ****     {
+ 741              		.loc 1 153 8 is_stmt 0 view .LVU178
+ 742 0082 0021     		movs	r1, #0
+ 743 0084 0D4B     		ldr	r3, .L44+36
+ 744 0086 1868     		ldr	r0, [r3]	@ float
+ 745 0088 FFF7FEFF 		bl	__aeabi_fcmpeq
+ 746              	.LVL43:
+ 747 008c 0028     		cmp	r0, #0
+ 748 008e E0D0     		beq	.L41
+ 749 0090 DCE7     		b	.L43
+ 750              	.L45:
+ 751 0092 00BFAFF3 		.align	3
+ 751      0080
+ 752              	.L44:
+ 753 0098 1F85EB51 		.word	1374389535
+ 754 009c B81E0940 		.word	1074339512
+ 755 00a0 00000000 		.word	hi2c1
+ 756 00a4 00000000 		.word	.LC2
+ 757 00a8 24000000 		.word	.LC3
+ 758 00ac 44000000 		.word	.LC5
+ 759 00b0 3C000000 		.word	.LC4
+ 760 00b4 00000000 		.word	huart2
+ 761 00b8 00000000 		.word	data_float
+ 762 00bc 00000000 		.word	Temperature
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 25
+
+
+ 763              	.LBE11:
+ 764              		.cfi_endproc
+ 765              	.LFE68:
+ 767              		.global	data_float
+ 768              		.section	.data.data_float,"aw"
+ 769              		.align	2
+ 772              	data_float:
+ 773 0000 9A997940 		.word	1081711002
+ 774              		.global	data_int
+ 775              		.section	.data.data_int,"aw"
+ 776              		.align	2
+ 779              	data_int:
+ 780 0000 03000000 		.word	3
+ 781              		.global	Humidity
+ 782              		.section	.bss.Humidity,"aw",%nobits
+ 783              		.align	2
+ 786              	Humidity:
+ 787 0000 00000000 		.space	4
+ 788              		.global	Pressure
+ 789              		.section	.bss.Pressure,"aw",%nobits
+ 790              		.align	2
+ 793              	Pressure:
+ 794 0000 00000000 		.space	4
+ 795              		.global	Temperature
+ 796              		.section	.bss.Temperature,"aw",%nobits
+ 797              		.align	2
+ 800              	Temperature:
+ 801 0000 00000000 		.space	4
+ 802              		.global	huart2
+ 803              		.section	.bss.huart2,"aw",%nobits
+ 804              		.align	2
+ 807              	huart2:
+ 808 0000 00000000 		.space	72
+ 808      00000000 
+ 808      00000000 
+ 808      00000000 
+ 808      00000000 
+ 809              		.global	hi2c1
+ 810              		.section	.bss.hi2c1,"aw",%nobits
+ 811              		.align	2
+ 814              	hi2c1:
+ 815 0000 00000000 		.space	84
+ 815      00000000 
+ 815      00000000 
+ 815      00000000 
+ 815      00000000 
+ 816              		.text
+ 817              	.Letext0:
+ 818              		.file 3 "C:/Users/Dell/Downloads/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi/arm-none
+ 819              		.file 4 "C:/Users/Dell/Downloads/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi/arm-none
+ 820              		.file 5 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 821              		.file 6 "C:/Users/Dell/Downloads/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi/lib/gcc/
+ 822              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 823              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h"
+ 824              		.file 9 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h"
+ 825              		.file 10 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+ 826              		.file 11 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 26
+
+
+ 827              		.file 12 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+ 828              		.file 13 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h"
+ 829              		.file 14 "C:/Users/Dell/Downloads/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi/arm-non
+ 830              		.file 15 "C:/Users/Dell/Downloads/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi/arm-non
+ 831              		.file 16 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ 832              		.file 17 "Core/Inc/BME280_STM32.h"
+ 833              		.file 18 "<built-in>"
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 27
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:19     .text.MX_GPIO_Init:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:24     .text.MX_GPIO_Init:00000000 MX_GPIO_Init
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:143    .text.MX_GPIO_Init:00000084 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:149    .rodata.UART_Transmit_Float.str1.4:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:153    .text.UART_Transmit_Float:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:159    .text.UART_Transmit_Float:00000000 UART_Transmit_Float
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:208    .text.UART_Transmit_Float:0000002c $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:807    .bss.huart2:00000000 huart2
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:214    .text.UART_SendInt:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:220    .text.UART_SendInt:00000000 UART_SendInt
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:266    .text.UART_SendInt:0000002c $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:273    .rodata.UART_SendFloat.str1.4:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:277    .text.UART_SendFloat:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:283    .text.UART_SendFloat:00000000 UART_SendFloat
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:330    .text.UART_SendFloat:00000030 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:336    .text.Error_Handler:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:342    .text.Error_Handler:00000000 Error_Handler
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:374    .text.MX_I2C1_Init:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:379    .text.MX_I2C1_Init:00000000 MX_I2C1_Init
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:437    .text.MX_I2C1_Init:0000002c $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:814    .bss.hi2c1:00000000 hi2c1
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:444    .text.MX_USART2_UART_Init:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:449    .text.MX_USART2_UART_Init:00000000 MX_USART2_UART_Init
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:504    .text.MX_USART2_UART_Init:0000002c $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:510    .text.SystemClock_Config:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:516    .text.SystemClock_Config:00000000 SystemClock_Config
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:621    .rodata.main.str1.4:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:635    .text.main:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:641    .text.main:00000000 main
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:753    .text.main:00000098 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:772    .data.data_float:00000000 data_float
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:800    .bss.Temperature:00000000 Temperature
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:769    .data.data_float:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:779    .data.data_int:00000000 data_int
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:776    .data.data_int:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:786    .bss.Humidity:00000000 Humidity
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:783    .bss.Humidity:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:793    .bss.Pressure:00000000 Pressure
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:790    .bss.Pressure:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:797    .bss.Temperature:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:804    .bss.huart2:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s:811    .bss.hi2c1:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_GPIO_WritePin
+HAL_GPIO_Init
+snprintf
+strlen
+HAL_UART_Transmit
+__aeabi_f2d
+sprintf
+HAL_I2C_Init
+HAL_UART_Init
+memset
+HAL_RCC_OscConfig
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccyaOMGr.s 			page 28
+
+
+HAL_RCC_ClockConfig
+__aeabi_fcmpeq
+HAL_Init
+HAL_I2C_IsDeviceReady
+puts
+BME280_Config
+HAL_Delay
+BME280_Measure

@@ -1,0 +1,2373 @@
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"BMP280.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Core/Src/BMP280.c"
+  18              		.section	.text.compensate_temperature,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	compensate_temperature:
+  25              	.LVL0:
+  26              	.LFB74:
+   1:Core/Src/BMP280.c **** /**
+   2:Core/Src/BMP280.c ****  * Ciastkolog.pl (https://github.com/ciastkolog)
+   3:Core/Src/BMP280.c ****  *
+   4:Core/Src/BMP280.c ****  */
+   5:Core/Src/BMP280.c **** /**
+   6:Core/Src/BMP280.c ****  * The MIT License (MIT)
+   7:Core/Src/BMP280.c ****  *
+   8:Core/Src/BMP280.c ****  * Copyright (c) 2016 sheinz (https://github.com/sheinz)
+   9:Core/Src/BMP280.c ****  *
+  10:Core/Src/BMP280.c ****  * Permission is hereby granted, free of charge, to any person obtaining a copy
+  11:Core/Src/BMP280.c ****  * of this software and associated documentation files (the "Software"), to deal
+  12:Core/Src/BMP280.c ****  * in the Software without restriction, including without limitation the rights
+  13:Core/Src/BMP280.c ****  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  14:Core/Src/BMP280.c ****  * copies of the Software, and to permit persons to whom the Software is
+  15:Core/Src/BMP280.c ****  * furnished to do so, subject to the following conditions:
+  16:Core/Src/BMP280.c ****  *
+  17:Core/Src/BMP280.c ****  * The above copyright notice and this permission notice shall be included in
+  18:Core/Src/BMP280.c ****  * all copies or substantial portions of the Software.
+  19:Core/Src/BMP280.c ****  *
+  20:Core/Src/BMP280.c ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  21:Core/Src/BMP280.c ****  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  22:Core/Src/BMP280.c ****  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  23:Core/Src/BMP280.c ****  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  24:Core/Src/BMP280.c ****  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  25:Core/Src/BMP280.c ****  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  26:Core/Src/BMP280.c ****  * THE SOFTWARE.
+  27:Core/Src/BMP280.c ****  */
+  28:Core/Src/BMP280.c **** 
+  29:Core/Src/BMP280.c **** #include "bmp280.h"
+  30:Core/Src/BMP280.c **** 
+  31:Core/Src/BMP280.c **** /**
+  32:Core/Src/BMP280.c ****  * BMP280 registers
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 2
+
+
+  33:Core/Src/BMP280.c ****  */
+  34:Core/Src/BMP280.c **** #define BMP280_REG_TEMP_XLSB 0xFC /* bits: 7-4 */
+  35:Core/Src/BMP280.c **** #define BMP280_REG_TEMP_LSB 0xFB
+  36:Core/Src/BMP280.c **** #define BMP280_REG_TEMP_MSB 0xFA
+  37:Core/Src/BMP280.c **** #define BMP280_REG_TEMP (BMP280_REG_TEMP_MSB)
+  38:Core/Src/BMP280.c **** #define BMP280_REG_PRESS_XLSB 0xF9 /* bits: 7-4 */
+  39:Core/Src/BMP280.c **** #define BMP280_REG_PRESS_LSB 0xF8
+  40:Core/Src/BMP280.c **** #define BMP280_REG_PRESS_MSB 0xF7
+  41:Core/Src/BMP280.c **** #define BMP280_REG_PRESSURE (BMP280_REG_PRESS_MSB)
+  42:Core/Src/BMP280.c **** #define BMP280_REG_CONFIG 0xF5   /* bits: 7-5 t_sb; 4-2 filter; 0 spi3w_en */
+  43:Core/Src/BMP280.c **** #define BMP280_REG_CTRL 0xF4     /* bits: 7-5 osrs_t; 4-2 osrs_p; 1-0 mode */
+  44:Core/Src/BMP280.c **** #define BMP280_REG_STATUS 0xF3   /* bits: 3 measuring; 0 im_update */
+  45:Core/Src/BMP280.c **** #define BMP280_REG_CTRL_HUM 0xF2 /* bits: 2-0 osrs_h; */
+  46:Core/Src/BMP280.c **** #define BMP280_REG_RESET 0xE0
+  47:Core/Src/BMP280.c **** #define BMP280_REG_ID 0xD0
+  48:Core/Src/BMP280.c **** #define BMP280_REG_CALIB 0x88
+  49:Core/Src/BMP280.c **** #define BMP280_REG_HUM_CALIB 0x88
+  50:Core/Src/BMP280.c **** 
+  51:Core/Src/BMP280.c **** #define BMP280_RESET_VALUE 0xB6
+  52:Core/Src/BMP280.c **** 
+  53:Core/Src/BMP280.c **** void bmp280_init_default_params(bmp280_params_t *params)
+  54:Core/Src/BMP280.c **** {
+  55:Core/Src/BMP280.c ****     params->mode = BMP280_MODE_NORMAL;
+  56:Core/Src/BMP280.c ****     params->filter = BMP280_FILTER_OFF;
+  57:Core/Src/BMP280.c ****     params->oversampling_pressure = BMP280_STANDARD;
+  58:Core/Src/BMP280.c ****     params->oversampling_temperature = BMP280_STANDARD;
+  59:Core/Src/BMP280.c ****     params->oversampling_humidity = BMP280_STANDARD;
+  60:Core/Src/BMP280.c ****     params->standby = BMP280_STANDBY_250;
+  61:Core/Src/BMP280.c **** }
+  62:Core/Src/BMP280.c **** 
+  63:Core/Src/BMP280.c **** static bool read_register16(BMP280_HandleTypedef *dev, uint8_t addr, uint16_t *value)
+  64:Core/Src/BMP280.c **** {
+  65:Core/Src/BMP280.c ****     uint16_t tx_buff;
+  66:Core/Src/BMP280.c ****     uint8_t rx_buff[2];
+  67:Core/Src/BMP280.c ****     tx_buff = (dev->addr << 1);
+  68:Core/Src/BMP280.c **** 
+  69:Core/Src/BMP280.c ****     if (HAL_I2C_Mem_Read(dev->i2c, tx_buff, addr, 1, rx_buff, 2, 5000) == HAL_OK)
+  70:Core/Src/BMP280.c ****     {
+  71:Core/Src/BMP280.c ****         *value = (uint16_t)((rx_buff[1] << 8) | rx_buff[0]);
+  72:Core/Src/BMP280.c ****         return true;
+  73:Core/Src/BMP280.c ****     }
+  74:Core/Src/BMP280.c ****     else
+  75:Core/Src/BMP280.c ****         return false;
+  76:Core/Src/BMP280.c **** }
+  77:Core/Src/BMP280.c **** 
+  78:Core/Src/BMP280.c **** static inline int read_data(BMP280_HandleTypedef *dev, uint8_t addr, uint8_t *value,
+  79:Core/Src/BMP280.c ****                             uint8_t len)
+  80:Core/Src/BMP280.c **** {
+  81:Core/Src/BMP280.c ****     uint16_t tx_buff;
+  82:Core/Src/BMP280.c ****     tx_buff = (dev->addr << 1);
+  83:Core/Src/BMP280.c ****     if (HAL_I2C_Mem_Read(dev->i2c, tx_buff, addr, 1, value, len, 5000) == HAL_OK)
+  84:Core/Src/BMP280.c ****         return 0;
+  85:Core/Src/BMP280.c ****     else
+  86:Core/Src/BMP280.c ****         return 1;
+  87:Core/Src/BMP280.c **** }
+  88:Core/Src/BMP280.c **** 
+  89:Core/Src/BMP280.c **** static bool read_calibration_data(BMP280_HandleTypedef *dev)
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 3
+
+
+  90:Core/Src/BMP280.c **** {
+  91:Core/Src/BMP280.c **** 
+  92:Core/Src/BMP280.c ****     if (read_register16(dev, 0x88, &dev->dig_T1) && read_register16(dev, 0x8a, (uint16_t *)&dev->di
+  93:Core/Src/BMP280.c ****     {
+  94:Core/Src/BMP280.c **** 
+  95:Core/Src/BMP280.c ****         return true;
+  96:Core/Src/BMP280.c ****     }
+  97:Core/Src/BMP280.c **** 
+  98:Core/Src/BMP280.c ****     return false;
+  99:Core/Src/BMP280.c **** }
+ 100:Core/Src/BMP280.c **** 
+ 101:Core/Src/BMP280.c **** static bool read_hum_calibration_data(BMP280_HandleTypedef *dev)
+ 102:Core/Src/BMP280.c **** {
+ 103:Core/Src/BMP280.c ****     uint16_t h4, h5;
+ 104:Core/Src/BMP280.c **** 
+ 105:Core/Src/BMP280.c ****     if (!read_data(dev, 0xa1, &dev->dig_H1, 1) && read_register16(dev, 0xe1, (uint16_t *)&dev->dig_
+ 106:Core/Src/BMP280.c ****     {
+ 107:Core/Src/BMP280.c ****         dev->dig_H4 = (h4 & 0x00ff) << 4 | (h4 & 0x0f00) >> 8;
+ 108:Core/Src/BMP280.c ****         dev->dig_H5 = h5 >> 4;
+ 109:Core/Src/BMP280.c **** 
+ 110:Core/Src/BMP280.c ****         return true;
+ 111:Core/Src/BMP280.c ****     }
+ 112:Core/Src/BMP280.c **** 
+ 113:Core/Src/BMP280.c ****     return false;
+ 114:Core/Src/BMP280.c **** }
+ 115:Core/Src/BMP280.c **** 
+ 116:Core/Src/BMP280.c **** static int write_register8(BMP280_HandleTypedef *dev, uint8_t addr, uint8_t value)
+ 117:Core/Src/BMP280.c **** {
+ 118:Core/Src/BMP280.c ****     uint16_t tx_buff;
+ 119:Core/Src/BMP280.c **** 
+ 120:Core/Src/BMP280.c ****     tx_buff = (dev->addr << 1);
+ 121:Core/Src/BMP280.c **** 
+ 122:Core/Src/BMP280.c ****     if (HAL_I2C_Mem_Write(dev->i2c, tx_buff, addr, 1, &value, 1, 10000) == HAL_OK)
+ 123:Core/Src/BMP280.c ****         return false;
+ 124:Core/Src/BMP280.c ****     else
+ 125:Core/Src/BMP280.c ****         return true;
+ 126:Core/Src/BMP280.c **** }
+ 127:Core/Src/BMP280.c **** 
+ 128:Core/Src/BMP280.c **** bool bmp280_init(BMP280_HandleTypedef *dev, bmp280_params_t *params)
+ 129:Core/Src/BMP280.c **** {
+ 130:Core/Src/BMP280.c **** 
+ 131:Core/Src/BMP280.c ****     if (dev->addr != BMP280_I2C_ADDRESS_0 && dev->addr != BMP280_I2C_ADDRESS_1)
+ 132:Core/Src/BMP280.c ****     {
+ 133:Core/Src/BMP280.c **** 
+ 134:Core/Src/BMP280.c ****         return false;
+ 135:Core/Src/BMP280.c ****     }
+ 136:Core/Src/BMP280.c **** 
+ 137:Core/Src/BMP280.c ****     if (read_data(dev, BMP280_REG_ID, &dev->id, 1))
+ 138:Core/Src/BMP280.c ****     {
+ 139:Core/Src/BMP280.c ****         return false;
+ 140:Core/Src/BMP280.c ****     }
+ 141:Core/Src/BMP280.c **** 
+ 142:Core/Src/BMP280.c ****     if (dev->id != BMP280_CHIP_ID && dev->id != BME280_CHIP_ID)
+ 143:Core/Src/BMP280.c ****     {
+ 144:Core/Src/BMP280.c **** 
+ 145:Core/Src/BMP280.c ****         return false;
+ 146:Core/Src/BMP280.c ****     }
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 4
+
+
+ 147:Core/Src/BMP280.c **** 
+ 148:Core/Src/BMP280.c ****     // Soft reset.
+ 149:Core/Src/BMP280.c ****     if (write_register8(dev, BMP280_REG_RESET, BMP280_RESET_VALUE))
+ 150:Core/Src/BMP280.c ****     {
+ 151:Core/Src/BMP280.c ****         return false;
+ 152:Core/Src/BMP280.c ****     }
+ 153:Core/Src/BMP280.c **** 
+ 154:Core/Src/BMP280.c ****     // Wait until finished copying over the NVP data.
+ 155:Core/Src/BMP280.c ****     while (1)
+ 156:Core/Src/BMP280.c ****     {
+ 157:Core/Src/BMP280.c ****         uint8_t status;
+ 158:Core/Src/BMP280.c ****         if (!read_data(dev, BMP280_REG_STATUS, &status, 1) && (status & 1) == 0)
+ 159:Core/Src/BMP280.c ****             break;
+ 160:Core/Src/BMP280.c ****     }
+ 161:Core/Src/BMP280.c **** 
+ 162:Core/Src/BMP280.c ****     if (!read_calibration_data(dev))
+ 163:Core/Src/BMP280.c ****     {
+ 164:Core/Src/BMP280.c ****         return false;
+ 165:Core/Src/BMP280.c ****     }
+ 166:Core/Src/BMP280.c **** 
+ 167:Core/Src/BMP280.c ****     if (dev->id == BME280_CHIP_ID && !read_hum_calibration_data(dev))
+ 168:Core/Src/BMP280.c ****     {
+ 169:Core/Src/BMP280.c ****         return false;
+ 170:Core/Src/BMP280.c ****     }
+ 171:Core/Src/BMP280.c **** 
+ 172:Core/Src/BMP280.c ****     uint8_t config = (params->standby << 5) | (params->filter << 2);
+ 173:Core/Src/BMP280.c ****     if (write_register8(dev, BMP280_REG_CONFIG, config))
+ 174:Core/Src/BMP280.c ****     {
+ 175:Core/Src/BMP280.c ****         return false;
+ 176:Core/Src/BMP280.c ****     }
+ 177:Core/Src/BMP280.c **** 
+ 178:Core/Src/BMP280.c ****     if (params->mode == BMP280_MODE_FORCED)
+ 179:Core/Src/BMP280.c ****     {
+ 180:Core/Src/BMP280.c ****         params->mode = BMP280_MODE_SLEEP; // initial mode for forced is sleep
+ 181:Core/Src/BMP280.c ****     }
+ 182:Core/Src/BMP280.c **** 
+ 183:Core/Src/BMP280.c ****     uint8_t ctrl = (params->oversampling_temperature << 5) | (params->oversampling_pressure << 2) |
+ 184:Core/Src/BMP280.c **** 
+ 185:Core/Src/BMP280.c ****     if (dev->id == BME280_CHIP_ID)
+ 186:Core/Src/BMP280.c ****     {
+ 187:Core/Src/BMP280.c ****         // Write crtl hum reg first, only active after write to BMP280_REG_CTRL.
+ 188:Core/Src/BMP280.c ****         uint8_t ctrl_hum = params->oversampling_humidity;
+ 189:Core/Src/BMP280.c ****         if (write_register8(dev, BMP280_REG_CTRL_HUM, ctrl_hum))
+ 190:Core/Src/BMP280.c ****         {
+ 191:Core/Src/BMP280.c ****             return false;
+ 192:Core/Src/BMP280.c ****         }
+ 193:Core/Src/BMP280.c ****     }
+ 194:Core/Src/BMP280.c **** 
+ 195:Core/Src/BMP280.c ****     if (write_register8(dev, BMP280_REG_CTRL, ctrl))
+ 196:Core/Src/BMP280.c ****     {
+ 197:Core/Src/BMP280.c ****         return false;
+ 198:Core/Src/BMP280.c ****     }
+ 199:Core/Src/BMP280.c **** 
+ 200:Core/Src/BMP280.c ****     return true;
+ 201:Core/Src/BMP280.c **** }
+ 202:Core/Src/BMP280.c **** 
+ 203:Core/Src/BMP280.c **** bool bmp280_force_measurement(BMP280_HandleTypedef *dev)
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 5
+
+
+ 204:Core/Src/BMP280.c **** {
+ 205:Core/Src/BMP280.c ****     uint8_t ctrl;
+ 206:Core/Src/BMP280.c ****     if (read_data(dev, BMP280_REG_CTRL, &ctrl, 1))
+ 207:Core/Src/BMP280.c ****         return false;
+ 208:Core/Src/BMP280.c ****     ctrl &= ~0b11; // clear two lower bits
+ 209:Core/Src/BMP280.c ****     ctrl |= BMP280_MODE_FORCED;
+ 210:Core/Src/BMP280.c ****     if (write_register8(dev, BMP280_REG_CTRL, ctrl))
+ 211:Core/Src/BMP280.c ****     {
+ 212:Core/Src/BMP280.c ****         return false;
+ 213:Core/Src/BMP280.c ****     }
+ 214:Core/Src/BMP280.c ****     return true;
+ 215:Core/Src/BMP280.c **** }
+ 216:Core/Src/BMP280.c **** 
+ 217:Core/Src/BMP280.c **** bool bmp280_is_measuring(BMP280_HandleTypedef *dev)
+ 218:Core/Src/BMP280.c **** {
+ 219:Core/Src/BMP280.c ****     uint8_t status;
+ 220:Core/Src/BMP280.c ****     if (read_data(dev, BMP280_REG_STATUS, &status, 1))
+ 221:Core/Src/BMP280.c ****         return false;
+ 222:Core/Src/BMP280.c ****     if (status & (1 << 3))
+ 223:Core/Src/BMP280.c ****     {
+ 224:Core/Src/BMP280.c ****         return true;
+ 225:Core/Src/BMP280.c ****     }
+ 226:Core/Src/BMP280.c ****     return false;
+ 227:Core/Src/BMP280.c **** }
+ 228:Core/Src/BMP280.c **** 
+ 229:Core/Src/BMP280.c **** /**
+ 230:Core/Src/BMP280.c ****  * Compensation algorithm is taken from BMP280 datasheet.
+ 231:Core/Src/BMP280.c ****  *
+ 232:Core/Src/BMP280.c ****  * Return value is in degrees Celsius.
+ 233:Core/Src/BMP280.c ****  */
+ 234:Core/Src/BMP280.c **** static inline int32_t compensate_temperature(BMP280_HandleTypedef *dev, int32_t adc_temp,
+ 235:Core/Src/BMP280.c ****                                              int32_t *fine_temp)
+ 236:Core/Src/BMP280.c **** {
+  27              		.loc 1 236 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31              		.loc 1 236 1 is_stmt 0 view .LVU1
+  32 0000 00B5     		push	{lr}
+  33              	.LCFI0:
+  34              		.cfi_def_cfa_offset 4
+  35              		.cfi_offset 14, -4
+ 237:Core/Src/BMP280.c ****     int32_t var1, var2;
+  36              		.loc 1 237 5 is_stmt 1 view .LVU2
+ 238:Core/Src/BMP280.c **** 
+ 239:Core/Src/BMP280.c ****     var1 = ((((adc_temp >> 3) - ((int32_t)dev->dig_T1 << 1))) * (int32_t)dev->dig_T2) >> 11;
+  37              		.loc 1 239 5 view .LVU3
+  38              		.loc 1 239 46 is_stmt 0 view .LVU4
+  39 0002 0388     		ldrh	r3, [r0]
+  40              		.loc 1 239 55 view .LVU5
+  41 0004 4FEA430C 		lsl	ip, r3, #1
+  42              		.loc 1 239 31 view .LVU6
+  43 0008 CCEBE10C 		rsb	ip, ip, r1, asr #3
+  44              		.loc 1 239 77 view .LVU7
+  45 000c B0F902E0 		ldrsh	lr, [r0, #2]
+  46              		.loc 1 239 63 view .LVU8
+  47 0010 0EFB0CFC 		mul	ip, lr, ip
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 6
+
+
+  48              	.LVL1:
+ 240:Core/Src/BMP280.c ****     var2 = (((((adc_temp >> 4) - (int32_t)dev->dig_T1) * ((adc_temp >> 4) - (int32_t)dev->dig_T1)) 
+  49              		.loc 1 240 5 is_stmt 1 view .LVU9
+  50              		.loc 1 240 32 is_stmt 0 view .LVU10
+  51 0014 C3EB2111 		rsb	r1, r3, r1, asr #4
+  52              	.LVL2:
+  53              		.loc 1 240 56 view .LVU11
+  54 0018 01FB01F1 		mul	r1, r1, r1
+  55              		.loc 1 240 100 view .LVU12
+  56 001c 0913     		asrs	r1, r1, #12
+  57              		.loc 1 240 121 view .LVU13
+  58 001e B0F90430 		ldrsh	r3, [r0, #4]
+  59              		.loc 1 240 107 view .LVU14
+  60 0022 03FB01F0 		mul	r0, r3, r1
+  61              	.LVL3:
+  62              		.loc 1 240 10 view .LVU15
+  63 0026 8013     		asrs	r0, r0, #14
+  64              	.LVL4:
+ 241:Core/Src/BMP280.c **** 
+ 242:Core/Src/BMP280.c ****     *fine_temp = var1 + var2;
+  65              		.loc 1 242 5 is_stmt 1 view .LVU16
+  66              		.loc 1 242 23 is_stmt 0 view .LVU17
+  67 0028 00EBEC20 		add	r0, r0, ip, asr #11
+  68              	.LVL5:
+  69              		.loc 1 242 16 view .LVU18
+  70 002c 1060     		str	r0, [r2]
+ 243:Core/Src/BMP280.c ****     return (*fine_temp * 5 + 128) >> 8;
+  71              		.loc 1 243 5 is_stmt 1 view .LVU19
+  72              		.loc 1 243 24 is_stmt 0 view .LVU20
+  73 002e 00EB8000 		add	r0, r0, r0, lsl #2
+  74              		.loc 1 243 28 view .LVU21
+  75 0032 8030     		adds	r0, r0, #128
+ 244:Core/Src/BMP280.c **** }
+  76              		.loc 1 244 1 view .LVU22
+  77 0034 0012     		asrs	r0, r0, #8
+  78 0036 5DF804FB 		ldr	pc, [sp], #4
+  79              		.cfi_endproc
+  80              	.LFE74:
+  82              		.global	__aeabi_ldivmod
+  83              		.section	.text.compensate_pressure,"ax",%progbits
+  84              		.align	1
+  85              		.syntax unified
+  86              		.thumb
+  87              		.thumb_func
+  89              	compensate_pressure:
+  90              	.LVL6:
+  91              	.LFB75:
+ 245:Core/Src/BMP280.c **** 
+ 246:Core/Src/BMP280.c **** /**
+ 247:Core/Src/BMP280.c ****  * Compensation algorithm is taken from BMP280 datasheet.
+ 248:Core/Src/BMP280.c ****  *
+ 249:Core/Src/BMP280.c ****  * Return value is in Pa, 24 integer bits and 8 fractional bits.
+ 250:Core/Src/BMP280.c ****  */
+ 251:Core/Src/BMP280.c **** static inline uint32_t compensate_pressure(BMP280_HandleTypedef *dev, int32_t adc_press,
+ 252:Core/Src/BMP280.c ****                                            int32_t fine_temp)
+ 253:Core/Src/BMP280.c **** {
+  92              		.loc 1 253 1 is_stmt 1 view -0
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 7
+
+
+  93              		.cfi_startproc
+  94              		@ args = 0, pretend = 0, frame = 0
+  95              		@ frame_needed = 0, uses_anonymous_args = 0
+  96              		.loc 1 253 1 is_stmt 0 view .LVU24
+  97 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  98              	.LCFI1:
+  99              		.cfi_def_cfa_offset 24
+ 100              		.cfi_offset 4, -24
+ 101              		.cfi_offset 5, -20
+ 102              		.cfi_offset 6, -16
+ 103              		.cfi_offset 7, -12
+ 104              		.cfi_offset 8, -8
+ 105              		.cfi_offset 14, -4
+ 106 0004 0446     		mov	r4, r0
+ 254:Core/Src/BMP280.c ****     int64_t var1, var2, p;
+ 107              		.loc 1 254 5 is_stmt 1 view .LVU25
+ 255:Core/Src/BMP280.c **** 
+ 256:Core/Src/BMP280.c ****     var1 = (int64_t)fine_temp - 128000;
+ 108              		.loc 1 256 5 view .LVU26
+ 109              		.loc 1 256 12 is_stmt 0 view .LVU27
+ 110 0006 D317     		asrs	r3, r2, #31
+ 111              		.loc 1 256 10 view .LVU28
+ 112 0008 B2F5FA32 		subs	r2, r2, #128000
+ 113              	.LVL7:
+ 114              		.loc 1 256 10 view .LVU29
+ 115 000c 43F1FF33 		adc	r3, r3, #-1
+ 116              	.LVL8:
+ 257:Core/Src/BMP280.c ****     var2 = var1 * var1 * (int64_t)dev->dig_P6;
+ 117              		.loc 1 257 5 is_stmt 1 view .LVU30
+ 118              		.loc 1 257 17 is_stmt 0 view .LVU31
+ 119 0010 02FB03F0 		mul	r0, r2, r3
+ 120              	.LVL9:
+ 121              		.loc 1 257 17 view .LVU32
+ 122 0014 A2FB02C7 		umull	ip, r7, r2, r2
+ 123 0018 07EB4007 		add	r7, r7, r0, lsl #1
+ 124              		.loc 1 257 38 view .LVU33
+ 125 001c B4F91000 		ldrsh	r0, [r4, #16]
+ 126              		.loc 1 257 26 view .LVU34
+ 127 0020 4FEAE07E 		asr	lr, r0, #31
+ 128              		.loc 1 257 10 view .LVU35
+ 129 0024 0CFB0EFE 		mul	lr, ip, lr
+ 130 0028 00FB07EE 		mla	lr, r0, r7, lr
+ 131 002c ACFB0060 		umull	r6, r0, ip, r0
+ 132 0030 8644     		add	lr, lr, r0
+ 133              	.LVL10:
+ 258:Core/Src/BMP280.c ****     var2 = var2 + ((var1 * (int64_t)dev->dig_P5) << 17);
+ 134              		.loc 1 258 5 is_stmt 1 view .LVU36
+ 135              		.loc 1 258 40 is_stmt 0 view .LVU37
+ 136 0032 B4F90E00 		ldrsh	r0, [r4, #14]
+ 137              		.loc 1 258 28 view .LVU38
+ 138 0036 4FEAE078 		asr	r8, r0, #31
+ 139              		.loc 1 258 26 view .LVU39
+ 140 003a 00FB03F5 		mul	r5, r0, r3
+ 141 003e 02FB0855 		mla	r5, r2, r8, r5
+ 142 0042 A0FB0208 		umull	r0, r8, r0, r2
+ 143 0046 4544     		add	r5, r5, r8
+ 144              		.loc 1 258 50 view .LVU40
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 8
+
+
+ 145 0048 6D04     		lsls	r5, r5, #17
+ 146 004a 45EAD035 		orr	r5, r5, r0, lsr #15
+ 147 004e 4004     		lsls	r0, r0, #17
+ 148              		.loc 1 258 10 view .LVU41
+ 149 0050 8019     		adds	r0, r0, r6
+ 150 0052 4EEB050E 		adc	lr, lr, r5
+ 151              	.LVL11:
+ 259:Core/Src/BMP280.c ****     var2 = var2 + (((int64_t)dev->dig_P4) << 35);
+ 152              		.loc 1 259 5 is_stmt 1 view .LVU42
+ 153              		.loc 1 259 33 is_stmt 0 view .LVU43
+ 154 0056 B4F90C50 		ldrsh	r5, [r4, #12]
+ 155              		.loc 1 259 10 view .LVU44
+ 156 005a 0EEBC50E 		add	lr, lr, r5, lsl #3
+ 157              	.LVL12:
+ 260:Core/Src/BMP280.c ****     var1 = ((var1 * var1 * (int64_t)dev->dig_P3) >> 8) + ((var1 * (int64_t)dev->dig_P2) << 12);
+ 158              		.loc 1 260 5 is_stmt 1 view .LVU45
+ 159              		.loc 1 260 40 is_stmt 0 view .LVU46
+ 160 005e B4F90A50 		ldrsh	r5, [r4, #10]
+ 161              		.loc 1 260 28 view .LVU47
+ 162 0062 EE17     		asrs	r6, r5, #31
+ 163              		.loc 1 260 26 view .LVU48
+ 164 0064 0CFB06F6 		mul	r6, ip, r6
+ 165 0068 05FB0766 		mla	r6, r5, r7, r6
+ 166 006c ACFB05C5 		umull	ip, r5, ip, r5
+ 167 0070 2E44     		add	r6, r6, r5
+ 168              		.loc 1 260 50 view .LVU49
+ 169 0072 4FEA1C2C 		lsr	ip, ip, #8
+ 170 0076 4CEA066C 		orr	ip, ip, r6, lsl #24
+ 171              		.loc 1 260 79 view .LVU50
+ 172 007a B4F90850 		ldrsh	r5, [r4, #8]
+ 173              		.loc 1 260 67 view .LVU51
+ 174 007e EF17     		asrs	r7, r5, #31
+ 175              		.loc 1 260 65 view .LVU52
+ 176 0080 05FB03F3 		mul	r3, r5, r3
+ 177              	.LVL13:
+ 178              		.loc 1 260 65 view .LVU53
+ 179 0084 02FB0733 		mla	r3, r2, r7, r3
+ 180 0088 A5FB0252 		umull	r5, r2, r5, r2
+ 181              	.LVL14:
+ 182              		.loc 1 260 65 view .LVU54
+ 183 008c 1344     		add	r3, r3, r2
+ 184              		.loc 1 260 89 view .LVU55
+ 185 008e 1B03     		lsls	r3, r3, #12
+ 186 0090 43EA1553 		orr	r3, r3, r5, lsr #20
+ 187 0094 2D03     		lsls	r5, r5, #12
+ 188              		.loc 1 260 10 view .LVU56
+ 189 0096 1CEB050C 		adds	ip, ip, r5
+ 190 009a 43EB2623 		adc	r3, r3, r6, asr #8
+ 191              	.LVL15:
+ 261:Core/Src/BMP280.c ****     var1 = (((int64_t)1 << 47) + var1) * ((int64_t)dev->dig_P1) >> 33;
+ 192              		.loc 1 261 5 is_stmt 1 view .LVU57
+ 193              		.loc 1 261 32 is_stmt 0 view .LVU58
+ 194 009e 03F50043 		add	r3, r3, #32768
+ 195              	.LVL16:
+ 196              		.loc 1 261 55 view .LVU59
+ 197 00a2 E288     		ldrh	r2, [r4, #6]
+ 198              		.loc 1 261 40 view .LVU60
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 9
+
+
+ 199 00a4 ACFB02C5 		umull	ip, r5, ip, r2
+ 200              	.LVL17:
+ 201              		.loc 1 261 40 view .LVU61
+ 202 00a8 02FB0355 		mla	r5, r2, r3, r5
+ 203              		.loc 1 261 10 view .LVU62
+ 204 00ac 6A10     		asrs	r2, r5, #1
+ 205 00ae EB17     		asrs	r3, r5, #31
+ 206              	.LVL18:
+ 262:Core/Src/BMP280.c **** 
+ 263:Core/Src/BMP280.c ****     if (var1 == 0)
+ 207              		.loc 1 263 5 is_stmt 1 view .LVU63
+ 208              		.loc 1 263 8 is_stmt 0 view .LVU64
+ 209 00b0 53EA6505 		orrs	r5, r3, r5, asr #1
+ 210 00b4 61D0     		beq	.L5
+ 264:Core/Src/BMP280.c ****     {
+ 265:Core/Src/BMP280.c ****         return 0; // avoid exception caused by division by zero
+ 266:Core/Src/BMP280.c ****     }
+ 267:Core/Src/BMP280.c **** 
+ 268:Core/Src/BMP280.c ****     p = 1048576 - adc_press;
+ 211              		.loc 1 268 5 is_stmt 1 view .LVU65
+ 212              		.loc 1 268 17 is_stmt 0 view .LVU66
+ 213 00b6 C1F58015 		rsb	r5, r1, #1048576
+ 214              	.LVL19:
+ 269:Core/Src/BMP280.c ****     p = (((p << 31) - var2) * 3125) / var1;
+ 215              		.loc 1 269 5 is_stmt 1 view .LVU67
+ 216              		.loc 1 269 14 is_stmt 0 view .LVU68
+ 217 00ba 6910     		asrs	r1, r5, #1
+ 218              	.LVL20:
+ 219              		.loc 1 269 14 view .LVU69
+ 220 00bc ED07     		lsls	r5, r5, #31
+ 221              	.LVL21:
+ 222              		.loc 1 269 21 view .LVU70
+ 223 00be 2D1A     		subs	r5, r5, r0
+ 224 00c0 61EB0E0E 		sbc	lr, r1, lr
+ 225              	.LVL22:
+ 226              		.loc 1 269 29 view .LVU71
+ 227 00c4 15EB050C 		adds	ip, r5, r5
+ 228 00c8 4EEB0E01 		adc	r1, lr, lr
+ 229 00cc 1CEB050C 		adds	ip, ip, r5
+ 230 00d0 4EEB0101 		adc	r1, lr, r1
+ 231 00d4 8801     		lsls	r0, r1, #6
+ 232              	.LVL23:
+ 233              		.loc 1 269 29 view .LVU72
+ 234 00d6 40EA9C60 		orr	r0, r0, ip, lsr #26
+ 235 00da 4FEA8C16 		lsl	r6, ip, #6
+ 236 00de 1CEB060C 		adds	ip, ip, r6
+ 237 00e2 41EB0001 		adc	r1, r1, r0
+ 238 00e6 8900     		lsls	r1, r1, #2
+ 239 00e8 41EA9C71 		orr	r1, r1, ip, lsr #30
+ 240 00ec 4FEA8C0C 		lsl	ip, ip, #2
+ 241 00f0 1CEB050C 		adds	ip, ip, r5
+ 242 00f4 4EEB0101 		adc	r1, lr, r1
+ 243 00f8 8900     		lsls	r1, r1, #2
+ 244 00fa 41EA9C71 		orr	r1, r1, ip, lsr #30
+ 245 00fe 4FEA8C00 		lsl	r0, ip, #2
+ 246 0102 4019     		adds	r0, r0, r5
+ 247              		.loc 1 269 7 view .LVU73
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 10
+
+
+ 248 0104 4EEB0101 		adc	r1, lr, r1
+ 249 0108 FFF7FEFF 		bl	__aeabi_ldivmod
+ 250              	.LVL24:
+ 251              		.loc 1 269 7 view .LVU74
+ 252 010c 0346     		mov	r3, r0
+ 253              	.LVL25:
+ 270:Core/Src/BMP280.c ****     var1 = ((int64_t)dev->dig_P9 * (p >> 13) * (p >> 13)) >> 25;
+ 254              		.loc 1 270 5 is_stmt 1 view .LVU75
+ 255              		.loc 1 270 25 is_stmt 0 view .LVU76
+ 256 010e B4F91660 		ldrsh	r6, [r4, #22]
+ 257              		.loc 1 270 13 view .LVU77
+ 258 0112 4FEAE67C 		asr	ip, r6, #31
+ 259              		.loc 1 270 39 view .LVU78
+ 260 0116 420B     		lsrs	r2, r0, #13
+ 261 0118 42EAC142 		orr	r2, r2, r1, lsl #19
+ 262 011c 4F13     		asrs	r7, r1, #13
+ 263              		.loc 1 270 34 view .LVU79
+ 264 011e 06FB07F5 		mul	r5, r6, r7
+ 265 0122 02FB0C55 		mla	r5, r2, ip, r5
+ 266 0126 A6FB026C 		umull	r6, ip, r6, r2
+ 267 012a 6544     		add	r5, r5, ip
+ 268              		.loc 1 270 46 view .LVU80
+ 269 012c 02FB05F5 		mul	r5, r2, r5
+ 270 0130 06FB0755 		mla	r5, r6, r7, r5
+ 271 0134 A2FB0626 		umull	r2, r6, r2, r6
+ 272 0138 3544     		add	r5, r5, r6
+ 273              		.loc 1 270 10 view .LVU81
+ 274 013a 520E     		lsrs	r2, r2, #25
+ 275 013c 42EAC512 		orr	r2, r2, r5, lsl #7
+ 276              	.LVL26:
+ 271:Core/Src/BMP280.c ****     var2 = ((int64_t)dev->dig_P8 * p) >> 19;
+ 277              		.loc 1 271 5 is_stmt 1 view .LVU82
+ 278              		.loc 1 271 25 is_stmt 0 view .LVU83
+ 279 0140 B4F91460 		ldrsh	r6, [r4, #20]
+ 280              		.loc 1 271 13 view .LVU84
+ 281 0144 4FEAE67C 		asr	ip, r6, #31
+ 282              		.loc 1 271 34 view .LVU85
+ 283 0148 06FB01F7 		mul	r7, r6, r1
+ 284 014c 0CFB0070 		mla	r0, ip, r0, r7
+ 285              	.LVL27:
+ 286              		.loc 1 271 34 view .LVU86
+ 287 0150 A6FB0367 		umull	r6, r7, r6, r3
+ 288 0154 3844     		add	r0, r0, r7
+ 289              		.loc 1 271 10 view .LVU87
+ 290 0156 F60C     		lsrs	r6, r6, #19
+ 291 0158 46EA4036 		orr	r6, r6, r0, lsl #13
+ 292              	.LVL28:
+ 272:Core/Src/BMP280.c **** 
+ 273:Core/Src/BMP280.c ****     p = ((p + var1 + var2) >> 8) + ((int64_t)dev->dig_P7 << 4);
+ 293              		.loc 1 273 5 is_stmt 1 view .LVU88
+ 294              		.loc 1 273 13 is_stmt 0 view .LVU89
+ 295 015c 9B18     		adds	r3, r3, r2
+ 296              	.LVL29:
+ 297              		.loc 1 273 13 view .LVU90
+ 298 015e 41EB6561 		adc	r1, r1, r5, asr #25
+ 299              		.loc 1 273 20 view .LVU91
+ 300 0162 9B19     		adds	r3, r3, r6
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 11
+
+
+ 301 0164 41EBE041 		adc	r1, r1, r0, asr #19
+ 302              		.loc 1 273 28 view .LVU92
+ 303 0168 180A     		lsrs	r0, r3, #8
+ 304              	.LVL30:
+ 305              		.loc 1 273 28 view .LVU93
+ 306 016a 40EA0160 		orr	r0, r0, r1, lsl #24
+ 307              		.loc 1 273 49 view .LVU94
+ 308 016e B4F91230 		ldrsh	r3, [r4, #18]
+ 309              	.LVL31:
+ 274:Core/Src/BMP280.c ****     return p;
+ 310              		.loc 1 274 5 is_stmt 1 view .LVU95
+ 311              		.loc 1 274 12 is_stmt 0 view .LVU96
+ 312 0172 00EB0310 		add	r0, r0, r3, lsl #4
+ 313              	.LVL32:
+ 314              	.L3:
+ 275:Core/Src/BMP280.c **** }
+ 315              		.loc 1 275 1 view .LVU97
+ 316 0176 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 317              	.LVL33:
+ 318              	.L5:
+ 265:Core/Src/BMP280.c ****     }
+ 319              		.loc 1 265 16 view .LVU98
+ 320 017a 0020     		movs	r0, #0
+ 321              	.LVL34:
+ 265:Core/Src/BMP280.c ****     }
+ 322              		.loc 1 265 16 view .LVU99
+ 323 017c FBE7     		b	.L3
+ 324              		.cfi_endproc
+ 325              	.LFE75:
+ 327              		.section	.text.compensate_humidity,"ax",%progbits
+ 328              		.align	1
+ 329              		.syntax unified
+ 330              		.thumb
+ 331              		.thumb_func
+ 333              	compensate_humidity:
+ 334              	.LVL35:
+ 335              	.LFB76:
+ 276:Core/Src/BMP280.c **** 
+ 277:Core/Src/BMP280.c **** /**
+ 278:Core/Src/BMP280.c ****  * Compensation algorithm is taken from BME280 datasheet.
+ 279:Core/Src/BMP280.c ****  *
+ 280:Core/Src/BMP280.c ****  * Return value is in Pa, 24 integer bits and 8 fractional bits.
+ 281:Core/Src/BMP280.c ****  */
+ 282:Core/Src/BMP280.c **** static inline uint32_t compensate_humidity(BMP280_HandleTypedef *dev, int32_t adc_hum,
+ 283:Core/Src/BMP280.c ****                                            int32_t fine_temp)
+ 284:Core/Src/BMP280.c **** {
+ 336              		.loc 1 284 1 is_stmt 1 view -0
+ 337              		.cfi_startproc
+ 338              		@ args = 0, pretend = 0, frame = 0
+ 339              		@ frame_needed = 0, uses_anonymous_args = 0
+ 340              		@ link register save eliminated.
+ 285:Core/Src/BMP280.c ****     int32_t v_x1_u32r;
+ 341              		.loc 1 285 5 view .LVU101
+ 286:Core/Src/BMP280.c **** 
+ 287:Core/Src/BMP280.c ****     v_x1_u32r = fine_temp - (int32_t)76800;
+ 342              		.loc 1 287 5 view .LVU102
+ 343              		.loc 1 287 15 is_stmt 0 view .LVU103
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 12
+
+
+ 344 0000 A2F5963C 		sub	ip, r2, #76800
+ 345              	.LVL36:
+ 288:Core/Src/BMP280.c ****     v_x1_u32r = ((((adc_hum << 14) - ((int32_t)dev->dig_H4 << 20) - ((int32_t)dev->dig_H5 * v_x1_u3
+ 346              		.loc 1 288 5 is_stmt 1 view .LVU104
+ 347              		.loc 1 288 51 is_stmt 0 view .LVU105
+ 348 0004 B0F91E30 		ldrsh	r3, [r0, #30]
+ 349              		.loc 1 288 60 view .LVU106
+ 350 0008 1B05     		lsls	r3, r3, #20
+ 351              		.loc 1 288 36 view .LVU107
+ 352 000a C3EB8133 		rsb	r3, r3, r1, lsl #14
+ 353              		.loc 1 288 82 view .LVU108
+ 354 000e B0F92020 		ldrsh	r2, [r0, #32]
+ 355              	.LVL37:
+ 356              		.loc 1 288 67 view .LVU109
+ 357 0012 0CFB1233 		mls	r3, ip, r2, r3
+ 358              		.loc 1 288 105 view .LVU110
+ 359 0016 03F58043 		add	r3, r3, #16384
+ 360              		.loc 1 288 123 view .LVU111
+ 361 001a D913     		asrs	r1, r3, #15
+ 362              	.LVL38:
+ 363              		.loc 1 288 163 view .LVU112
+ 364 001c 90F92230 		ldrsb	r3, [r0, #34]
+ 365              		.loc 1 288 149 view .LVU113
+ 366 0020 0CFB03F3 		mul	r3, ip, r3
+ 367              		.loc 1 288 173 view .LVU114
+ 368 0024 9B12     		asrs	r3, r3, #10
+ 369              		.loc 1 288 209 view .LVU115
+ 370 0026 027F     		ldrb	r2, [r0, #28]	@ zero_extendqisi2
+ 371              		.loc 1 288 195 view .LVU116
+ 372 0028 0CFB02F2 		mul	r2, ip, r2
+ 373              		.loc 1 288 219 view .LVU117
+ 374 002c D212     		asrs	r2, r2, #11
+ 375              		.loc 1 288 226 view .LVU118
+ 376 002e 02F50042 		add	r2, r2, #32768
+ 377              		.loc 1 288 180 view .LVU119
+ 378 0032 02FB03F3 		mul	r3, r2, r3
+ 379              		.loc 1 288 245 view .LVU120
+ 380 0036 9B12     		asrs	r3, r3, #10
+ 381              		.loc 1 288 252 view .LVU121
+ 382 0038 03F50013 		add	r3, r3, #2097152
+ 383              		.loc 1 288 286 view .LVU122
+ 384 003c B0F91A20 		ldrsh	r2, [r0, #26]
+ 385              		.loc 1 288 272 view .LVU123
+ 386 0040 02FB03F3 		mul	r3, r2, r3
+ 387              		.loc 1 288 295 view .LVU124
+ 388 0044 03F50053 		add	r3, r3, #8192
+ 389              		.loc 1 288 303 view .LVU125
+ 390 0048 9B13     		asrs	r3, r3, #14
+ 391              		.loc 1 288 15 view .LVU126
+ 392 004a 01FB03F3 		mul	r3, r1, r3
+ 393              	.LVL39:
+ 289:Core/Src/BMP280.c ****     v_x1_u32r = v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * (int32_t)dev->dig_H1
+ 394              		.loc 1 289 5 is_stmt 1 view .LVU127
+ 395              		.loc 1 289 44 is_stmt 0 view .LVU128
+ 396 004e DA13     		asrs	r2, r3, #15
+ 397              		.loc 1 289 51 view .LVU129
+ 398 0050 02FB02F2 		mul	r2, r2, r2
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 13
+
+
+ 399              		.loc 1 289 72 view .LVU130
+ 400 0054 D211     		asrs	r2, r2, #7
+ 401              		.loc 1 289 92 view .LVU131
+ 402 0056 017E     		ldrb	r1, [r0, #24]	@ zero_extendqisi2
+ 403              		.loc 1 289 78 view .LVU132
+ 404 0058 01FB02F2 		mul	r2, r1, r2
+ 405              		.loc 1 289 15 view .LVU133
+ 406 005c A3EB2210 		sub	r0, r3, r2, asr #4
+ 407              	.LVL40:
+ 290:Core/Src/BMP280.c ****     v_x1_u32r = v_x1_u32r < 0 ? 0 : v_x1_u32r;
+ 408              		.loc 1 290 5 is_stmt 1 view .LVU134
+ 409              		.loc 1 290 15 is_stmt 0 view .LVU135
+ 410 0060 20EAE070 		bic	r0, r0, r0, asr #31
+ 411              	.LVL41:
+ 291:Core/Src/BMP280.c ****     v_x1_u32r = v_x1_u32r > 419430400 ? 419430400 : v_x1_u32r;
+ 412              		.loc 1 291 5 is_stmt 1 view .LVU136
+ 413              		.loc 1 291 15 is_stmt 0 view .LVU137
+ 414 0064 B0F1C85F 		cmp	r0, #419430400
+ 415 0068 A8BF     		it	ge
+ 416 006a 4FF0C850 		movge	r0, #419430400
+ 417              	.LVL42:
+ 292:Core/Src/BMP280.c ****     return v_x1_u32r >> 12;
+ 418              		.loc 1 292 5 is_stmt 1 view .LVU138
+ 293:Core/Src/BMP280.c **** }
+ 419              		.loc 1 293 1 is_stmt 0 view .LVU139
+ 420 006e 0013     		asrs	r0, r0, #12
+ 421              	.LVL43:
+ 422              		.loc 1 293 1 view .LVU140
+ 423 0070 7047     		bx	lr
+ 424              		.cfi_endproc
+ 425              	.LFE76:
+ 427              		.section	.text.read_data,"ax",%progbits
+ 428              		.align	1
+ 429              		.syntax unified
+ 430              		.thumb
+ 431              		.thumb_func
+ 433              	read_data:
+ 434              	.LVL44:
+ 435              	.LFB67:
+  80:Core/Src/BMP280.c ****     uint16_t tx_buff;
+ 436              		.loc 1 80 1 is_stmt 1 view -0
+ 437              		.cfi_startproc
+ 438              		@ args = 0, pretend = 0, frame = 0
+ 439              		@ frame_needed = 0, uses_anonymous_args = 0
+  80:Core/Src/BMP280.c ****     uint16_t tx_buff;
+ 440              		.loc 1 80 1 is_stmt 0 view .LVU142
+ 441 0000 10B5     		push	{r4, lr}
+ 442              	.LCFI2:
+ 443              		.cfi_def_cfa_offset 8
+ 444              		.cfi_offset 4, -8
+ 445              		.cfi_offset 14, -4
+ 446 0002 84B0     		sub	sp, sp, #16
+ 447              	.LCFI3:
+ 448              		.cfi_def_cfa_offset 24
+ 449 0004 8E46     		mov	lr, r1
+  81:Core/Src/BMP280.c ****     tx_buff = (dev->addr << 1);
+ 450              		.loc 1 81 5 is_stmt 1 view .LVU143
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 14
+
+
+  82:Core/Src/BMP280.c ****     if (HAL_I2C_Mem_Read(dev->i2c, tx_buff, addr, 1, value, len, 5000) == HAL_OK)
+ 451              		.loc 1 82 5 view .LVU144
+  82:Core/Src/BMP280.c ****     if (HAL_I2C_Mem_Read(dev->i2c, tx_buff, addr, 1, value, len, 5000) == HAL_OK)
+ 452              		.loc 1 82 19 is_stmt 0 view .LVU145
+ 453 0006 B0F824C0 		ldrh	ip, [r0, #36]
+  82:Core/Src/BMP280.c ****     if (HAL_I2C_Mem_Read(dev->i2c, tx_buff, addr, 1, value, len, 5000) == HAL_OK)
+ 454              		.loc 1 82 13 view .LVU146
+ 455 000a 4FEA4C0C 		lsl	ip, ip, #1
+ 456 000e 1FFA8CF1 		uxth	r1, ip
+ 457              	.LVL45:
+  83:Core/Src/BMP280.c ****         return 0;
+ 458              		.loc 1 83 5 is_stmt 1 view .LVU147
+  83:Core/Src/BMP280.c ****         return 0;
+ 459              		.loc 1 83 9 is_stmt 0 view .LVU148
+ 460 0012 41F28834 		movw	r4, #5000
+ 461 0016 0294     		str	r4, [sp, #8]
+ 462 0018 0193     		str	r3, [sp, #4]
+ 463 001a 0092     		str	r2, [sp]
+ 464 001c 0123     		movs	r3, #1
+ 465              	.LVL46:
+  83:Core/Src/BMP280.c ****         return 0;
+ 466              		.loc 1 83 9 view .LVU149
+ 467 001e 7246     		mov	r2, lr
+ 468              	.LVL47:
+  83:Core/Src/BMP280.c ****         return 0;
+ 469              		.loc 1 83 9 view .LVU150
+ 470 0020 806A     		ldr	r0, [r0, #40]
+ 471              	.LVL48:
+  83:Core/Src/BMP280.c ****         return 0;
+ 472              		.loc 1 83 9 view .LVU151
+ 473 0022 FFF7FEFF 		bl	HAL_I2C_Mem_Read
+ 474              	.LVL49:
+  83:Core/Src/BMP280.c ****         return 0;
+ 475              		.loc 1 83 8 discriminator 1 view .LVU152
+ 476 0026 00B1     		cbz	r0, .L8
+  86:Core/Src/BMP280.c **** }
+ 477              		.loc 1 86 16 view .LVU153
+ 478 0028 0120     		movs	r0, #1
+ 479              	.L8:
+  87:Core/Src/BMP280.c **** 
+ 480              		.loc 1 87 1 view .LVU154
+ 481 002a 04B0     		add	sp, sp, #16
+ 482              	.LCFI4:
+ 483              		.cfi_def_cfa_offset 8
+ 484              		@ sp needed
+ 485 002c 10BD     		pop	{r4, pc}
+ 486              		.cfi_endproc
+ 487              	.LFE67:
+ 489              		.section	.text.read_register16,"ax",%progbits
+ 490              		.align	1
+ 491              		.syntax unified
+ 492              		.thumb
+ 493              		.thumb_func
+ 495              	read_register16:
+ 496              	.LVL50:
+ 497              	.LFB66:
+  64:Core/Src/BMP280.c ****     uint16_t tx_buff;
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 15
+
+
+ 498              		.loc 1 64 1 is_stmt 1 view -0
+ 499              		.cfi_startproc
+ 500              		@ args = 0, pretend = 0, frame = 8
+ 501              		@ frame_needed = 0, uses_anonymous_args = 0
+  64:Core/Src/BMP280.c ****     uint16_t tx_buff;
+ 502              		.loc 1 64 1 is_stmt 0 view .LVU156
+ 503 0000 10B5     		push	{r4, lr}
+ 504              	.LCFI5:
+ 505              		.cfi_def_cfa_offset 8
+ 506              		.cfi_offset 4, -8
+ 507              		.cfi_offset 14, -4
+ 508 0002 86B0     		sub	sp, sp, #24
+ 509              	.LCFI6:
+ 510              		.cfi_def_cfa_offset 32
+ 511 0004 8C46     		mov	ip, r1
+ 512 0006 1446     		mov	r4, r2
+  65:Core/Src/BMP280.c ****     uint8_t rx_buff[2];
+ 513              		.loc 1 65 5 is_stmt 1 view .LVU157
+  66:Core/Src/BMP280.c ****     tx_buff = (dev->addr << 1);
+ 514              		.loc 1 66 5 view .LVU158
+  67:Core/Src/BMP280.c **** 
+ 515              		.loc 1 67 5 view .LVU159
+  67:Core/Src/BMP280.c **** 
+ 516              		.loc 1 67 19 is_stmt 0 view .LVU160
+ 517 0008 838C     		ldrh	r3, [r0, #36]
+  67:Core/Src/BMP280.c **** 
+ 518              		.loc 1 67 13 view .LVU161
+ 519 000a 5B00     		lsls	r3, r3, #1
+ 520 000c 99B2     		uxth	r1, r3
+ 521              	.LVL51:
+  69:Core/Src/BMP280.c ****     {
+ 522              		.loc 1 69 5 is_stmt 1 view .LVU162
+  69:Core/Src/BMP280.c ****     {
+ 523              		.loc 1 69 9 is_stmt 0 view .LVU163
+ 524 000e 41F28833 		movw	r3, #5000
+ 525 0012 0293     		str	r3, [sp, #8]
+ 526 0014 0223     		movs	r3, #2
+ 527 0016 0193     		str	r3, [sp, #4]
+ 528 0018 05AB     		add	r3, sp, #20
+ 529 001a 0093     		str	r3, [sp]
+ 530 001c 0123     		movs	r3, #1
+ 531 001e 6246     		mov	r2, ip
+ 532              	.LVL52:
+  69:Core/Src/BMP280.c ****     {
+ 533              		.loc 1 69 9 view .LVU164
+ 534 0020 806A     		ldr	r0, [r0, #40]
+ 535              	.LVL53:
+  69:Core/Src/BMP280.c ****     {
+ 536              		.loc 1 69 9 view .LVU165
+ 537 0022 FFF7FEFF 		bl	HAL_I2C_Mem_Read
+ 538              	.LVL54:
+  69:Core/Src/BMP280.c ****     {
+ 539              		.loc 1 69 8 discriminator 1 view .LVU166
+ 540 0026 48B9     		cbnz	r0, .L14
+  71:Core/Src/BMP280.c ****         return true;
+ 541              		.loc 1 71 9 is_stmt 1 view .LVU167
+  71:Core/Src/BMP280.c ****         return true;
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 16
+
+
+ 542              		.loc 1 71 37 is_stmt 0 view .LVU168
+ 543 0028 9DF81520 		ldrb	r2, [sp, #21]	@ zero_extendqisi2
+  71:Core/Src/BMP280.c ****         return true;
+ 544              		.loc 1 71 56 view .LVU169
+ 545 002c 9DF81430 		ldrb	r3, [sp, #20]	@ zero_extendqisi2
+  71:Core/Src/BMP280.c ****         return true;
+ 546              		.loc 1 71 18 view .LVU170
+ 547 0030 43EA0223 		orr	r3, r3, r2, lsl #8
+  71:Core/Src/BMP280.c ****         return true;
+ 548              		.loc 1 71 16 view .LVU171
+ 549 0034 2380     		strh	r3, [r4]	@ movhi
+  72:Core/Src/BMP280.c ****     }
+ 550              		.loc 1 72 9 is_stmt 1 view .LVU172
+  72:Core/Src/BMP280.c ****     }
+ 551              		.loc 1 72 16 is_stmt 0 view .LVU173
+ 552 0036 0120     		movs	r0, #1
+ 553              	.L13:
+  76:Core/Src/BMP280.c **** 
+ 554              		.loc 1 76 1 view .LVU174
+ 555 0038 06B0     		add	sp, sp, #24
+ 556              	.LCFI7:
+ 557              		.cfi_remember_state
+ 558              		.cfi_def_cfa_offset 8
+ 559              		@ sp needed
+ 560 003a 10BD     		pop	{r4, pc}
+ 561              	.LVL55:
+ 562              	.L14:
+ 563              	.LCFI8:
+ 564              		.cfi_restore_state
+  75:Core/Src/BMP280.c **** }
+ 565              		.loc 1 75 16 view .LVU175
+ 566 003c 0020     		movs	r0, #0
+ 567 003e FBE7     		b	.L13
+ 568              		.cfi_endproc
+ 569              	.LFE66:
+ 571              		.section	.text.read_calibration_data,"ax",%progbits
+ 572              		.align	1
+ 573              		.syntax unified
+ 574              		.thumb
+ 575              		.thumb_func
+ 577              	read_calibration_data:
+ 578              	.LVL56:
+ 579              	.LFB68:
+  90:Core/Src/BMP280.c **** 
+ 580              		.loc 1 90 1 is_stmt 1 view -0
+ 581              		.cfi_startproc
+ 582              		@ args = 0, pretend = 0, frame = 0
+ 583              		@ frame_needed = 0, uses_anonymous_args = 0
+  90:Core/Src/BMP280.c **** 
+ 584              		.loc 1 90 1 is_stmt 0 view .LVU177
+ 585 0000 10B5     		push	{r4, lr}
+ 586              	.LCFI9:
+ 587              		.cfi_def_cfa_offset 8
+ 588              		.cfi_offset 4, -8
+ 589              		.cfi_offset 14, -4
+ 590 0002 0446     		mov	r4, r0
+  92:Core/Src/BMP280.c ****     {
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 17
+
+
+ 591              		.loc 1 92 5 is_stmt 1 view .LVU178
+  92:Core/Src/BMP280.c ****     {
+ 592              		.loc 1 92 9 is_stmt 0 view .LVU179
+ 593 0004 0246     		mov	r2, r0
+ 594 0006 8821     		movs	r1, #136
+ 595 0008 FFF7FEFF 		bl	read_register16
+ 596              	.LVL57:
+  92:Core/Src/BMP280.c ****     {
+ 597              		.loc 1 92 8 discriminator 1 view .LVU180
+ 598 000c 00B9     		cbnz	r0, .L19
+ 599              	.L17:
+  99:Core/Src/BMP280.c **** 
+ 600              		.loc 1 99 1 view .LVU181
+ 601 000e 10BD     		pop	{r4, pc}
+ 602              	.LVL58:
+ 603              	.L19:
+  92:Core/Src/BMP280.c ****     {
+ 604              		.loc 1 92 53 discriminator 1 view .LVU182
+ 605 0010 A21C     		adds	r2, r4, #2
+ 606 0012 8A21     		movs	r1, #138
+ 607 0014 2046     		mov	r0, r4
+ 608 0016 FFF7FEFF 		bl	read_register16
+ 609              	.LVL59:
+  92:Core/Src/BMP280.c ****     {
+ 610              		.loc 1 92 50 discriminator 1 view .LVU183
+ 611 001a 0028     		cmp	r0, #0
+ 612 001c F7D0     		beq	.L17
+  92:Core/Src/BMP280.c ****     {
+ 613              		.loc 1 92 109 discriminator 2 view .LVU184
+ 614 001e 221D     		adds	r2, r4, #4
+ 615 0020 8C21     		movs	r1, #140
+ 616 0022 2046     		mov	r0, r4
+ 617 0024 FFF7FEFF 		bl	read_register16
+ 618              	.LVL60:
+  92:Core/Src/BMP280.c ****     {
+ 619              		.loc 1 92 106 discriminator 1 view .LVU185
+ 620 0028 0028     		cmp	r0, #0
+ 621 002a F0D0     		beq	.L17
+  92:Core/Src/BMP280.c ****     {
+ 622              		.loc 1 92 165 discriminator 3 view .LVU186
+ 623 002c A21D     		adds	r2, r4, #6
+ 624 002e 8E21     		movs	r1, #142
+ 625 0030 2046     		mov	r0, r4
+ 626 0032 FFF7FEFF 		bl	read_register16
+ 627              	.LVL61:
+  92:Core/Src/BMP280.c ****     {
+ 628              		.loc 1 92 162 discriminator 1 view .LVU187
+ 629 0036 0028     		cmp	r0, #0
+ 630 0038 E9D0     		beq	.L17
+  92:Core/Src/BMP280.c ****     {
+ 631              		.loc 1 92 209 discriminator 4 view .LVU188
+ 632 003a 04F10802 		add	r2, r4, #8
+ 633 003e 9021     		movs	r1, #144
+ 634 0040 2046     		mov	r0, r4
+ 635 0042 FFF7FEFF 		bl	read_register16
+ 636              	.LVL62:
+  92:Core/Src/BMP280.c ****     {
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 18
+
+
+ 637              		.loc 1 92 206 discriminator 1 view .LVU189
+ 638 0046 0028     		cmp	r0, #0
+ 639 0048 E1D0     		beq	.L17
+  92:Core/Src/BMP280.c ****     {
+ 640              		.loc 1 92 265 discriminator 5 view .LVU190
+ 641 004a 04F10A02 		add	r2, r4, #10
+ 642 004e 9221     		movs	r1, #146
+ 643 0050 2046     		mov	r0, r4
+ 644 0052 FFF7FEFF 		bl	read_register16
+ 645              	.LVL63:
+  92:Core/Src/BMP280.c ****     {
+ 646              		.loc 1 92 262 discriminator 1 view .LVU191
+ 647 0056 0028     		cmp	r0, #0
+ 648 0058 D9D0     		beq	.L17
+  92:Core/Src/BMP280.c ****     {
+ 649              		.loc 1 92 321 discriminator 6 view .LVU192
+ 650 005a 04F10C02 		add	r2, r4, #12
+ 651 005e 9421     		movs	r1, #148
+ 652 0060 2046     		mov	r0, r4
+ 653 0062 FFF7FEFF 		bl	read_register16
+ 654              	.LVL64:
+  92:Core/Src/BMP280.c ****     {
+ 655              		.loc 1 92 318 discriminator 1 view .LVU193
+ 656 0066 0028     		cmp	r0, #0
+ 657 0068 D1D0     		beq	.L17
+  92:Core/Src/BMP280.c ****     {
+ 658              		.loc 1 92 377 discriminator 7 view .LVU194
+ 659 006a 04F10E02 		add	r2, r4, #14
+ 660 006e 9621     		movs	r1, #150
+ 661 0070 2046     		mov	r0, r4
+ 662 0072 FFF7FEFF 		bl	read_register16
+ 663              	.LVL65:
+  92:Core/Src/BMP280.c ****     {
+ 664              		.loc 1 92 374 discriminator 1 view .LVU195
+ 665 0076 0028     		cmp	r0, #0
+ 666 0078 C9D0     		beq	.L17
+  92:Core/Src/BMP280.c ****     {
+ 667              		.loc 1 92 433 discriminator 8 view .LVU196
+ 668 007a 04F11002 		add	r2, r4, #16
+ 669 007e 9821     		movs	r1, #152
+ 670 0080 2046     		mov	r0, r4
+ 671 0082 FFF7FEFF 		bl	read_register16
+ 672              	.LVL66:
+  92:Core/Src/BMP280.c ****     {
+ 673              		.loc 1 92 430 discriminator 1 view .LVU197
+ 674 0086 0028     		cmp	r0, #0
+ 675 0088 C1D0     		beq	.L17
+  92:Core/Src/BMP280.c ****     {
+ 676              		.loc 1 92 489 discriminator 9 view .LVU198
+ 677 008a 04F11202 		add	r2, r4, #18
+ 678 008e 9A21     		movs	r1, #154
+ 679 0090 2046     		mov	r0, r4
+ 680 0092 FFF7FEFF 		bl	read_register16
+ 681              	.LVL67:
+  92:Core/Src/BMP280.c ****     {
+ 682              		.loc 1 92 486 discriminator 1 view .LVU199
+ 683 0096 0028     		cmp	r0, #0
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 19
+
+
+ 684 0098 B9D0     		beq	.L17
+  92:Core/Src/BMP280.c ****     {
+ 685              		.loc 1 92 545 discriminator 10 view .LVU200
+ 686 009a 04F11402 		add	r2, r4, #20
+ 687 009e 9C21     		movs	r1, #156
+ 688 00a0 2046     		mov	r0, r4
+ 689 00a2 FFF7FEFF 		bl	read_register16
+ 690              	.LVL68:
+  92:Core/Src/BMP280.c ****     {
+ 691              		.loc 1 92 542 discriminator 1 view .LVU201
+ 692 00a6 0028     		cmp	r0, #0
+ 693 00a8 B1D0     		beq	.L17
+  92:Core/Src/BMP280.c ****     {
+ 694              		.loc 1 92 601 discriminator 11 view .LVU202
+ 695 00aa 04F11602 		add	r2, r4, #22
+ 696 00ae 9E21     		movs	r1, #158
+ 697 00b0 2046     		mov	r0, r4
+ 698 00b2 FFF7FEFF 		bl	read_register16
+ 699              	.LVL69:
+ 700 00b6 AAE7     		b	.L17
+ 701              		.cfi_endproc
+ 702              	.LFE68:
+ 704              		.section	.text.read_hum_calibration_data,"ax",%progbits
+ 705              		.align	1
+ 706              		.syntax unified
+ 707              		.thumb
+ 708              		.thumb_func
+ 710              	read_hum_calibration_data:
+ 711              	.LVL70:
+ 712              	.LFB69:
+ 102:Core/Src/BMP280.c ****     uint16_t h4, h5;
+ 713              		.loc 1 102 1 is_stmt 1 view -0
+ 714              		.cfi_startproc
+ 715              		@ args = 0, pretend = 0, frame = 8
+ 716              		@ frame_needed = 0, uses_anonymous_args = 0
+ 102:Core/Src/BMP280.c ****     uint16_t h4, h5;
+ 717              		.loc 1 102 1 is_stmt 0 view .LVU204
+ 718 0000 30B5     		push	{r4, r5, lr}
+ 719              	.LCFI10:
+ 720              		.cfi_def_cfa_offset 12
+ 721              		.cfi_offset 4, -12
+ 722              		.cfi_offset 5, -8
+ 723              		.cfi_offset 14, -4
+ 724 0002 83B0     		sub	sp, sp, #12
+ 725              	.LCFI11:
+ 726              		.cfi_def_cfa_offset 24
+ 727 0004 0446     		mov	r4, r0
+ 103:Core/Src/BMP280.c **** 
+ 728              		.loc 1 103 5 is_stmt 1 view .LVU205
+ 105:Core/Src/BMP280.c ****     {
+ 729              		.loc 1 105 5 view .LVU206
+ 105:Core/Src/BMP280.c ****     {
+ 730              		.loc 1 105 10 is_stmt 0 view .LVU207
+ 731 0006 0123     		movs	r3, #1
+ 732 0008 00F11802 		add	r2, r0, #24
+ 733 000c A121     		movs	r1, #161
+ 734 000e FFF7FEFF 		bl	read_data
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 20
+
+
+ 735              	.LVL71:
+ 105:Core/Src/BMP280.c ****     {
+ 736              		.loc 1 105 8 discriminator 1 view .LVU208
+ 737 0012 18B1     		cbz	r0, .L26
+ 113:Core/Src/BMP280.c **** }
+ 738              		.loc 1 113 12 view .LVU209
+ 739 0014 0025     		movs	r5, #0
+ 740              	.L21:
+ 114:Core/Src/BMP280.c **** 
+ 741              		.loc 1 114 1 view .LVU210
+ 742 0016 2846     		mov	r0, r5
+ 743 0018 03B0     		add	sp, sp, #12
+ 744              	.LCFI12:
+ 745              		.cfi_remember_state
+ 746              		.cfi_def_cfa_offset 12
+ 747              		@ sp needed
+ 748 001a 30BD     		pop	{r4, r5, pc}
+ 749              	.LVL72:
+ 750              	.L26:
+ 751              	.LCFI13:
+ 752              		.cfi_restore_state
+ 105:Core/Src/BMP280.c ****     {
+ 753              		.loc 1 105 51 discriminator 1 view .LVU211
+ 754 001c 04F11A02 		add	r2, r4, #26
+ 755 0020 E121     		movs	r1, #225
+ 756 0022 2046     		mov	r0, r4
+ 757 0024 FFF7FEFF 		bl	read_register16
+ 758              	.LVL73:
+ 105:Core/Src/BMP280.c ****     {
+ 759              		.loc 1 105 48 discriminator 1 view .LVU212
+ 760 0028 0546     		mov	r5, r0
+ 761 002a 0028     		cmp	r0, #0
+ 762 002c F3D0     		beq	.L21
+ 105:Core/Src/BMP280.c ****     {
+ 763              		.loc 1 105 108 discriminator 2 view .LVU213
+ 764 002e 0123     		movs	r3, #1
+ 765 0030 04F11C02 		add	r2, r4, #28
+ 766 0034 E321     		movs	r1, #227
+ 767 0036 2046     		mov	r0, r4
+ 768 0038 FFF7FEFF 		bl	read_data
+ 769              	.LVL74:
+ 105:Core/Src/BMP280.c ****     {
+ 770              		.loc 1 105 104 discriminator 1 view .LVU214
+ 771 003c 08B1     		cbz	r0, .L27
+ 113:Core/Src/BMP280.c **** }
+ 772              		.loc 1 113 12 view .LVU215
+ 773 003e 0025     		movs	r5, #0
+ 774 0040 E9E7     		b	.L21
+ 775              	.L27:
+ 105:Core/Src/BMP280.c ****     {
+ 776              		.loc 1 105 149 discriminator 3 view .LVU216
+ 777 0042 0DF10602 		add	r2, sp, #6
+ 778 0046 E421     		movs	r1, #228
+ 779 0048 2046     		mov	r0, r4
+ 780 004a FFF7FEFF 		bl	read_register16
+ 781              	.LVL75:
+ 105:Core/Src/BMP280.c ****     {
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 21
+
+
+ 782              		.loc 1 105 146 discriminator 1 view .LVU217
+ 783 004e 0546     		mov	r5, r0
+ 784 0050 0028     		cmp	r0, #0
+ 785 0052 E0D0     		beq	.L21
+ 105:Core/Src/BMP280.c ****     {
+ 786              		.loc 1 105 184 discriminator 4 view .LVU218
+ 787 0054 01AA     		add	r2, sp, #4
+ 788 0056 E521     		movs	r1, #229
+ 789 0058 2046     		mov	r0, r4
+ 790 005a FFF7FEFF 		bl	read_register16
+ 791              	.LVL76:
+ 105:Core/Src/BMP280.c ****     {
+ 792              		.loc 1 105 181 discriminator 1 view .LVU219
+ 793 005e 0546     		mov	r5, r0
+ 794 0060 0028     		cmp	r0, #0
+ 795 0062 D8D0     		beq	.L21
+ 105:Core/Src/BMP280.c ****     {
+ 796              		.loc 1 105 220 discriminator 5 view .LVU220
+ 797 0064 0123     		movs	r3, #1
+ 798 0066 04F12202 		add	r2, r4, #34
+ 799 006a E721     		movs	r1, #231
+ 800 006c 2046     		mov	r0, r4
+ 801 006e FFF7FEFF 		bl	read_data
+ 802              	.LVL77:
+ 105:Core/Src/BMP280.c ****     {
+ 803              		.loc 1 105 216 discriminator 1 view .LVU221
+ 804 0072 08B1     		cbz	r0, .L28
+ 113:Core/Src/BMP280.c **** }
+ 805              		.loc 1 113 12 view .LVU222
+ 806 0074 0025     		movs	r5, #0
+ 807 0076 CEE7     		b	.L21
+ 808              	.L28:
+ 107:Core/Src/BMP280.c ****         dev->dig_H5 = h5 >> 4;
+ 809              		.loc 1 107 9 is_stmt 1 view .LVU223
+ 107:Core/Src/BMP280.c ****         dev->dig_H5 = h5 >> 4;
+ 810              		.loc 1 107 37 is_stmt 0 view .LVU224
+ 811 0078 BDF80620 		ldrh	r2, [sp, #6]
+ 812 007c 1301     		lsls	r3, r2, #4
+ 813 007e 03F47F63 		and	r3, r3, #4080
+ 107:Core/Src/BMP280.c ****         dev->dig_H5 = h5 >> 4;
+ 814              		.loc 1 107 58 view .LVU225
+ 815 0082 C2F30322 		ubfx	r2, r2, #8, #4
+ 107:Core/Src/BMP280.c ****         dev->dig_H5 = h5 >> 4;
+ 816              		.loc 1 107 42 view .LVU226
+ 817 0086 1343     		orrs	r3, r3, r2
+ 107:Core/Src/BMP280.c ****         dev->dig_H5 = h5 >> 4;
+ 818              		.loc 1 107 21 view .LVU227
+ 819 0088 E383     		strh	r3, [r4, #30]	@ movhi
+ 108:Core/Src/BMP280.c **** 
+ 820              		.loc 1 108 9 is_stmt 1 view .LVU228
+ 108:Core/Src/BMP280.c **** 
+ 821              		.loc 1 108 21 is_stmt 0 view .LVU229
+ 822 008a BDF80430 		ldrh	r3, [sp, #4]
+ 823 008e 1B09     		lsrs	r3, r3, #4
+ 824 0090 2384     		strh	r3, [r4, #32]	@ movhi
+ 110:Core/Src/BMP280.c ****     }
+ 825              		.loc 1 110 9 is_stmt 1 view .LVU230
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 22
+
+
+ 110:Core/Src/BMP280.c ****     }
+ 826              		.loc 1 110 16 is_stmt 0 view .LVU231
+ 827 0092 C0E7     		b	.L21
+ 828              		.cfi_endproc
+ 829              	.LFE69:
+ 831              		.section	.text.write_register8,"ax",%progbits
+ 832              		.align	1
+ 833              		.syntax unified
+ 834              		.thumb
+ 835              		.thumb_func
+ 837              	write_register8:
+ 838              	.LVL78:
+ 839              	.LFB70:
+ 117:Core/Src/BMP280.c ****     uint16_t tx_buff;
+ 840              		.loc 1 117 1 is_stmt 1 view -0
+ 841              		.cfi_startproc
+ 842              		@ args = 0, pretend = 0, frame = 8
+ 843              		@ frame_needed = 0, uses_anonymous_args = 0
+ 117:Core/Src/BMP280.c ****     uint16_t tx_buff;
+ 844              		.loc 1 117 1 is_stmt 0 view .LVU233
+ 845 0000 00B5     		push	{lr}
+ 846              	.LCFI14:
+ 847              		.cfi_def_cfa_offset 4
+ 848              		.cfi_offset 14, -4
+ 849 0002 87B0     		sub	sp, sp, #28
+ 850              	.LCFI15:
+ 851              		.cfi_def_cfa_offset 32
+ 852 0004 8C46     		mov	ip, r1
+ 853 0006 8DF81720 		strb	r2, [sp, #23]
+ 118:Core/Src/BMP280.c **** 
+ 854              		.loc 1 118 5 is_stmt 1 view .LVU234
+ 120:Core/Src/BMP280.c **** 
+ 855              		.loc 1 120 5 view .LVU235
+ 120:Core/Src/BMP280.c **** 
+ 856              		.loc 1 120 19 is_stmt 0 view .LVU236
+ 857 000a 838C     		ldrh	r3, [r0, #36]
+ 120:Core/Src/BMP280.c **** 
+ 858              		.loc 1 120 13 view .LVU237
+ 859 000c 5B00     		lsls	r3, r3, #1
+ 860 000e 99B2     		uxth	r1, r3
+ 861              	.LVL79:
+ 122:Core/Src/BMP280.c ****         return false;
+ 862              		.loc 1 122 5 is_stmt 1 view .LVU238
+ 122:Core/Src/BMP280.c ****         return false;
+ 863              		.loc 1 122 9 is_stmt 0 view .LVU239
+ 864 0010 42F21073 		movw	r3, #10000
+ 865 0014 0293     		str	r3, [sp, #8]
+ 866 0016 0123     		movs	r3, #1
+ 867 0018 0193     		str	r3, [sp, #4]
+ 868 001a 0DF11702 		add	r2, sp, #23
+ 869              	.LVL80:
+ 122:Core/Src/BMP280.c ****         return false;
+ 870              		.loc 1 122 9 view .LVU240
+ 871 001e 0092     		str	r2, [sp]
+ 872 0020 6246     		mov	r2, ip
+ 873              	.LVL81:
+ 122:Core/Src/BMP280.c ****         return false;
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 23
+
+
+ 874              		.loc 1 122 9 view .LVU241
+ 875 0022 806A     		ldr	r0, [r0, #40]
+ 876              	.LVL82:
+ 122:Core/Src/BMP280.c ****         return false;
+ 877              		.loc 1 122 9 view .LVU242
+ 878 0024 FFF7FEFF 		bl	HAL_I2C_Mem_Write
+ 879              	.LVL83:
+ 122:Core/Src/BMP280.c ****         return false;
+ 880              		.loc 1 122 8 discriminator 1 view .LVU243
+ 881 0028 00B1     		cbz	r0, .L29
+ 125:Core/Src/BMP280.c **** }
+ 882              		.loc 1 125 16 view .LVU244
+ 883 002a 0120     		movs	r0, #1
+ 884              	.L29:
+ 126:Core/Src/BMP280.c **** 
+ 885              		.loc 1 126 1 view .LVU245
+ 886 002c 07B0     		add	sp, sp, #28
+ 887              	.LCFI16:
+ 888              		.cfi_def_cfa_offset 4
+ 889              		@ sp needed
+ 890 002e 5DF804FB 		ldr	pc, [sp], #4
+ 891              		.cfi_endproc
+ 892              	.LFE70:
+ 894              		.section	.text.bmp280_init_default_params,"ax",%progbits
+ 895              		.align	1
+ 896              		.global	bmp280_init_default_params
+ 897              		.syntax unified
+ 898              		.thumb
+ 899              		.thumb_func
+ 901              	bmp280_init_default_params:
+ 902              	.LVL84:
+ 903              	.LFB65:
+  54:Core/Src/BMP280.c ****     params->mode = BMP280_MODE_NORMAL;
+ 904              		.loc 1 54 1 is_stmt 1 view -0
+ 905              		.cfi_startproc
+ 906              		@ args = 0, pretend = 0, frame = 0
+ 907              		@ frame_needed = 0, uses_anonymous_args = 0
+ 908              		@ link register save eliminated.
+  55:Core/Src/BMP280.c ****     params->filter = BMP280_FILTER_OFF;
+ 909              		.loc 1 55 5 view .LVU247
+  55:Core/Src/BMP280.c ****     params->filter = BMP280_FILTER_OFF;
+ 910              		.loc 1 55 18 is_stmt 0 view .LVU248
+ 911 0000 0323     		movs	r3, #3
+ 912 0002 0370     		strb	r3, [r0]
+  56:Core/Src/BMP280.c ****     params->oversampling_pressure = BMP280_STANDARD;
+ 913              		.loc 1 56 5 is_stmt 1 view .LVU249
+  56:Core/Src/BMP280.c ****     params->oversampling_pressure = BMP280_STANDARD;
+ 914              		.loc 1 56 20 is_stmt 0 view .LVU250
+ 915 0004 0022     		movs	r2, #0
+ 916 0006 4270     		strb	r2, [r0, #1]
+  57:Core/Src/BMP280.c ****     params->oversampling_temperature = BMP280_STANDARD;
+ 917              		.loc 1 57 5 is_stmt 1 view .LVU251
+  57:Core/Src/BMP280.c ****     params->oversampling_temperature = BMP280_STANDARD;
+ 918              		.loc 1 57 35 is_stmt 0 view .LVU252
+ 919 0008 8370     		strb	r3, [r0, #2]
+  58:Core/Src/BMP280.c ****     params->oversampling_humidity = BMP280_STANDARD;
+ 920              		.loc 1 58 5 is_stmt 1 view .LVU253
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 24
+
+
+  58:Core/Src/BMP280.c ****     params->oversampling_humidity = BMP280_STANDARD;
+ 921              		.loc 1 58 38 is_stmt 0 view .LVU254
+ 922 000a C370     		strb	r3, [r0, #3]
+  59:Core/Src/BMP280.c ****     params->standby = BMP280_STANDBY_250;
+ 923              		.loc 1 59 5 is_stmt 1 view .LVU255
+  59:Core/Src/BMP280.c ****     params->standby = BMP280_STANDBY_250;
+ 924              		.loc 1 59 35 is_stmt 0 view .LVU256
+ 925 000c 0371     		strb	r3, [r0, #4]
+  60:Core/Src/BMP280.c **** }
+ 926              		.loc 1 60 5 is_stmt 1 view .LVU257
+  60:Core/Src/BMP280.c **** }
+ 927              		.loc 1 60 21 is_stmt 0 view .LVU258
+ 928 000e 4371     		strb	r3, [r0, #5]
+  61:Core/Src/BMP280.c **** 
+ 929              		.loc 1 61 1 view .LVU259
+ 930 0010 7047     		bx	lr
+ 931              		.cfi_endproc
+ 932              	.LFE65:
+ 934              		.section	.text.bmp280_init,"ax",%progbits
+ 935              		.align	1
+ 936              		.global	bmp280_init
+ 937              		.syntax unified
+ 938              		.thumb
+ 939              		.thumb_func
+ 941              	bmp280_init:
+ 942              	.LVL85:
+ 943              	.LFB71:
+ 129:Core/Src/BMP280.c **** 
+ 944              		.loc 1 129 1 is_stmt 1 view -0
+ 945              		.cfi_startproc
+ 946              		@ args = 0, pretend = 0, frame = 8
+ 947              		@ frame_needed = 0, uses_anonymous_args = 0
+ 129:Core/Src/BMP280.c **** 
+ 948              		.loc 1 129 1 is_stmt 0 view .LVU261
+ 949 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 950              	.LCFI17:
+ 951              		.cfi_def_cfa_offset 20
+ 952              		.cfi_offset 4, -20
+ 953              		.cfi_offset 5, -16
+ 954              		.cfi_offset 6, -12
+ 955              		.cfi_offset 7, -8
+ 956              		.cfi_offset 14, -4
+ 957 0002 83B0     		sub	sp, sp, #12
+ 958              	.LCFI18:
+ 959              		.cfi_def_cfa_offset 32
+ 131:Core/Src/BMP280.c ****     {
+ 960              		.loc 1 131 5 is_stmt 1 view .LVU262
+ 131:Core/Src/BMP280.c ****     {
+ 961              		.loc 1 131 12 is_stmt 0 view .LVU263
+ 962 0004 838C     		ldrh	r3, [r0, #36]
+ 131:Core/Src/BMP280.c ****     {
+ 963              		.loc 1 131 43 view .LVU264
+ 964 0006 763B     		subs	r3, r3, #118
+ 965 0008 9BB2     		uxth	r3, r3
+ 131:Core/Src/BMP280.c ****     {
+ 966              		.loc 1 131 8 view .LVU265
+ 967 000a 012B     		cmp	r3, #1
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 25
+
+
+ 968 000c 03D9     		bls	.L52
+ 134:Core/Src/BMP280.c ****     }
+ 969              		.loc 1 134 16 view .LVU266
+ 970 000e 0025     		movs	r5, #0
+ 971              	.LVL86:
+ 972              	.L35:
+ 201:Core/Src/BMP280.c **** 
+ 973              		.loc 1 201 1 view .LVU267
+ 974 0010 2846     		mov	r0, r5
+ 975 0012 03B0     		add	sp, sp, #12
+ 976              	.LCFI19:
+ 977              		.cfi_remember_state
+ 978              		.cfi_def_cfa_offset 20
+ 979              		@ sp needed
+ 980 0014 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 981              	.LVL87:
+ 982              	.L52:
+ 983              	.LCFI20:
+ 984              		.cfi_restore_state
+ 201:Core/Src/BMP280.c **** 
+ 985              		.loc 1 201 1 view .LVU268
+ 986 0016 0446     		mov	r4, r0
+ 987 0018 0E46     		mov	r6, r1
+ 137:Core/Src/BMP280.c ****     {
+ 988              		.loc 1 137 5 is_stmt 1 view .LVU269
+ 137:Core/Src/BMP280.c ****     {
+ 989              		.loc 1 137 9 is_stmt 0 view .LVU270
+ 990 001a 0123     		movs	r3, #1
+ 991 001c 00F13202 		add	r2, r0, #50
+ 992 0020 D021     		movs	r1, #208
+ 993              	.LVL88:
+ 137:Core/Src/BMP280.c ****     {
+ 994              		.loc 1 137 9 view .LVU271
+ 995 0022 FFF7FEFF 		bl	read_data
+ 996              	.LVL89:
+ 137:Core/Src/BMP280.c ****     {
+ 997              		.loc 1 137 8 discriminator 1 view .LVU272
+ 998 0026 0028     		cmp	r0, #0
+ 999 0028 5CD1     		bne	.L44
+ 142:Core/Src/BMP280.c ****     {
+ 1000              		.loc 1 142 5 is_stmt 1 view .LVU273
+ 142:Core/Src/BMP280.c ****     {
+ 1001              		.loc 1 142 12 is_stmt 0 view .LVU274
+ 1002 002a 94F83230 		ldrb	r3, [r4, #50]	@ zero_extendqisi2
+ 142:Core/Src/BMP280.c ****     {
+ 1003              		.loc 1 142 8 view .LVU275
+ 1004 002e 582B     		cmp	r3, #88
+ 1005 0030 01D0     		beq	.L36
+ 142:Core/Src/BMP280.c ****     {
+ 1006              		.loc 1 142 35 discriminator 1 view .LVU276
+ 1007 0032 602B     		cmp	r3, #96
+ 1008 0034 58D1     		bne	.L45
+ 1009              	.L36:
+ 149:Core/Src/BMP280.c ****     {
+ 1010              		.loc 1 149 5 is_stmt 1 view .LVU277
+ 149:Core/Src/BMP280.c ****     {
+ 1011              		.loc 1 149 9 is_stmt 0 view .LVU278
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 26
+
+
+ 1012 0036 B622     		movs	r2, #182
+ 1013 0038 E021     		movs	r1, #224
+ 1014 003a 2046     		mov	r0, r4
+ 1015 003c FFF7FEFF 		bl	write_register8
+ 1016              	.LVL90:
+ 149:Core/Src/BMP280.c ****     {
+ 1017              		.loc 1 149 8 discriminator 1 view .LVU279
+ 1018 0040 0028     		cmp	r0, #0
+ 1019 0042 53D1     		bne	.L46
+ 1020              	.L39:
+ 155:Core/Src/BMP280.c ****     {
+ 1021              		.loc 1 155 5 is_stmt 1 view .LVU280
+ 1022              	.LBB2:
+ 157:Core/Src/BMP280.c ****         if (!read_data(dev, BMP280_REG_STATUS, &status, 1) && (status & 1) == 0)
+ 1023              		.loc 1 157 9 view .LVU281
+ 158:Core/Src/BMP280.c ****             break;
+ 1024              		.loc 1 158 9 view .LVU282
+ 158:Core/Src/BMP280.c ****             break;
+ 1025              		.loc 1 158 14 is_stmt 0 view .LVU283
+ 1026 0044 0123     		movs	r3, #1
+ 1027 0046 0DF10702 		add	r2, sp, #7
+ 1028 004a F321     		movs	r1, #243
+ 1029 004c 2046     		mov	r0, r4
+ 1030 004e FFF7FEFF 		bl	read_data
+ 1031              	.LVL91:
+ 158:Core/Src/BMP280.c ****             break;
+ 1032              		.loc 1 158 12 discriminator 1 view .LVU284
+ 1033 0052 0028     		cmp	r0, #0
+ 1034 0054 F6D1     		bne	.L39
+ 158:Core/Src/BMP280.c ****             break;
+ 1035              		.loc 1 158 71 discriminator 1 view .LVU285
+ 1036 0056 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 158:Core/Src/BMP280.c ****             break;
+ 1037              		.loc 1 158 60 discriminator 1 view .LVU286
+ 1038 005a 13F0010F 		tst	r3, #1
+ 1039 005e F1D1     		bne	.L39
+ 1040              	.LBE2:
+ 162:Core/Src/BMP280.c ****     {
+ 1041              		.loc 1 162 5 is_stmt 1 view .LVU287
+ 162:Core/Src/BMP280.c ****     {
+ 1042              		.loc 1 162 10 is_stmt 0 view .LVU288
+ 1043 0060 2046     		mov	r0, r4
+ 1044 0062 FFF7FEFF 		bl	read_calibration_data
+ 1045              	.LVL92:
+ 162:Core/Src/BMP280.c ****     {
+ 1046              		.loc 1 162 8 discriminator 1 view .LVU289
+ 1047 0066 0546     		mov	r5, r0
+ 1048 0068 0028     		cmp	r0, #0
+ 1049 006a D1D0     		beq	.L35
+ 167:Core/Src/BMP280.c ****     {
+ 1050              		.loc 1 167 5 is_stmt 1 view .LVU290
+ 167:Core/Src/BMP280.c ****     {
+ 1051              		.loc 1 167 12 is_stmt 0 view .LVU291
+ 1052 006c 94F83230 		ldrb	r3, [r4, #50]	@ zero_extendqisi2
+ 167:Core/Src/BMP280.c ****     {
+ 1053              		.loc 1 167 8 view .LVU292
+ 1054 0070 602B     		cmp	r3, #96
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 27
+
+
+ 1055 0072 24D0     		beq	.L53
+ 1056              	.L40:
+ 172:Core/Src/BMP280.c ****     if (write_register8(dev, BMP280_REG_CONFIG, config))
+ 1057              		.loc 1 172 5 is_stmt 1 view .LVU293
+ 172:Core/Src/BMP280.c ****     if (write_register8(dev, BMP280_REG_CONFIG, config))
+ 1058              		.loc 1 172 29 is_stmt 0 view .LVU294
+ 1059 0074 7379     		ldrb	r3, [r6, #5]	@ zero_extendqisi2
+ 172:Core/Src/BMP280.c ****     if (write_register8(dev, BMP280_REG_CONFIG, config))
+ 1060              		.loc 1 172 54 view .LVU295
+ 1061 0076 7278     		ldrb	r2, [r6, #1]	@ zero_extendqisi2
+ 172:Core/Src/BMP280.c ****     if (write_register8(dev, BMP280_REG_CONFIG, config))
+ 1062              		.loc 1 172 45 view .LVU296
+ 1063 0078 9200     		lsls	r2, r2, #2
+ 1064 007a 42EA4312 		orr	r2, r2, r3, lsl #5
+ 1065              	.LVL93:
+ 173:Core/Src/BMP280.c ****     {
+ 1066              		.loc 1 173 5 is_stmt 1 view .LVU297
+ 173:Core/Src/BMP280.c ****     {
+ 1067              		.loc 1 173 9 is_stmt 0 view .LVU298
+ 1068 007e 02F0FC02 		and	r2, r2, #252
+ 1069              	.LVL94:
+ 173:Core/Src/BMP280.c ****     {
+ 1070              		.loc 1 173 9 view .LVU299
+ 1071 0082 F521     		movs	r1, #245
+ 1072 0084 2046     		mov	r0, r4
+ 1073 0086 FFF7FEFF 		bl	write_register8
+ 1074              	.LVL95:
+ 173:Core/Src/BMP280.c ****     {
+ 1075              		.loc 1 173 8 discriminator 1 view .LVU300
+ 1076 008a 88BB     		cbnz	r0, .L48
+ 178:Core/Src/BMP280.c ****     {
+ 1077              		.loc 1 178 5 is_stmt 1 view .LVU301
+ 178:Core/Src/BMP280.c ****     {
+ 1078              		.loc 1 178 15 is_stmt 0 view .LVU302
+ 1079 008c 3378     		ldrb	r3, [r6]	@ zero_extendqisi2
+ 178:Core/Src/BMP280.c ****     {
+ 1080              		.loc 1 178 8 view .LVU303
+ 1081 008e 012B     		cmp	r3, #1
+ 1082 0090 1CD0     		beq	.L54
+ 1083              	.L41:
+ 183:Core/Src/BMP280.c **** 
+ 1084              		.loc 1 183 5 is_stmt 1 view .LVU304
+ 183:Core/Src/BMP280.c **** 
+ 1085              		.loc 1 183 27 is_stmt 0 view .LVU305
+ 1086 0092 F278     		ldrb	r2, [r6, #3]	@ zero_extendqisi2
+ 183:Core/Src/BMP280.c **** 
+ 1087              		.loc 1 183 69 view .LVU306
+ 1088 0094 B378     		ldrb	r3, [r6, #2]	@ zero_extendqisi2
+ 183:Core/Src/BMP280.c **** 
+ 1089              		.loc 1 183 60 view .LVU307
+ 1090 0096 9B00     		lsls	r3, r3, #2
+ 1091 0098 43EA4213 		orr	r3, r3, r2, lsl #5
+ 1092 009c 5BB2     		sxtb	r3, r3
+ 183:Core/Src/BMP280.c **** 
+ 1093              		.loc 1 183 108 view .LVU308
+ 1094 009e 3278     		ldrb	r2, [r6]	@ zero_extendqisi2
+ 183:Core/Src/BMP280.c **** 
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 28
+
+
+ 1095              		.loc 1 183 13 view .LVU309
+ 1096 00a0 1343     		orrs	r3, r3, r2
+ 1097 00a2 DFB2     		uxtb	r7, r3
+ 1098              	.LVL96:
+ 185:Core/Src/BMP280.c ****     {
+ 1099              		.loc 1 185 5 is_stmt 1 view .LVU310
+ 185:Core/Src/BMP280.c ****     {
+ 1100              		.loc 1 185 12 is_stmt 0 view .LVU311
+ 1101 00a4 94F83230 		ldrb	r3, [r4, #50]	@ zero_extendqisi2
+ 185:Core/Src/BMP280.c ****     {
+ 1102              		.loc 1 185 8 view .LVU312
+ 1103 00a8 602B     		cmp	r3, #96
+ 1104 00aa 12D0     		beq	.L55
+ 1105              	.L42:
+ 195:Core/Src/BMP280.c ****     {
+ 1106              		.loc 1 195 5 is_stmt 1 view .LVU313
+ 195:Core/Src/BMP280.c ****     {
+ 1107              		.loc 1 195 9 is_stmt 0 view .LVU314
+ 1108 00ac 3A46     		mov	r2, r7
+ 1109 00ae F421     		movs	r1, #244
+ 1110 00b0 2046     		mov	r0, r4
+ 1111 00b2 FFF7FEFF 		bl	write_register8
+ 1112              	.LVL97:
+ 195:Core/Src/BMP280.c ****     {
+ 1113              		.loc 1 195 8 discriminator 1 view .LVU315
+ 1114 00b6 0028     		cmp	r0, #0
+ 1115 00b8 AAD0     		beq	.L35
+ 197:Core/Src/BMP280.c ****     }
+ 1116              		.loc 1 197 16 view .LVU316
+ 1117 00ba 0025     		movs	r5, #0
+ 1118 00bc A8E7     		b	.L35
+ 1119              	.LVL98:
+ 1120              	.L53:
+ 167:Core/Src/BMP280.c ****     {
+ 1121              		.loc 1 167 39 discriminator 1 view .LVU317
+ 1122 00be 2046     		mov	r0, r4
+ 1123 00c0 FFF7FEFF 		bl	read_hum_calibration_data
+ 1124              	.LVL99:
+ 167:Core/Src/BMP280.c ****     {
+ 1125              		.loc 1 167 35 discriminator 1 view .LVU318
+ 1126 00c4 0028     		cmp	r0, #0
+ 1127 00c6 D5D1     		bne	.L40
+ 169:Core/Src/BMP280.c ****     }
+ 1128              		.loc 1 169 16 view .LVU319
+ 1129 00c8 0546     		mov	r5, r0
+ 1130 00ca A1E7     		b	.L35
+ 1131              	.LVL100:
+ 1132              	.L54:
+ 180:Core/Src/BMP280.c ****     }
+ 1133              		.loc 1 180 9 is_stmt 1 view .LVU320
+ 180:Core/Src/BMP280.c ****     }
+ 1134              		.loc 1 180 22 is_stmt 0 view .LVU321
+ 1135 00cc 0023     		movs	r3, #0
+ 1136 00ce 3370     		strb	r3, [r6]
+ 1137 00d0 DFE7     		b	.L41
+ 1138              	.LVL101:
+ 1139              	.L55:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 29
+
+
+ 1140              	.LBB3:
+ 188:Core/Src/BMP280.c ****         if (write_register8(dev, BMP280_REG_CTRL_HUM, ctrl_hum))
+ 1141              		.loc 1 188 9 is_stmt 1 view .LVU322
+ 189:Core/Src/BMP280.c ****         {
+ 1142              		.loc 1 189 9 view .LVU323
+ 189:Core/Src/BMP280.c ****         {
+ 1143              		.loc 1 189 13 is_stmt 0 view .LVU324
+ 1144 00d2 3279     		ldrb	r2, [r6, #4]	@ zero_extendqisi2
+ 1145 00d4 F221     		movs	r1, #242
+ 1146 00d6 2046     		mov	r0, r4
+ 1147 00d8 FFF7FEFF 		bl	write_register8
+ 1148              	.LVL102:
+ 189:Core/Src/BMP280.c ****         {
+ 1149              		.loc 1 189 12 discriminator 1 view .LVU325
+ 1150 00dc 0028     		cmp	r0, #0
+ 1151 00de E5D0     		beq	.L42
+ 191:Core/Src/BMP280.c ****         }
+ 1152              		.loc 1 191 20 view .LVU326
+ 1153 00e0 0025     		movs	r5, #0
+ 1154 00e2 95E7     		b	.L35
+ 1155              	.LVL103:
+ 1156              	.L44:
+ 191:Core/Src/BMP280.c ****         }
+ 1157              		.loc 1 191 20 view .LVU327
+ 1158              	.LBE3:
+ 139:Core/Src/BMP280.c ****     }
+ 1159              		.loc 1 139 16 view .LVU328
+ 1160 00e4 0025     		movs	r5, #0
+ 1161 00e6 93E7     		b	.L35
+ 1162              	.L45:
+ 145:Core/Src/BMP280.c ****     }
+ 1163              		.loc 1 145 16 view .LVU329
+ 1164 00e8 0025     		movs	r5, #0
+ 1165 00ea 91E7     		b	.L35
+ 1166              	.L46:
+ 151:Core/Src/BMP280.c ****     }
+ 1167              		.loc 1 151 16 view .LVU330
+ 1168 00ec 0025     		movs	r5, #0
+ 1169 00ee 8FE7     		b	.L35
+ 1170              	.LVL104:
+ 1171              	.L48:
+ 175:Core/Src/BMP280.c ****     }
+ 1172              		.loc 1 175 16 view .LVU331
+ 1173 00f0 0025     		movs	r5, #0
+ 1174 00f2 8DE7     		b	.L35
+ 1175              		.cfi_endproc
+ 1176              	.LFE71:
+ 1178              		.section	.text.bmp280_force_measurement,"ax",%progbits
+ 1179              		.align	1
+ 1180              		.global	bmp280_force_measurement
+ 1181              		.syntax unified
+ 1182              		.thumb
+ 1183              		.thumb_func
+ 1185              	bmp280_force_measurement:
+ 1186              	.LVL105:
+ 1187              	.LFB72:
+ 204:Core/Src/BMP280.c ****     uint8_t ctrl;
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 30
+
+
+ 1188              		.loc 1 204 1 is_stmt 1 view -0
+ 1189              		.cfi_startproc
+ 1190              		@ args = 0, pretend = 0, frame = 8
+ 1191              		@ frame_needed = 0, uses_anonymous_args = 0
+ 204:Core/Src/BMP280.c ****     uint8_t ctrl;
+ 1192              		.loc 1 204 1 is_stmt 0 view .LVU333
+ 1193 0000 10B5     		push	{r4, lr}
+ 1194              	.LCFI21:
+ 1195              		.cfi_def_cfa_offset 8
+ 1196              		.cfi_offset 4, -8
+ 1197              		.cfi_offset 14, -4
+ 1198 0002 82B0     		sub	sp, sp, #8
+ 1199              	.LCFI22:
+ 1200              		.cfi_def_cfa_offset 16
+ 1201 0004 0446     		mov	r4, r0
+ 205:Core/Src/BMP280.c ****     if (read_data(dev, BMP280_REG_CTRL, &ctrl, 1))
+ 1202              		.loc 1 205 5 is_stmt 1 view .LVU334
+ 206:Core/Src/BMP280.c ****         return false;
+ 1203              		.loc 1 206 5 view .LVU335
+ 206:Core/Src/BMP280.c ****         return false;
+ 1204              		.loc 1 206 9 is_stmt 0 view .LVU336
+ 1205 0006 0123     		movs	r3, #1
+ 1206 0008 0DF10702 		add	r2, sp, #7
+ 1207 000c F421     		movs	r1, #244
+ 1208 000e FFF7FEFF 		bl	read_data
+ 1209              	.LVL106:
+ 206:Core/Src/BMP280.c ****         return false;
+ 1210              		.loc 1 206 8 discriminator 1 view .LVU337
+ 1211 0012 10B1     		cbz	r0, .L61
+ 207:Core/Src/BMP280.c ****     ctrl &= ~0b11; // clear two lower bits
+ 1212              		.loc 1 207 16 view .LVU338
+ 1213 0014 0020     		movs	r0, #0
+ 1214              	.L57:
+ 215:Core/Src/BMP280.c **** 
+ 1215              		.loc 1 215 1 view .LVU339
+ 1216 0016 02B0     		add	sp, sp, #8
+ 1217              	.LCFI23:
+ 1218              		.cfi_remember_state
+ 1219              		.cfi_def_cfa_offset 8
+ 1220              		@ sp needed
+ 1221 0018 10BD     		pop	{r4, pc}
+ 1222              	.LVL107:
+ 1223              	.L61:
+ 1224              	.LCFI24:
+ 1225              		.cfi_restore_state
+ 208:Core/Src/BMP280.c ****     ctrl |= BMP280_MODE_FORCED;
+ 1226              		.loc 1 208 5 is_stmt 1 view .LVU340
+ 208:Core/Src/BMP280.c ****     ctrl |= BMP280_MODE_FORCED;
+ 1227              		.loc 1 208 10 is_stmt 0 view .LVU341
+ 1228 001a 9DF80720 		ldrb	r2, [sp, #7]	@ zero_extendqisi2
+ 1229 001e 02F0FC02 		and	r2, r2, #252
+ 1230 0022 8DF80720 		strb	r2, [sp, #7]
+ 209:Core/Src/BMP280.c ****     if (write_register8(dev, BMP280_REG_CTRL, ctrl))
+ 1231              		.loc 1 209 5 is_stmt 1 view .LVU342
+ 209:Core/Src/BMP280.c ****     if (write_register8(dev, BMP280_REG_CTRL, ctrl))
+ 1232              		.loc 1 209 10 is_stmt 0 view .LVU343
+ 1233 0026 42F00102 		orr	r2, r2, #1
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 31
+
+
+ 1234 002a 8DF80720 		strb	r2, [sp, #7]
+ 210:Core/Src/BMP280.c ****     {
+ 1235              		.loc 1 210 5 is_stmt 1 view .LVU344
+ 210:Core/Src/BMP280.c ****     {
+ 1236              		.loc 1 210 9 is_stmt 0 view .LVU345
+ 1237 002e F421     		movs	r1, #244
+ 1238 0030 2046     		mov	r0, r4
+ 1239 0032 FFF7FEFF 		bl	write_register8
+ 1240              	.LVL108:
+ 210:Core/Src/BMP280.c ****     {
+ 1241              		.loc 1 210 8 discriminator 1 view .LVU346
+ 1242 0036 08B9     		cbnz	r0, .L59
+ 214:Core/Src/BMP280.c **** }
+ 1243              		.loc 1 214 12 view .LVU347
+ 1244 0038 0120     		movs	r0, #1
+ 1245 003a ECE7     		b	.L57
+ 1246              	.L59:
+ 212:Core/Src/BMP280.c ****     }
+ 1247              		.loc 1 212 16 view .LVU348
+ 1248 003c 0020     		movs	r0, #0
+ 1249 003e EAE7     		b	.L57
+ 1250              		.cfi_endproc
+ 1251              	.LFE72:
+ 1253              		.section	.text.bmp280_is_measuring,"ax",%progbits
+ 1254              		.align	1
+ 1255              		.global	bmp280_is_measuring
+ 1256              		.syntax unified
+ 1257              		.thumb
+ 1258              		.thumb_func
+ 1260              	bmp280_is_measuring:
+ 1261              	.LVL109:
+ 1262              	.LFB73:
+ 218:Core/Src/BMP280.c ****     uint8_t status;
+ 1263              		.loc 1 218 1 is_stmt 1 view -0
+ 1264              		.cfi_startproc
+ 1265              		@ args = 0, pretend = 0, frame = 8
+ 1266              		@ frame_needed = 0, uses_anonymous_args = 0
+ 218:Core/Src/BMP280.c ****     uint8_t status;
+ 1267              		.loc 1 218 1 is_stmt 0 view .LVU350
+ 1268 0000 00B5     		push	{lr}
+ 1269              	.LCFI25:
+ 1270              		.cfi_def_cfa_offset 4
+ 1271              		.cfi_offset 14, -4
+ 1272 0002 83B0     		sub	sp, sp, #12
+ 1273              	.LCFI26:
+ 1274              		.cfi_def_cfa_offset 16
+ 219:Core/Src/BMP280.c ****     if (read_data(dev, BMP280_REG_STATUS, &status, 1))
+ 1275              		.loc 1 219 5 is_stmt 1 view .LVU351
+ 220:Core/Src/BMP280.c ****         return false;
+ 1276              		.loc 1 220 5 view .LVU352
+ 220:Core/Src/BMP280.c ****         return false;
+ 1277              		.loc 1 220 9 is_stmt 0 view .LVU353
+ 1278 0004 0123     		movs	r3, #1
+ 1279 0006 0DF10702 		add	r2, sp, #7
+ 1280 000a F321     		movs	r1, #243
+ 1281 000c FFF7FEFF 		bl	read_data
+ 1282              	.LVL110:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 32
+
+
+ 220:Core/Src/BMP280.c ****         return false;
+ 1283              		.loc 1 220 8 discriminator 1 view .LVU354
+ 1284 0010 38B9     		cbnz	r0, .L64
+ 222:Core/Src/BMP280.c ****     {
+ 1285              		.loc 1 222 5 is_stmt 1 view .LVU355
+ 222:Core/Src/BMP280.c ****     {
+ 1286              		.loc 1 222 16 is_stmt 0 view .LVU356
+ 1287 0012 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 222:Core/Src/BMP280.c ****     {
+ 1288              		.loc 1 222 8 view .LVU357
+ 1289 0016 13F0080F 		tst	r3, #8
+ 1290 001a 04D1     		bne	.L65
+ 1291              	.L63:
+ 227:Core/Src/BMP280.c **** 
+ 1292              		.loc 1 227 1 view .LVU358
+ 1293 001c 03B0     		add	sp, sp, #12
+ 1294              	.LCFI27:
+ 1295              		.cfi_remember_state
+ 1296              		.cfi_def_cfa_offset 4
+ 1297              		@ sp needed
+ 1298 001e 5DF804FB 		ldr	pc, [sp], #4
+ 1299              	.L64:
+ 1300              	.LCFI28:
+ 1301              		.cfi_restore_state
+ 221:Core/Src/BMP280.c ****     if (status & (1 << 3))
+ 1302              		.loc 1 221 16 view .LVU359
+ 1303 0022 0020     		movs	r0, #0
+ 1304 0024 FAE7     		b	.L63
+ 1305              	.L65:
+ 224:Core/Src/BMP280.c ****     }
+ 1306              		.loc 1 224 16 view .LVU360
+ 1307 0026 0120     		movs	r0, #1
+ 1308 0028 F8E7     		b	.L63
+ 1309              		.cfi_endproc
+ 1310              	.LFE73:
+ 1312              		.section	.text.bmp280_read_fixed,"ax",%progbits
+ 1313              		.align	1
+ 1314              		.global	bmp280_read_fixed
+ 1315              		.syntax unified
+ 1316              		.thumb
+ 1317              		.thumb_func
+ 1319              	bmp280_read_fixed:
+ 1320              	.LVL111:
+ 1321              	.LFB77:
+ 294:Core/Src/BMP280.c **** 
+ 295:Core/Src/BMP280.c **** bool bmp280_read_fixed(BMP280_HandleTypedef *dev, int32_t *temperature, uint32_t *pressure,
+ 296:Core/Src/BMP280.c ****                        uint32_t *humidity)
+ 297:Core/Src/BMP280.c **** {
+ 1322              		.loc 1 297 1 is_stmt 1 view -0
+ 1323              		.cfi_startproc
+ 1324              		@ args = 0, pretend = 0, frame = 16
+ 1325              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1326              		.loc 1 297 1 is_stmt 0 view .LVU362
+ 1327 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 1328              	.LCFI29:
+ 1329              		.cfi_def_cfa_offset 24
+ 1330              		.cfi_offset 4, -24
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 33
+
+
+ 1331              		.cfi_offset 5, -20
+ 1332              		.cfi_offset 6, -16
+ 1333              		.cfi_offset 7, -12
+ 1334              		.cfi_offset 8, -8
+ 1335              		.cfi_offset 14, -4
+ 1336 0004 84B0     		sub	sp, sp, #16
+ 1337              	.LCFI30:
+ 1338              		.cfi_def_cfa_offset 40
+ 1339 0006 0446     		mov	r4, r0
+ 1340 0008 8846     		mov	r8, r1
+ 1341 000a 1746     		mov	r7, r2
+ 1342 000c 1D46     		mov	r5, r3
+ 298:Core/Src/BMP280.c ****     int32_t adc_pressure;
+ 1343              		.loc 1 298 5 is_stmt 1 view .LVU363
+ 299:Core/Src/BMP280.c ****     int32_t adc_temp;
+ 1344              		.loc 1 299 5 view .LVU364
+ 300:Core/Src/BMP280.c ****     uint8_t data[8];
+ 1345              		.loc 1 300 5 view .LVU365
+ 301:Core/Src/BMP280.c **** 
+ 302:Core/Src/BMP280.c ****     // Only the BME280 supports reading the humidity.
+ 303:Core/Src/BMP280.c ****     if (dev->id != BME280_CHIP_ID)
+ 1346              		.loc 1 303 5 view .LVU366
+ 1347              		.loc 1 303 12 is_stmt 0 view .LVU367
+ 1348 000e 90F83230 		ldrb	r3, [r0, #50]	@ zero_extendqisi2
+ 1349              	.LVL112:
+ 1350              		.loc 1 303 8 view .LVU368
+ 1351 0012 602B     		cmp	r3, #96
+ 1352 0014 0ED0     		beq	.L68
+ 304:Core/Src/BMP280.c ****     {
+ 305:Core/Src/BMP280.c ****         if (humidity)
+ 1353              		.loc 1 305 9 is_stmt 1 view .LVU369
+ 1354              		.loc 1 305 12 is_stmt 0 view .LVU370
+ 1355 0016 85B1     		cbz	r5, .L71
+ 306:Core/Src/BMP280.c ****             *humidity = 0;
+ 1356              		.loc 1 306 13 is_stmt 1 view .LVU371
+ 1357              		.loc 1 306 23 is_stmt 0 view .LVU372
+ 1358 0018 0023     		movs	r3, #0
+ 1359 001a 2B60     		str	r3, [r5]
+ 307:Core/Src/BMP280.c ****         humidity = NULL;
+ 1360              		.loc 1 307 18 view .LVU373
+ 1361 001c 1D46     		mov	r5, r3
+ 1362              	.LVL113:
+ 308:Core/Src/BMP280.c ****     }
+ 309:Core/Src/BMP280.c **** 
+ 310:Core/Src/BMP280.c ****     // Need to read in one sequence to ensure they match.
+ 311:Core/Src/BMP280.c ****     size_t size = humidity ? 8 : 6;
+ 1363              		.loc 1 311 32 discriminator 2 view .LVU374
+ 1364 001e 0623     		movs	r3, #6
+ 1365              	.L69:
+ 1366              	.LVL114:
+ 312:Core/Src/BMP280.c ****     if (read_data(dev, 0xf7, data, size))
+ 1367              		.loc 1 312 5 is_stmt 1 view .LVU375
+ 1368              		.loc 1 312 9 is_stmt 0 view .LVU376
+ 1369 0020 02AA     		add	r2, sp, #8
+ 1370              	.LVL115:
+ 1371              		.loc 1 312 9 view .LVU377
+ 1372 0022 F721     		movs	r1, #247
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 34
+
+
+ 1373              	.LVL116:
+ 1374              		.loc 1 312 9 view .LVU378
+ 1375 0024 2046     		mov	r0, r4
+ 1376              	.LVL117:
+ 1377              		.loc 1 312 9 view .LVU379
+ 1378 0026 FFF7FEFF 		bl	read_data
+ 1379              	.LVL118:
+ 1380              		.loc 1 312 8 discriminator 1 view .LVU380
+ 1381 002a 50B1     		cbz	r0, .L76
+ 313:Core/Src/BMP280.c ****     {
+ 314:Core/Src/BMP280.c ****         return false;
+ 1382              		.loc 1 314 16 view .LVU381
+ 1383 002c 0020     		movs	r0, #0
+ 1384              	.L70:
+ 315:Core/Src/BMP280.c ****     }
+ 316:Core/Src/BMP280.c **** 
+ 317:Core/Src/BMP280.c ****     adc_pressure = data[0] << 12 | data[1] << 4 | data[2] >> 4;
+ 318:Core/Src/BMP280.c ****     adc_temp = data[3] << 12 | data[4] << 4 | data[5] >> 4;
+ 319:Core/Src/BMP280.c **** 
+ 320:Core/Src/BMP280.c ****     int32_t fine_temp;
+ 321:Core/Src/BMP280.c ****     *temperature = compensate_temperature(dev, adc_temp, &fine_temp);
+ 322:Core/Src/BMP280.c ****     *pressure = compensate_pressure(dev, adc_pressure, fine_temp);
+ 323:Core/Src/BMP280.c **** 
+ 324:Core/Src/BMP280.c ****     if (humidity)
+ 325:Core/Src/BMP280.c ****     {
+ 326:Core/Src/BMP280.c ****         int32_t adc_humidity = data[6] << 8 | data[7];
+ 327:Core/Src/BMP280.c ****         *humidity = compensate_humidity(dev, adc_humidity, fine_temp);
+ 328:Core/Src/BMP280.c ****     }
+ 329:Core/Src/BMP280.c **** 
+ 330:Core/Src/BMP280.c ****     return true;
+ 331:Core/Src/BMP280.c **** }
+ 1385              		.loc 1 331 1 view .LVU382
+ 1386 002e 04B0     		add	sp, sp, #16
+ 1387              	.LCFI31:
+ 1388              		.cfi_remember_state
+ 1389              		.cfi_def_cfa_offset 24
+ 1390              		@ sp needed
+ 1391 0030 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 1392              	.LVL119:
+ 1393              	.L68:
+ 1394              	.LCFI32:
+ 1395              		.cfi_restore_state
+ 311:Core/Src/BMP280.c ****     if (read_data(dev, 0xf7, data, size))
+ 1396              		.loc 1 311 5 is_stmt 1 view .LVU383
+ 311:Core/Src/BMP280.c ****     if (read_data(dev, 0xf7, data, size))
+ 1397              		.loc 1 311 32 is_stmt 0 view .LVU384
+ 1398 0034 1DB1     		cbz	r5, .L72
+ 311:Core/Src/BMP280.c ****     if (read_data(dev, 0xf7, data, size))
+ 1399              		.loc 1 311 32 discriminator 1 view .LVU385
+ 1400 0036 0823     		movs	r3, #8
+ 1401 0038 F2E7     		b	.L69
+ 1402              	.L71:
+ 311:Core/Src/BMP280.c ****     if (read_data(dev, 0xf7, data, size))
+ 1403              		.loc 1 311 32 discriminator 2 view .LVU386
+ 1404 003a 0623     		movs	r3, #6
+ 1405 003c F0E7     		b	.L69
+ 1406              	.L72:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 35
+
+
+ 311:Core/Src/BMP280.c ****     if (read_data(dev, 0xf7, data, size))
+ 1407              		.loc 1 311 32 discriminator 2 view .LVU387
+ 1408 003e 0623     		movs	r3, #6
+ 1409 0040 EEE7     		b	.L69
+ 1410              	.LVL120:
+ 1411              	.L76:
+ 317:Core/Src/BMP280.c ****     adc_temp = data[3] << 12 | data[4] << 4 | data[5] >> 4;
+ 1412              		.loc 1 317 5 is_stmt 1 view .LVU388
+ 317:Core/Src/BMP280.c ****     adc_temp = data[3] << 12 | data[4] << 4 | data[5] >> 4;
+ 1413              		.loc 1 317 24 is_stmt 0 view .LVU389
+ 1414 0042 9DF80830 		ldrb	r3, [sp, #8]	@ zero_extendqisi2
+ 317:Core/Src/BMP280.c ****     adc_temp = data[3] << 12 | data[4] << 4 | data[5] >> 4;
+ 1415              		.loc 1 317 40 view .LVU390
+ 1416 0046 9DF80960 		ldrb	r6, [sp, #9]	@ zero_extendqisi2
+ 317:Core/Src/BMP280.c ****     adc_temp = data[3] << 12 | data[4] << 4 | data[5] >> 4;
+ 1417              		.loc 1 317 44 view .LVU391
+ 1418 004a 3601     		lsls	r6, r6, #4
+ 317:Core/Src/BMP280.c ****     adc_temp = data[3] << 12 | data[4] << 4 | data[5] >> 4;
+ 1419              		.loc 1 317 34 view .LVU392
+ 1420 004c 46EA0336 		orr	r6, r6, r3, lsl #12
+ 317:Core/Src/BMP280.c ****     adc_temp = data[3] << 12 | data[4] << 4 | data[5] >> 4;
+ 1421              		.loc 1 317 55 view .LVU393
+ 1422 0050 9DF80A30 		ldrb	r3, [sp, #10]	@ zero_extendqisi2
+ 317:Core/Src/BMP280.c ****     adc_temp = data[3] << 12 | data[4] << 4 | data[5] >> 4;
+ 1423              		.loc 1 317 18 view .LVU394
+ 1424 0054 46EA1316 		orr	r6, r6, r3, lsr #4
+ 1425              	.LVL121:
+ 318:Core/Src/BMP280.c **** 
+ 1426              		.loc 1 318 5 is_stmt 1 view .LVU395
+ 318:Core/Src/BMP280.c **** 
+ 1427              		.loc 1 318 20 is_stmt 0 view .LVU396
+ 1428 0058 9DF80B20 		ldrb	r2, [sp, #11]	@ zero_extendqisi2
+ 318:Core/Src/BMP280.c **** 
+ 1429              		.loc 1 318 36 view .LVU397
+ 1430 005c 9DF80C30 		ldrb	r3, [sp, #12]	@ zero_extendqisi2
+ 318:Core/Src/BMP280.c **** 
+ 1431              		.loc 1 318 40 view .LVU398
+ 1432 0060 1B01     		lsls	r3, r3, #4
+ 318:Core/Src/BMP280.c **** 
+ 1433              		.loc 1 318 30 view .LVU399
+ 1434 0062 43EA0233 		orr	r3, r3, r2, lsl #12
+ 318:Core/Src/BMP280.c **** 
+ 1435              		.loc 1 318 51 view .LVU400
+ 1436 0066 9DF80D10 		ldrb	r1, [sp, #13]	@ zero_extendqisi2
+ 1437              	.LVL122:
+ 320:Core/Src/BMP280.c ****     *temperature = compensate_temperature(dev, adc_temp, &fine_temp);
+ 1438              		.loc 1 320 5 is_stmt 1 view .LVU401
+ 321:Core/Src/BMP280.c ****     *pressure = compensate_pressure(dev, adc_pressure, fine_temp);
+ 1439              		.loc 1 321 5 view .LVU402
+ 321:Core/Src/BMP280.c ****     *pressure = compensate_pressure(dev, adc_pressure, fine_temp);
+ 1440              		.loc 1 321 20 is_stmt 0 view .LVU403
+ 1441 006a 01AA     		add	r2, sp, #4
+ 1442 006c 43EA1111 		orr	r1, r3, r1, lsr #4
+ 1443              	.LVL123:
+ 321:Core/Src/BMP280.c ****     *pressure = compensate_pressure(dev, adc_pressure, fine_temp);
+ 1444              		.loc 1 321 20 view .LVU404
+ 1445 0070 2046     		mov	r0, r4
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 36
+
+
+ 1446 0072 FFF7FEFF 		bl	compensate_temperature
+ 1447              	.LVL124:
+ 321:Core/Src/BMP280.c ****     *pressure = compensate_pressure(dev, adc_pressure, fine_temp);
+ 1448              		.loc 1 321 18 discriminator 1 view .LVU405
+ 1449 0076 C8F80000 		str	r0, [r8]
+ 322:Core/Src/BMP280.c **** 
+ 1450              		.loc 1 322 5 is_stmt 1 view .LVU406
+ 322:Core/Src/BMP280.c **** 
+ 1451              		.loc 1 322 17 is_stmt 0 view .LVU407
+ 1452 007a 019A     		ldr	r2, [sp, #4]
+ 1453 007c 3146     		mov	r1, r6
+ 1454 007e 2046     		mov	r0, r4
+ 1455 0080 FFF7FEFF 		bl	compensate_pressure
+ 1456              	.LVL125:
+ 322:Core/Src/BMP280.c **** 
+ 1457              		.loc 1 322 15 discriminator 1 view .LVU408
+ 1458 0084 3860     		str	r0, [r7]
+ 324:Core/Src/BMP280.c ****     {
+ 1459              		.loc 1 324 5 is_stmt 1 view .LVU409
+ 324:Core/Src/BMP280.c ****     {
+ 1460              		.loc 1 324 8 is_stmt 0 view .LVU410
+ 1461 0086 65B1     		cbz	r5, .L74
+ 1462              	.LBB4:
+ 326:Core/Src/BMP280.c ****         *humidity = compensate_humidity(dev, adc_humidity, fine_temp);
+ 1463              		.loc 1 326 9 is_stmt 1 view .LVU411
+ 326:Core/Src/BMP280.c ****         *humidity = compensate_humidity(dev, adc_humidity, fine_temp);
+ 1464              		.loc 1 326 36 is_stmt 0 view .LVU412
+ 1465 0088 9DF80E10 		ldrb	r1, [sp, #14]	@ zero_extendqisi2
+ 326:Core/Src/BMP280.c ****         *humidity = compensate_humidity(dev, adc_humidity, fine_temp);
+ 1466              		.loc 1 326 51 view .LVU413
+ 1467 008c 9DF80F30 		ldrb	r3, [sp, #15]	@ zero_extendqisi2
+ 1468              	.LVL126:
+ 327:Core/Src/BMP280.c ****     }
+ 1469              		.loc 1 327 9 is_stmt 1 view .LVU414
+ 327:Core/Src/BMP280.c ****     }
+ 1470              		.loc 1 327 21 is_stmt 0 view .LVU415
+ 1471 0090 019A     		ldr	r2, [sp, #4]
+ 1472 0092 43EA0121 		orr	r1, r3, r1, lsl #8
+ 1473              	.LVL127:
+ 327:Core/Src/BMP280.c ****     }
+ 1474              		.loc 1 327 21 view .LVU416
+ 1475 0096 2046     		mov	r0, r4
+ 1476 0098 FFF7FEFF 		bl	compensate_humidity
+ 1477              	.LVL128:
+ 327:Core/Src/BMP280.c ****     }
+ 1478              		.loc 1 327 19 discriminator 1 view .LVU417
+ 1479 009c 2860     		str	r0, [r5]
+ 1480              	.LBE4:
+ 330:Core/Src/BMP280.c **** }
+ 1481              		.loc 1 330 12 view .LVU418
+ 1482 009e 0120     		movs	r0, #1
+ 1483 00a0 C5E7     		b	.L70
+ 1484              	.LVL129:
+ 1485              	.L74:
+ 330:Core/Src/BMP280.c **** }
+ 1486              		.loc 1 330 12 view .LVU419
+ 1487 00a2 0120     		movs	r0, #1
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 37
+
+
+ 1488 00a4 C3E7     		b	.L70
+ 1489              		.cfi_endproc
+ 1490              	.LFE77:
+ 1492              		.global	__aeabi_i2f
+ 1493              		.global	__aeabi_fdiv
+ 1494              		.global	__aeabi_ui2f
+ 1495              		.global	__aeabi_fmul
+ 1496              		.section	.text.bmp280_read_float,"ax",%progbits
+ 1497              		.align	1
+ 1498              		.global	bmp280_read_float
+ 1499              		.syntax unified
+ 1500              		.thumb
+ 1501              		.thumb_func
+ 1503              	bmp280_read_float:
+ 1504              	.LVL130:
+ 1505              	.LFB78:
+ 332:Core/Src/BMP280.c **** 
+ 333:Core/Src/BMP280.c **** bool bmp280_read_float(BMP280_HandleTypedef *dev, float *temperature, float *pressure,
+ 334:Core/Src/BMP280.c ****                        float *humidity)
+ 335:Core/Src/BMP280.c **** {
+ 1506              		.loc 1 335 1 is_stmt 1 view -0
+ 1507              		.cfi_startproc
+ 1508              		@ args = 0, pretend = 0, frame = 16
+ 1509              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1510              		.loc 1 335 1 is_stmt 0 view .LVU421
+ 1511 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 1512              	.LCFI33:
+ 1513              		.cfi_def_cfa_offset 20
+ 1514              		.cfi_offset 4, -20
+ 1515              		.cfi_offset 5, -16
+ 1516              		.cfi_offset 6, -12
+ 1517              		.cfi_offset 7, -8
+ 1518              		.cfi_offset 14, -4
+ 1519 0002 85B0     		sub	sp, sp, #20
+ 1520              	.LCFI34:
+ 1521              		.cfi_def_cfa_offset 40
+ 1522 0004 0E46     		mov	r6, r1
+ 1523 0006 1546     		mov	r5, r2
+ 336:Core/Src/BMP280.c ****     int32_t fixed_temperature;
+ 1524              		.loc 1 336 5 is_stmt 1 view .LVU422
+ 337:Core/Src/BMP280.c ****     uint32_t fixed_pressure;
+ 1525              		.loc 1 337 5 view .LVU423
+ 338:Core/Src/BMP280.c ****     uint32_t fixed_humidity;
+ 1526              		.loc 1 338 5 view .LVU424
+ 339:Core/Src/BMP280.c ****     if (bmp280_read_fixed(dev, &fixed_temperature, &fixed_pressure,
+ 1527              		.loc 1 339 5 view .LVU425
+ 1528              		.loc 1 339 9 is_stmt 0 view .LVU426
+ 1529 0008 1F46     		mov	r7, r3
+ 1530 000a 03B1     		cbz	r3, .L78
+ 1531              		.loc 1 339 9 discriminator 1 view .LVU427
+ 1532 000c 01AB     		add	r3, sp, #4
+ 1533              	.LVL131:
+ 1534              	.L78:
+ 1535              		.loc 1 339 9 discriminator 4 view .LVU428
+ 1536 000e 02AA     		add	r2, sp, #8
+ 1537              	.LVL132:
+ 1538              		.loc 1 339 9 discriminator 4 view .LVU429
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 38
+
+
+ 1539 0010 03A9     		add	r1, sp, #12
+ 1540              	.LVL133:
+ 1541              		.loc 1 339 9 discriminator 4 view .LVU430
+ 1542 0012 FFF7FEFF 		bl	bmp280_read_fixed
+ 1543              	.LVL134:
+ 1544              		.loc 1 339 8 discriminator 1 view .LVU431
+ 1545 0016 0446     		mov	r4, r0
+ 1546 0018 10B9     		cbnz	r0, .L83
+ 1547              	.L79:
+ 340:Core/Src/BMP280.c ****                           humidity ? &fixed_humidity : NULL))
+ 341:Core/Src/BMP280.c ****     {
+ 342:Core/Src/BMP280.c ****         *temperature = (float)fixed_temperature / 100;
+ 343:Core/Src/BMP280.c ****         *pressure = (float)fixed_pressure / 256;
+ 344:Core/Src/BMP280.c ****         if (humidity)
+ 345:Core/Src/BMP280.c ****             *humidity = (float)fixed_humidity / 1024;
+ 346:Core/Src/BMP280.c ****         return true;
+ 347:Core/Src/BMP280.c ****     }
+ 348:Core/Src/BMP280.c **** 
+ 349:Core/Src/BMP280.c ****     return false;
+ 350:Core/Src/BMP280.c **** }...
+ 1548              		.loc 1 350 1 view .LVU432
+ 1549 001a 2046     		mov	r0, r4
+ 1550 001c 05B0     		add	sp, sp, #20
+ 1551              	.LCFI35:
+ 1552              		.cfi_remember_state
+ 1553              		.cfi_def_cfa_offset 20
+ 1554              		@ sp needed
+ 1555 001e F0BD     		pop	{r4, r5, r6, r7, pc}
+ 1556              	.LVL135:
+ 1557              	.L83:
+ 1558              	.LCFI36:
+ 1559              		.cfi_restore_state
+ 342:Core/Src/BMP280.c ****         *temperature = (float)fixed_temperature / 100;
+ 1560              		.loc 1 342 9 is_stmt 1 view .LVU433
+ 342:Core/Src/BMP280.c ****         *temperature = (float)fixed_temperature / 100;
+ 1561              		.loc 1 342 24 is_stmt 0 view .LVU434
+ 1562 0020 0398     		ldr	r0, [sp, #12]
+ 1563 0022 FFF7FEFF 		bl	__aeabi_i2f
+ 1564              	.LVL136:
+ 342:Core/Src/BMP280.c ****         *temperature = (float)fixed_temperature / 100;
+ 1565              		.loc 1 342 49 view .LVU435
+ 1566 0026 0B49     		ldr	r1, .L84
+ 1567 0028 FFF7FEFF 		bl	__aeabi_fdiv
+ 1568              	.LVL137:
+ 342:Core/Src/BMP280.c ****         *temperature = (float)fixed_temperature / 100;
+ 1569              		.loc 1 342 22 view .LVU436
+ 1570 002c 3060     		str	r0, [r6]	@ float
+ 343:Core/Src/BMP280.c ****         *pressure = (float)fixed_pressure / 256;
+ 1571              		.loc 1 343 9 is_stmt 1 view .LVU437
+ 343:Core/Src/BMP280.c ****         *pressure = (float)fixed_pressure / 256;
+ 1572              		.loc 1 343 21 is_stmt 0 view .LVU438
+ 1573 002e 0298     		ldr	r0, [sp, #8]
+ 1574 0030 FFF7FEFF 		bl	__aeabi_ui2f
+ 1575              	.LVL138:
+ 343:Core/Src/BMP280.c ****         *pressure = (float)fixed_pressure / 256;
+ 1576              		.loc 1 343 43 view .LVU439
+ 1577 0034 4FF06E51 		mov	r1, #998244352
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 39
+
+
+ 1578 0038 FFF7FEFF 		bl	__aeabi_fmul
+ 1579              	.LVL139:
+ 343:Core/Src/BMP280.c ****         *pressure = (float)fixed_pressure / 256;
+ 1580              		.loc 1 343 19 view .LVU440
+ 1581 003c 2860     		str	r0, [r5]	@ float
+ 344:Core/Src/BMP280.c ****         if (humidity)
+ 1582              		.loc 1 344 9 is_stmt 1 view .LVU441
+ 344:Core/Src/BMP280.c ****         if (humidity)
+ 1583              		.loc 1 344 12 is_stmt 0 view .LVU442
+ 1584 003e 002F     		cmp	r7, #0
+ 1585 0040 EBD0     		beq	.L79
+ 345:Core/Src/BMP280.c ****             *humidity = (float)fixed_humidity / 1024;
+ 1586              		.loc 1 345 13 is_stmt 1 view .LVU443
+ 345:Core/Src/BMP280.c ****             *humidity = (float)fixed_humidity / 1024;
+ 1587              		.loc 1 345 25 is_stmt 0 view .LVU444
+ 1588 0042 0198     		ldr	r0, [sp, #4]
+ 1589 0044 FFF7FEFF 		bl	__aeabi_ui2f
+ 1590              	.LVL140:
+ 345:Core/Src/BMP280.c ****             *humidity = (float)fixed_humidity / 1024;
+ 1591              		.loc 1 345 47 view .LVU445
+ 1592 0048 4FF06A51 		mov	r1, #981467136
+ 1593 004c FFF7FEFF 		bl	__aeabi_fmul
+ 1594              	.LVL141:
+ 345:Core/Src/BMP280.c ****             *humidity = (float)fixed_humidity / 1024;
+ 1595              		.loc 1 345 23 view .LVU446
+ 1596 0050 3860     		str	r0, [r7]	@ float
+ 346:Core/Src/BMP280.c ****         return true;
+ 1597              		.loc 1 346 9 is_stmt 1 view .LVU447
+ 346:Core/Src/BMP280.c ****         return true;
+ 1598              		.loc 1 346 16 is_stmt 0 view .LVU448
+ 1599 0052 E2E7     		b	.L79
+ 1600              	.L85:
+ 1601              		.align	2
+ 1602              	.L84:
+ 1603 0054 0000C842 		.word	1120403456
+ 1604              		.cfi_endproc
+ 1605              	.LFE78:
+ 1607              		.text
+ 1608              	.Letext0:
+ 1609              		.file 2 "C:/Users/Dell/Downloads/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi/arm-none
+ 1610              		.file 3 "C:/Users/Dell/Downloads/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi/arm-none
+ 1611              		.file 4 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 1612              		.file 5 "C:/Users/Dell/Downloads/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi/lib/gcc/
+ 1613              		.file 6 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 1614              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 1615              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+ 1616              		.file 9 "Core/Inc/bmp280.h"
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s 			page 40
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 BMP280.c
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:19     .text.compensate_temperature:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:24     .text.compensate_temperature:00000000 compensate_temperature
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:84     .text.compensate_pressure:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:89     .text.compensate_pressure:00000000 compensate_pressure
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:328    .text.compensate_humidity:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:333    .text.compensate_humidity:00000000 compensate_humidity
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:428    .text.read_data:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:433    .text.read_data:00000000 read_data
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:490    .text.read_register16:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:495    .text.read_register16:00000000 read_register16
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:572    .text.read_calibration_data:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:577    .text.read_calibration_data:00000000 read_calibration_data
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:705    .text.read_hum_calibration_data:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:710    .text.read_hum_calibration_data:00000000 read_hum_calibration_data
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:832    .text.write_register8:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:837    .text.write_register8:00000000 write_register8
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:895    .text.bmp280_init_default_params:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:901    .text.bmp280_init_default_params:00000000 bmp280_init_default_params
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:935    .text.bmp280_init:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:941    .text.bmp280_init:00000000 bmp280_init
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:1179   .text.bmp280_force_measurement:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:1185   .text.bmp280_force_measurement:00000000 bmp280_force_measurement
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:1254   .text.bmp280_is_measuring:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:1260   .text.bmp280_is_measuring:00000000 bmp280_is_measuring
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:1313   .text.bmp280_read_fixed:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:1319   .text.bmp280_read_fixed:00000000 bmp280_read_fixed
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:1497   .text.bmp280_read_float:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:1503   .text.bmp280_read_float:00000000 bmp280_read_float
+C:\Users\Dell\AppData\Local\Temp\ccJMFhuI.s:1603   .text.bmp280_read_float:00000054 $d
+
+UNDEFINED SYMBOLS
+__aeabi_ldivmod
+HAL_I2C_Mem_Read
+HAL_I2C_Mem_Write
+__aeabi_i2f
+__aeabi_fdiv
+__aeabi_ui2f
+__aeabi_fmul
