@@ -1,0 +1,1177 @@
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"SHT.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Core/Src/SHT.c"
+  18              		.section	.text.SHT31_Config,"ax",%progbits
+  19              		.align	1
+  20              		.global	SHT31_Config
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	SHT31_Config:
+  26              	.LVL0:
+  27              	.LFB65:
+   1:Core/Src/SHT.c **** 
+   2:Core/Src/SHT.c **** #include "SHT.h"
+   3:Core/Src/SHT.c **** 
+   4:Core/Src/SHT.c **** // Định nghĩa biến sht31
+   5:Core/Src/SHT.c **** struct SHT31_INFO sht31;
+   6:Core/Src/SHT.c **** 
+   7:Core/Src/SHT.c **** uint16_t MeasureSingleShotCMD[2][3] = {
+   8:Core/Src/SHT.c ****     {SHT31_MEASUREMENT_STRETCH_HIGH, SHT31_MEASUREMENT_STRETCH_MEDIUM, SHT31_MEASUREMENT_STRETCH_LO
+   9:Core/Src/SHT.c ****     {SHT31_MEASUREMENT_NOSTRETCH_HIGH, SHT31_MEASUREMENT_NOSTRETCH_MEDIUM, SHT31_MEASUREMENT_NOSTRE
+  10:Core/Src/SHT.c **** uint16_t MeasurePeriodicCMD[5][3] = {
+  11:Core/Src/SHT.c ****     {SHT31_MEASUREMENT_PERIODIC_05_HIGH, SHT31_MEASUREMENT_PERIODIC_05_MEDIUM, SHT31_MEASUREMENT_PE
+  12:Core/Src/SHT.c ****     {SHT31_MEASUREMENT_PERIODIC_1_HIGH, SHT31_MEASUREMENT_PERIODIC_1_MEDIUM, SHT31_MEASUREMENT_PERI
+  13:Core/Src/SHT.c ****     {SHT31_MEASUREMENT_PERIODIC_2_HIGH, SHT31_MEASUREMENT_PERIODIC_2_MEDIUM, SHT31_MEASUREMENT_PERI
+  14:Core/Src/SHT.c ****     {SHT31_MEASUREMENT_PERIODIC_4_HIGH, SHT31_MEASUREMENT_PERIODIC_4_MEDIUM, SHT31_MEASUREMENT_PERI
+  15:Core/Src/SHT.c ****     {SHT31_MEASUREMENT_PERIODIC_10_HIGH, SHT31_MEASUREMENT_PERIODIC_10_MEDIUM, SHT31_MEASUREMENT_PE
+  16:Core/Src/SHT.c **** uint16_t MilsPerMeasure[5] = {2005, 1005, 505, 255, 105}; // table 9 page 11 in column mps, + 5ms f
+  17:Core/Src/SHT.c **** //                           0.5     1    2    4   10
+  18:Core/Src/SHT.c **** uint8_t MeasureTime[3] = {13, 5, 3}; // table 4 page 7
+  19:Core/Src/SHT.c **** 
+  20:Core/Src/SHT.c **** void SHT31_Config(uint8_t address, I2C_HandleTypeDef *hi2c)
+  21:Core/Src/SHT.c **** {
+  28              		.loc 1 21 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 21 1 is_stmt 0 view .LVU1
+  33 0000 38B5     		push	{r3, r4, r5, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 16
+  36              		.cfi_offset 3, -16
+  37              		.cfi_offset 4, -12
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 2
+
+
+  38              		.cfi_offset 5, -8
+  39              		.cfi_offset 14, -4
+  22:Core/Src/SHT.c ****     sht31.address = address;
+  40              		.loc 1 22 5 is_stmt 1 view .LVU2
+  41              		.loc 1 22 19 is_stmt 0 view .LVU3
+  42 0002 054C     		ldr	r4, .L3
+  43 0004 2070     		strb	r0, [r4]
+  23:Core/Src/SHT.c ****     sht31.hi2c = hi2c;
+  44              		.loc 1 23 5 is_stmt 1 view .LVU4
+  45              		.loc 1 23 16 is_stmt 0 view .LVU5
+  46 0006 6160     		str	r1, [r4, #4]
+  24:Core/Src/SHT.c **** 
+  25:Core/Src/SHT.c ****     sht31.mode = SHT31_SingleShot;
+  47              		.loc 1 25 5 is_stmt 1 view .LVU6
+  48              		.loc 1 25 16 is_stmt 0 view .LVU7
+  49 0008 0025     		movs	r5, #0
+  50 000a 2572     		strb	r5, [r4, #8]
+  26:Core/Src/SHT.c ****     sht31.isCurrentlyPeriodic = 0;
+  51              		.loc 1 26 5 is_stmt 1 view .LVU8
+  52              		.loc 1 26 31 is_stmt 0 view .LVU9
+  53 000c E560     		str	r5, [r4, #12]
+  27:Core/Src/SHT.c **** 
+  28:Core/Src/SHT.c ****     sht31.lastMeasureTime = HAL_GetTick();
+  54              		.loc 1 28 5 is_stmt 1 view .LVU10
+  55              		.loc 1 28 29 is_stmt 0 view .LVU11
+  56 000e FFF7FEFF 		bl	HAL_GetTick
+  57              	.LVL1:
+  58              		.loc 1 28 27 discriminator 1 view .LVU12
+  59 0012 2061     		str	r0, [r4, #16]
+  60 0014 6561     		str	r5, [r4, #20]
+  29:Core/Src/SHT.c **** }
+  61              		.loc 1 29 1 view .LVU13
+  62 0016 38BD     		pop	{r3, r4, r5, pc}
+  63              	.L4:
+  64              		.align	2
+  65              	.L3:
+  66 0018 00000000 		.word	sht31
+  67              		.cfi_endproc
+  68              	.LFE65:
+  70              		.section	.text.SHT31_SendCommand,"ax",%progbits
+  71              		.align	1
+  72              		.global	SHT31_SendCommand
+  73              		.syntax unified
+  74              		.thumb
+  75              		.thumb_func
+  77              	SHT31_SendCommand:
+  78              	.LVL2:
+  79              	.LFB66:
+  30:Core/Src/SHT.c **** 
+  31:Core/Src/SHT.c **** SHT31_Status SHT31_SendCommand(uint16_t command)
+  32:Core/Src/SHT.c **** {
+  80              		.loc 1 32 1 is_stmt 1 view -0
+  81              		.cfi_startproc
+  82              		@ args = 0, pretend = 0, frame = 8
+  83              		@ frame_needed = 0, uses_anonymous_args = 0
+  84              		.loc 1 32 1 is_stmt 0 view .LVU15
+  85 0000 00B5     		push	{lr}
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 3
+
+
+  86              	.LCFI1:
+  87              		.cfi_def_cfa_offset 4
+  88              		.cfi_offset 14, -4
+  89 0002 85B0     		sub	sp, sp, #20
+  90              	.LCFI2:
+  91              		.cfi_def_cfa_offset 24
+  33:Core/Src/SHT.c ****     uint8_t buffer[2] = {command >> 8, command & (0xFF)};
+  92              		.loc 1 33 5 is_stmt 1 view .LVU16
+  93              		.loc 1 33 13 is_stmt 0 view .LVU17
+  94 0004 030A     		lsrs	r3, r0, #8
+  95 0006 8DF80C30 		strb	r3, [sp, #12]
+  96 000a 8DF80D00 		strb	r0, [sp, #13]
+  34:Core/Src/SHT.c ****     HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(sht31.hi2c, sht31.address << 1, buffer, 2, HAL_
+  97              		.loc 1 34 5 is_stmt 1 view .LVU18
+  98              		.loc 1 34 70 is_stmt 0 view .LVU19
+  99 000e 0848     		ldr	r0, .L8
+ 100              	.LVL3:
+ 101              		.loc 1 34 70 view .LVU20
+ 102 0010 0178     		ldrb	r1, [r0]	@ zero_extendqisi2
+ 103              		.loc 1 34 29 view .LVU21
+ 104 0012 4FF0FF33 		mov	r3, #-1
+ 105 0016 0093     		str	r3, [sp]
+ 106 0018 0223     		movs	r3, #2
+ 107 001a 03AA     		add	r2, sp, #12
+ 108 001c 4900     		lsls	r1, r1, #1
+ 109 001e 4068     		ldr	r0, [r0, #4]
+ 110 0020 FFF7FEFF 		bl	HAL_I2C_Master_Transmit
+ 111              	.LVL4:
+  35:Core/Src/SHT.c ****     if (ret == HAL_OK)
+ 112              		.loc 1 35 5 is_stmt 1 view .LVU22
+ 113              		.loc 1 35 8 is_stmt 0 view .LVU23
+ 114 0024 00B1     		cbz	r0, .L6
+  36:Core/Src/SHT.c ****     {
+  37:Core/Src/SHT.c ****         return SHT31_OK;
+  38:Core/Src/SHT.c ****     }
+  39:Core/Src/SHT.c ****     return SHT31_Transmit_Error;
+ 115              		.loc 1 39 12 view .LVU24
+ 116 0026 0420     		movs	r0, #4
+ 117              	.L6:
+  40:Core/Src/SHT.c **** }
+ 118              		.loc 1 40 1 view .LVU25
+ 119 0028 05B0     		add	sp, sp, #20
+ 120              	.LCFI3:
+ 121              		.cfi_def_cfa_offset 4
+ 122              		@ sp needed
+ 123 002a 5DF804FB 		ldr	pc, [sp], #4
+ 124              	.L9:
+ 125 002e 00BF     		.align	2
+ 126              	.L8:
+ 127 0030 00000000 		.word	sht31
+ 128              		.cfi_endproc
+ 129              	.LFE66:
+ 131              		.section	.text.SHT31_GetBytes,"ax",%progbits
+ 132              		.align	1
+ 133              		.global	SHT31_GetBytes
+ 134              		.syntax unified
+ 135              		.thumb
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 4
+
+
+ 136              		.thumb_func
+ 138              	SHT31_GetBytes:
+ 139              	.LVL5:
+ 140              	.LFB67:
+  41:Core/Src/SHT.c **** 
+  42:Core/Src/SHT.c **** SHT31_Status SHT31_GetBytes(uint8_t *buffer, int num)
+  43:Core/Src/SHT.c **** {
+ 141              		.loc 1 43 1 is_stmt 1 view -0
+ 142              		.cfi_startproc
+ 143              		@ args = 0, pretend = 0, frame = 0
+ 144              		@ frame_needed = 0, uses_anonymous_args = 0
+ 145              		.loc 1 43 1 is_stmt 0 view .LVU27
+ 146 0000 10B5     		push	{r4, lr}
+ 147              	.LCFI4:
+ 148              		.cfi_def_cfa_offset 8
+ 149              		.cfi_offset 4, -8
+ 150              		.cfi_offset 14, -4
+ 151 0002 82B0     		sub	sp, sp, #8
+ 152              	.LCFI5:
+ 153              		.cfi_def_cfa_offset 16
+ 154 0004 0246     		mov	r2, r0
+  44:Core/Src/SHT.c ****     HAL_StatusTypeDef ret = HAL_I2C_Master_Receive(sht31.hi2c, sht31.address << 1, buffer, num, HAL
+ 155              		.loc 1 44 5 is_stmt 1 view .LVU28
+ 156              		.loc 1 44 69 is_stmt 0 view .LVU29
+ 157 0006 084C     		ldr	r4, .L13
+ 158 0008 94F800C0 		ldrb	ip, [r4]	@ zero_extendqisi2
+ 159              		.loc 1 44 29 view .LVU30
+ 160 000c 4FF0FF33 		mov	r3, #-1
+ 161 0010 0093     		str	r3, [sp]
+ 162 0012 8BB2     		uxth	r3, r1
+ 163 0014 4FEA4C01 		lsl	r1, ip, #1
+ 164              	.LVL6:
+ 165              		.loc 1 44 29 view .LVU31
+ 166 0018 6068     		ldr	r0, [r4, #4]
+ 167              	.LVL7:
+ 168              		.loc 1 44 29 view .LVU32
+ 169 001a FFF7FEFF 		bl	HAL_I2C_Master_Receive
+ 170              	.LVL8:
+  45:Core/Src/SHT.c ****     if (ret == HAL_OK)
+ 171              		.loc 1 45 5 is_stmt 1 view .LVU33
+ 172              		.loc 1 45 8 is_stmt 0 view .LVU34
+ 173 001e 00B1     		cbz	r0, .L11
+  46:Core/Src/SHT.c ****     {
+  47:Core/Src/SHT.c ****         return SHT31_OK;
+  48:Core/Src/SHT.c ****     }
+  49:Core/Src/SHT.c ****     return SHT31_Transmit_Error;
+ 174              		.loc 1 49 12 view .LVU35
+ 175 0020 0420     		movs	r0, #4
+ 176              	.L11:
+  50:Core/Src/SHT.c **** }
+ 177              		.loc 1 50 1 view .LVU36
+ 178 0022 02B0     		add	sp, sp, #8
+ 179              	.LCFI6:
+ 180              		.cfi_def_cfa_offset 8
+ 181              		@ sp needed
+ 182 0024 10BD     		pop	{r4, pc}
+ 183              	.L14:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 5
+
+
+ 184 0026 00BF     		.align	2
+ 185              	.L13:
+ 186 0028 00000000 		.word	sht31
+ 187              		.cfi_endproc
+ 188              	.LFE67:
+ 190              		.section	.text.SHT31_GetCommand,"ax",%progbits
+ 191              		.align	1
+ 192              		.global	SHT31_GetCommand
+ 193              		.syntax unified
+ 194              		.thumb
+ 195              		.thumb_func
+ 197              	SHT31_GetCommand:
+ 198              	.LVL9:
+ 199              	.LFB69:
+  51:Core/Src/SHT.c **** 
+  52:Core/Src/SHT.c **** SHT31_Status SHT31_GetData(Mode mode, Repeatability rep, ClockStretch stretch, MPS mps)
+  53:Core/Src/SHT.c **** {
+  54:Core/Src/SHT.c ****     uint16_t command = SHT31_GetCommand(mode, rep, stretch, mps);
+  55:Core/Src/SHT.c **** 
+  56:Core/Src/SHT.c ****     SHT31_Status ret;
+  57:Core/Src/SHT.c **** 
+  58:Core/Src/SHT.c ****     if (sht31.mode == SHT31_SingleShot)
+  59:Core/Src/SHT.c ****     {
+  60:Core/Src/SHT.c **** 
+  61:Core/Src/SHT.c ****         ret = SHT31_SendCommand(command);
+  62:Core/Src/SHT.c ****         if (ret != SHT31_OK)
+  63:Core/Src/SHT.c ****         {
+  64:Core/Src/SHT.c ****             return SHT31_Transmit_Error;
+  65:Core/Src/SHT.c ****         }
+  66:Core/Src/SHT.c ****     }
+  67:Core/Src/SHT.c ****     else if (sht31.mode == SHT31_Periodic)
+  68:Core/Src/SHT.c ****     {
+  69:Core/Src/SHT.c ****         if (HAL_GetTick() - sht31.lastMeasureTime > MilsPerMeasure[mps])
+  70:Core/Src/SHT.c ****         { // must wait for enough time before read in Periodic mode
+  71:Core/Src/SHT.c ****             sht31.lastMeasureTime = HAL_GetTick();
+  72:Core/Src/SHT.c **** 
+  73:Core/Src/SHT.c ****             if (sht31.isCurrentlyPeriodic == 0)
+  74:Core/Src/SHT.c ****             { // Just the first period in Periodic mode need to send command
+  75:Core/Src/SHT.c **** 
+  76:Core/Src/SHT.c ****                 ret = SHT31_SendCommand(command);
+  77:Core/Src/SHT.c ****                 if (ret != SHT31_OK)
+  78:Core/Src/SHT.c ****                 {
+  79:Core/Src/SHT.c ****                     return SHT31_Transmit_Error;
+  80:Core/Src/SHT.c ****                 }
+  81:Core/Src/SHT.c **** 
+  82:Core/Src/SHT.c ****                 sht31.isCurrentlyPeriodic = 1;
+  83:Core/Src/SHT.c ****             }
+  84:Core/Src/SHT.c ****         }
+  85:Core/Src/SHT.c ****         else
+  86:Core/Src/SHT.c ****         {
+  87:Core/Src/SHT.c ****             return SHT31_Not_Ready;
+  88:Core/Src/SHT.c ****         }
+  89:Core/Src/SHT.c ****     }
+  90:Core/Src/SHT.c **** 
+  91:Core/Src/SHT.c ****     HAL_Delay(MeasureTime[rep]); // measure duration in table 4 page 7
+  92:Core/Src/SHT.c ****     uint8_t buffer[6];
+  93:Core/Src/SHT.c ****     SHT31_GetBytes(buffer, 6);
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 6
+
+
+  94:Core/Src/SHT.c **** 
+  95:Core/Src/SHT.c ****     if (buffer[2] != SHT31_CRC_8(&buffer[0], 2))
+  96:Core/Src/SHT.c ****     {
+  97:Core/Src/SHT.c ****         ret = SHT31_Data_Error;
+  98:Core/Src/SHT.c ****     }
+  99:Core/Src/SHT.c ****     else
+ 100:Core/Src/SHT.c ****     {
+ 101:Core/Src/SHT.c ****         sht31.temperature_raw = (buffer[0] << 8) + buffer[1];
+ 102:Core/Src/SHT.c ****         ret = SHT31_OK;
+ 103:Core/Src/SHT.c ****     }
+ 104:Core/Src/SHT.c **** 
+ 105:Core/Src/SHT.c ****     if (buffer[5] != SHT31_CRC_8(&buffer[3], 2))
+ 106:Core/Src/SHT.c ****     {
+ 107:Core/Src/SHT.c ****         ret = SHT31_Data_Error;
+ 108:Core/Src/SHT.c ****     }
+ 109:Core/Src/SHT.c ****     else
+ 110:Core/Src/SHT.c ****     {
+ 111:Core/Src/SHT.c ****         sht31.humidity_raw = (buffer[3] << 8) + buffer[4];
+ 112:Core/Src/SHT.c ****         ret = SHT31_OK;
+ 113:Core/Src/SHT.c ****     }
+ 114:Core/Src/SHT.c ****     return ret;
+ 115:Core/Src/SHT.c **** }
+ 116:Core/Src/SHT.c **** 
+ 117:Core/Src/SHT.c **** uint16_t SHT31_GetCommand(Mode mode, Repeatability rep, ClockStretch stretch, MPS mps)
+ 118:Core/Src/SHT.c **** {
+ 200              		.loc 1 118 1 is_stmt 1 view -0
+ 201              		.cfi_startproc
+ 202              		@ args = 0, pretend = 0, frame = 0
+ 203              		@ frame_needed = 0, uses_anonymous_args = 0
+ 204              		@ link register save eliminated.
+ 119:Core/Src/SHT.c ****     if (mode == SHT31_SingleShot)
+ 205              		.loc 1 119 5 view .LVU38
+ 206              		.loc 1 119 8 is_stmt 0 view .LVU39
+ 207 0000 18B1     		cbz	r0, .L19
+ 120:Core/Src/SHT.c ****     {
+ 121:Core/Src/SHT.c ****         sht31.mode = SHT31_SingleShot;
+ 122:Core/Src/SHT.c ****         return MeasureSingleShotCMD[stretch][rep];
+ 123:Core/Src/SHT.c ****     }
+ 124:Core/Src/SHT.c ****     else if (mode == SHT31_Periodic)
+ 208              		.loc 1 124 10 is_stmt 1 view .LVU40
+ 209              		.loc 1 124 13 is_stmt 0 view .LVU41
+ 210 0002 0128     		cmp	r0, #1
+ 211 0004 0AD0     		beq	.L20
+ 125:Core/Src/SHT.c ****     {
+ 126:Core/Src/SHT.c ****         sht31.mode = SHT31_Periodic;
+ 127:Core/Src/SHT.c **** 
+ 128:Core/Src/SHT.c ****         return MeasurePeriodicCMD[mps][rep];
+ 129:Core/Src/SHT.c ****     }
+ 130:Core/Src/SHT.c ****     return 0x0;
+ 212              		.loc 1 130 12 view .LVU42
+ 213 0006 0020     		movs	r0, #0
+ 214              	.LVL10:
+ 131:Core/Src/SHT.c **** }
+ 215              		.loc 1 131 1 view .LVU43
+ 216 0008 7047     		bx	lr
+ 217              	.LVL11:
+ 218              	.L19:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 7
+
+
+ 121:Core/Src/SHT.c ****         return MeasureSingleShotCMD[stretch][rep];
+ 219              		.loc 1 121 9 is_stmt 1 view .LVU44
+ 121:Core/Src/SHT.c ****         return MeasureSingleShotCMD[stretch][rep];
+ 220              		.loc 1 121 20 is_stmt 0 view .LVU45
+ 221 000a 094B     		ldr	r3, .L21
+ 222              	.LVL12:
+ 121:Core/Src/SHT.c ****         return MeasureSingleShotCMD[stretch][rep];
+ 223              		.loc 1 121 20 view .LVU46
+ 224 000c 1872     		strb	r0, [r3, #8]
+ 122:Core/Src/SHT.c ****     }
+ 225              		.loc 1 122 9 is_stmt 1 view .LVU47
+ 122:Core/Src/SHT.c ****     }
+ 226              		.loc 1 122 45 is_stmt 0 view .LVU48
+ 227 000e 02EB4202 		add	r2, r2, r2, lsl #1
+ 228              	.LVL13:
+ 122:Core/Src/SHT.c ****     }
+ 229              		.loc 1 122 45 view .LVU49
+ 230 0012 1144     		add	r1, r1, r2
+ 231              	.LVL14:
+ 122:Core/Src/SHT.c ****     }
+ 232              		.loc 1 122 45 view .LVU50
+ 233 0014 074B     		ldr	r3, .L21+4
+ 234 0016 33F81100 		ldrh	r0, [r3, r1, lsl #1]
+ 235              	.LVL15:
+ 122:Core/Src/SHT.c ****     }
+ 236              		.loc 1 122 45 view .LVU51
+ 237 001a 7047     		bx	lr
+ 238              	.LVL16:
+ 239              	.L20:
+ 126:Core/Src/SHT.c **** 
+ 240              		.loc 1 126 9 is_stmt 1 view .LVU52
+ 126:Core/Src/SHT.c **** 
+ 241              		.loc 1 126 20 is_stmt 0 view .LVU53
+ 242 001c 044A     		ldr	r2, .L21
+ 243              	.LVL17:
+ 126:Core/Src/SHT.c **** 
+ 244              		.loc 1 126 20 view .LVU54
+ 245 001e 0120     		movs	r0, #1
+ 246              	.LVL18:
+ 126:Core/Src/SHT.c **** 
+ 247              		.loc 1 126 20 view .LVU55
+ 248 0020 1072     		strb	r0, [r2, #8]
+ 128:Core/Src/SHT.c ****     }
+ 249              		.loc 1 128 9 is_stmt 1 view .LVU56
+ 128:Core/Src/SHT.c ****     }
+ 250              		.loc 1 128 39 is_stmt 0 view .LVU57
+ 251 0022 03EB4303 		add	r3, r3, r3, lsl #1
+ 252              	.LVL19:
+ 128:Core/Src/SHT.c ****     }
+ 253              		.loc 1 128 39 view .LVU58
+ 254 0026 1944     		add	r1, r1, r3
+ 255              	.LVL20:
+ 128:Core/Src/SHT.c ****     }
+ 256              		.loc 1 128 39 view .LVU59
+ 257 0028 034B     		ldr	r3, .L21+8
+ 258 002a 33F81100 		ldrh	r0, [r3, r1, lsl #1]
+ 259 002e 7047     		bx	lr
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 8
+
+
+ 260              	.L22:
+ 261              		.align	2
+ 262              	.L21:
+ 263 0030 00000000 		.word	sht31
+ 264 0034 00000000 		.word	MeasureSingleShotCMD
+ 265 0038 00000000 		.word	MeasurePeriodicCMD
+ 266              		.cfi_endproc
+ 267              	.LFE69:
+ 269              		.section	.text.SHT31_CRC_8,"ax",%progbits
+ 270              		.align	1
+ 271              		.global	SHT31_CRC_8
+ 272              		.syntax unified
+ 273              		.thumb
+ 274              		.thumb_func
+ 276              	SHT31_CRC_8:
+ 277              	.LVL21:
+ 278              	.LFB70:
+ 132:Core/Src/SHT.c **** 
+ 133:Core/Src/SHT.c **** uint8_t SHT31_CRC_8(uint8_t *data, int len)
+ 134:Core/Src/SHT.c **** {
+ 279              		.loc 1 134 1 is_stmt 1 view -0
+ 280              		.cfi_startproc
+ 281              		@ args = 0, pretend = 0, frame = 0
+ 282              		@ frame_needed = 0, uses_anonymous_args = 0
+ 283              		@ link register save eliminated.
+ 284              		.loc 1 134 1 is_stmt 0 view .LVU61
+ 285 0000 10B4     		push	{r4}
+ 286              	.LCFI7:
+ 287              		.cfi_def_cfa_offset 4
+ 288              		.cfi_offset 4, -4
+ 289 0002 0346     		mov	r3, r0
+ 135:Core/Src/SHT.c ****     uint8_t crc = 0xFF;
+ 290              		.loc 1 135 5 is_stmt 1 view .LVU62
+ 291              	.LVL22:
+ 136:Core/Src/SHT.c ****     const uint8_t poly = 0x31;
+ 292              		.loc 1 136 5 view .LVU63
+ 137:Core/Src/SHT.c **** 
+ 138:Core/Src/SHT.c ****     for (uint8_t byte = len; byte; byte--)
+ 293              		.loc 1 138 5 view .LVU64
+ 294              	.LBB2:
+ 295              		.loc 1 138 10 view .LVU65
+ 296              		.loc 1 138 18 is_stmt 0 view .LVU66
+ 297 0004 CCB2     		uxtb	r4, r1
+ 298              	.LVL23:
+ 299              		.loc 1 138 18 view .LVU67
+ 300              	.LBE2:
+ 135:Core/Src/SHT.c ****     const uint8_t poly = 0x31;
+ 301              		.loc 1 135 13 view .LVU68
+ 302 0006 FF20     		movs	r0, #255
+ 303              	.LVL24:
+ 304              	.LBB5:
+ 305              		.loc 1 138 5 view .LVU69
+ 306 0008 0FE0     		b	.L24
+ 307              	.LVL25:
+ 308              	.L26:
+ 309              	.LBB3:
+ 139:Core/Src/SHT.c ****     {
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 9
+
+
+ 140:Core/Src/SHT.c ****         crc ^= *(data++);
+ 141:Core/Src/SHT.c ****         for (uint8_t i = 8; i; i--)
+ 142:Core/Src/SHT.c ****         {
+ 143:Core/Src/SHT.c ****             crc = (crc & 0x80) ? (crc << 1) ^ poly : (crc << 1);
+ 310              		.loc 1 143 17 discriminator 2 view .LVU70
+ 311 000a 4000     		lsls	r0, r0, #1
+ 312              	.LVL26:
+ 313              		.loc 1 143 17 discriminator 2 view .LVU71
+ 314 000c C0B2     		uxtb	r0, r0
+ 315              	.LVL27:
+ 316              	.L27:
+ 141:Core/Src/SHT.c ****         {
+ 317              		.loc 1 141 33 is_stmt 1 discriminator 2 view .LVU72
+ 318 000e 013B     		subs	r3, r3, #1
+ 319              	.LVL28:
+ 141:Core/Src/SHT.c ****         {
+ 320              		.loc 1 141 33 is_stmt 0 discriminator 2 view .LVU73
+ 321 0010 DBB2     		uxtb	r3, r3
+ 322              	.LVL29:
+ 323              	.L25:
+ 141:Core/Src/SHT.c ****         {
+ 324              		.loc 1 141 29 is_stmt 1 discriminator 1 view .LVU74
+ 325 0012 3BB1     		cbz	r3, .L31
+ 326              		.loc 1 143 13 view .LVU75
+ 327              		.loc 1 143 32 is_stmt 0 view .LVU76
+ 328 0014 42B2     		sxtb	r2, r0
+ 329              		.loc 1 143 17 view .LVU77
+ 330 0016 002A     		cmp	r2, #0
+ 331 0018 F7DA     		bge	.L26
+ 332              		.loc 1 143 45 discriminator 1 view .LVU78
+ 333 001a 5200     		lsls	r2, r2, #1
+ 334 001c 82F03102 		eor	r2, r2, #49
+ 335              		.loc 1 143 17 discriminator 1 view .LVU79
+ 336 0020 D0B2     		uxtb	r0, r2
+ 337              	.LVL30:
+ 338              		.loc 1 143 17 discriminator 1 view .LVU80
+ 339 0022 F4E7     		b	.L27
+ 340              	.LVL31:
+ 341              	.L31:
+ 342              		.loc 1 143 17 discriminator 1 view .LVU81
+ 343              	.LBE3:
+ 138:Core/Src/SHT.c ****     {
+ 344              		.loc 1 138 40 is_stmt 1 discriminator 2 view .LVU82
+ 345 0024 013C     		subs	r4, r4, #1
+ 346              	.LVL32:
+ 138:Core/Src/SHT.c ****     {
+ 347              		.loc 1 138 40 is_stmt 0 discriminator 2 view .LVU83
+ 348 0026 E4B2     		uxtb	r4, r4
+ 349              	.LVL33:
+ 140:Core/Src/SHT.c ****         for (uint8_t i = 8; i; i--)
+ 350              		.loc 1 140 22 view .LVU84
+ 351 0028 0B46     		mov	r3, r1
+ 352              	.LVL34:
+ 353              	.L24:
+ 138:Core/Src/SHT.c ****     {
+ 354              		.loc 1 138 30 is_stmt 1 discriminator 1 view .LVU85
+ 355 002a 2CB1     		cbz	r4, .L32
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 10
+
+
+ 140:Core/Src/SHT.c ****         for (uint8_t i = 8; i; i--)
+ 356              		.loc 1 140 9 view .LVU86
+ 140:Core/Src/SHT.c ****         for (uint8_t i = 8; i; i--)
+ 357              		.loc 1 140 22 is_stmt 0 view .LVU87
+ 358 002c 1946     		mov	r1, r3
+ 359              	.LVL35:
+ 140:Core/Src/SHT.c ****         for (uint8_t i = 8; i; i--)
+ 360              		.loc 1 140 16 view .LVU88
+ 361 002e 11F8013B 		ldrb	r3, [r1], #1	@ zero_extendqisi2
+ 362              	.LVL36:
+ 140:Core/Src/SHT.c ****         for (uint8_t i = 8; i; i--)
+ 363              		.loc 1 140 13 view .LVU89
+ 364 0032 5840     		eors	r0, r0, r3
+ 365              	.LVL37:
+ 141:Core/Src/SHT.c ****         {
+ 366              		.loc 1 141 9 is_stmt 1 view .LVU90
+ 367              	.LBB4:
+ 141:Core/Src/SHT.c ****         {
+ 368              		.loc 1 141 14 view .LVU91
+ 141:Core/Src/SHT.c ****         {
+ 369              		.loc 1 141 22 is_stmt 0 view .LVU92
+ 370 0034 0823     		movs	r3, #8
+ 141:Core/Src/SHT.c ****         {
+ 371              		.loc 1 141 9 view .LVU93
+ 372 0036 ECE7     		b	.L25
+ 373              	.LVL38:
+ 374              	.L32:
+ 141:Core/Src/SHT.c ****         {
+ 375              		.loc 1 141 9 view .LVU94
+ 376              	.LBE4:
+ 377              	.LBE5:
+ 144:Core/Src/SHT.c ****         }
+ 145:Core/Src/SHT.c ****     }
+ 146:Core/Src/SHT.c ****     return crc;
+ 378              		.loc 1 146 5 is_stmt 1 view .LVU95
+ 147:Core/Src/SHT.c **** }
+ 379              		.loc 1 147 1 is_stmt 0 view .LVU96
+ 380 0038 10BC     		pop	{r4}
+ 381              	.LCFI8:
+ 382              		.cfi_restore 4
+ 383              		.cfi_def_cfa_offset 0
+ 384              	.LVL39:
+ 385              		.loc 1 147 1 view .LVU97
+ 386 003a 7047     		bx	lr
+ 387              		.cfi_endproc
+ 388              	.LFE70:
+ 390              		.section	.text.SHT31_GetData,"ax",%progbits
+ 391              		.align	1
+ 392              		.global	SHT31_GetData
+ 393              		.syntax unified
+ 394              		.thumb
+ 395              		.thumb_func
+ 397              	SHT31_GetData:
+ 398              	.LVL40:
+ 399              	.LFB68:
+  53:Core/Src/SHT.c ****     uint16_t command = SHT31_GetCommand(mode, rep, stretch, mps);
+ 400              		.loc 1 53 1 is_stmt 1 view -0
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 11
+
+
+ 401              		.cfi_startproc
+ 402              		@ args = 0, pretend = 0, frame = 8
+ 403              		@ frame_needed = 0, uses_anonymous_args = 0
+  53:Core/Src/SHT.c ****     uint16_t command = SHT31_GetCommand(mode, rep, stretch, mps);
+ 404              		.loc 1 53 1 is_stmt 0 view .LVU99
+ 405 0000 70B5     		push	{r4, r5, r6, lr}
+ 406              	.LCFI9:
+ 407              		.cfi_def_cfa_offset 16
+ 408              		.cfi_offset 4, -16
+ 409              		.cfi_offset 5, -12
+ 410              		.cfi_offset 6, -8
+ 411              		.cfi_offset 14, -4
+ 412 0002 82B0     		sub	sp, sp, #8
+ 413              	.LCFI10:
+ 414              		.cfi_def_cfa_offset 24
+ 415 0004 0E46     		mov	r6, r1
+ 416 0006 1D46     		mov	r5, r3
+  54:Core/Src/SHT.c **** 
+ 417              		.loc 1 54 5 is_stmt 1 view .LVU100
+  54:Core/Src/SHT.c **** 
+ 418              		.loc 1 54 24 is_stmt 0 view .LVU101
+ 419 0008 FFF7FEFF 		bl	SHT31_GetCommand
+ 420              	.LVL41:
+  54:Core/Src/SHT.c **** 
+ 421              		.loc 1 54 24 view .LVU102
+ 422 000c 0446     		mov	r4, r0
+ 423              	.LVL42:
+  56:Core/Src/SHT.c **** 
+ 424              		.loc 1 56 5 is_stmt 1 view .LVU103
+  58:Core/Src/SHT.c ****     {
+ 425              		.loc 1 58 5 view .LVU104
+  58:Core/Src/SHT.c ****     {
+ 426              		.loc 1 58 14 is_stmt 0 view .LVU105
+ 427 000e 2F4A     		ldr	r2, .L47
+ 428 0010 127A     		ldrb	r2, [r2, #8]	@ zero_extendqisi2
+  58:Core/Src/SHT.c ****     {
+ 429              		.loc 1 58 8 view .LVU106
+ 430 0012 EAB1     		cbz	r2, .L43
+  67:Core/Src/SHT.c ****     {
+ 431              		.loc 1 67 10 is_stmt 1 view .LVU107
+  67:Core/Src/SHT.c ****     {
+ 432              		.loc 1 67 13 is_stmt 0 view .LVU108
+ 433 0014 012A     		cmp	r2, #1
+ 434 0016 21D0     		beq	.L44
+ 435              	.LVL43:
+ 436              	.L36:
+  91:Core/Src/SHT.c ****     uint8_t buffer[6];
+ 437              		.loc 1 91 5 is_stmt 1 view .LVU109
+ 438 0018 2D4B     		ldr	r3, .L47+4
+ 439 001a 985D     		ldrb	r0, [r3, r6]	@ zero_extendqisi2
+ 440 001c FFF7FEFF 		bl	HAL_Delay
+ 441              	.LVL44:
+  92:Core/Src/SHT.c ****     SHT31_GetBytes(buffer, 6);
+ 442              		.loc 1 92 5 view .LVU110
+  93:Core/Src/SHT.c **** 
+ 443              		.loc 1 93 5 view .LVU111
+ 444 0020 0621     		movs	r1, #6
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 12
+
+
+ 445 0022 6846     		mov	r0, sp
+ 446 0024 FFF7FEFF 		bl	SHT31_GetBytes
+ 447              	.LVL45:
+  95:Core/Src/SHT.c ****     {
+ 448              		.loc 1 95 5 view .LVU112
+  95:Core/Src/SHT.c ****     {
+ 449              		.loc 1 95 15 is_stmt 0 view .LVU113
+ 450 0028 9DF80240 		ldrb	r4, [sp, #2]	@ zero_extendqisi2
+  95:Core/Src/SHT.c ****     {
+ 451              		.loc 1 95 22 view .LVU114
+ 452 002c 0221     		movs	r1, #2
+ 453 002e 6846     		mov	r0, sp
+ 454 0030 FFF7FEFF 		bl	SHT31_CRC_8
+ 455              	.LVL46:
+  95:Core/Src/SHT.c ****     {
+ 456              		.loc 1 95 8 discriminator 1 view .LVU115
+ 457 0034 8442     		cmp	r4, r0
+ 458 0036 32D0     		beq	.L45
+ 459              	.L37:
+ 105:Core/Src/SHT.c ****     {
+ 460              		.loc 1 105 5 is_stmt 1 view .LVU116
+ 105:Core/Src/SHT.c ****     {
+ 461              		.loc 1 105 15 is_stmt 0 view .LVU117
+ 462 0038 9DF80540 		ldrb	r4, [sp, #5]	@ zero_extendqisi2
+ 105:Core/Src/SHT.c ****     {
+ 463              		.loc 1 105 22 view .LVU118
+ 464 003c 0221     		movs	r1, #2
+ 465 003e 0DF10300 		add	r0, sp, #3
+ 466 0042 FFF7FEFF 		bl	SHT31_CRC_8
+ 467              	.LVL47:
+ 105:Core/Src/SHT.c ****     {
+ 468              		.loc 1 105 8 discriminator 1 view .LVU119
+ 469 0046 8442     		cmp	r4, r0
+ 470 0048 32D0     		beq	.L46
+ 107:Core/Src/SHT.c ****     }
+ 471              		.loc 1 107 13 view .LVU120
+ 472 004a 0120     		movs	r0, #1
+ 473              	.L35:
+ 115:Core/Src/SHT.c **** 
+ 474              		.loc 1 115 1 view .LVU121
+ 475 004c 02B0     		add	sp, sp, #8
+ 476              	.LCFI11:
+ 477              		.cfi_remember_state
+ 478              		.cfi_def_cfa_offset 16
+ 479              		@ sp needed
+ 480 004e 70BD     		pop	{r4, r5, r6, pc}
+ 481              	.LVL48:
+ 482              	.L43:
+ 483              	.LCFI12:
+ 484              		.cfi_restore_state
+  61:Core/Src/SHT.c ****         if (ret != SHT31_OK)
+ 485              		.loc 1 61 9 is_stmt 1 view .LVU122
+  61:Core/Src/SHT.c ****         if (ret != SHT31_OK)
+ 486              		.loc 1 61 15 is_stmt 0 view .LVU123
+ 487 0050 FFF7FEFF 		bl	SHT31_SendCommand
+ 488              	.LVL49:
+  62:Core/Src/SHT.c ****         {
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 13
+
+
+ 489              		.loc 1 62 9 is_stmt 1 view .LVU124
+  62:Core/Src/SHT.c ****         {
+ 490              		.loc 1 62 12 is_stmt 0 view .LVU125
+ 491 0054 0028     		cmp	r0, #0
+ 492 0056 DFD0     		beq	.L36
+  64:Core/Src/SHT.c ****         }
+ 493              		.loc 1 64 20 view .LVU126
+ 494 0058 0420     		movs	r0, #4
+ 495              	.LVL50:
+  64:Core/Src/SHT.c ****         }
+ 496              		.loc 1 64 20 view .LVU127
+ 497 005a F7E7     		b	.L35
+ 498              	.LVL51:
+ 499              	.L44:
+  69:Core/Src/SHT.c ****         { // must wait for enough time before read in Periodic mode
+ 500              		.loc 1 69 9 is_stmt 1 view .LVU128
+  69:Core/Src/SHT.c ****         { // must wait for enough time before read in Periodic mode
+ 501              		.loc 1 69 13 is_stmt 0 view .LVU129
+ 502 005c FFF7FEFF 		bl	HAL_GetTick
+ 503              	.LVL52:
+  69:Core/Src/SHT.c ****         { // must wait for enough time before read in Periodic mode
+ 504              		.loc 1 69 34 discriminator 1 view .LVU130
+ 505 0060 1A4B     		ldr	r3, .L47
+ 506 0062 1A69     		ldr	r2, [r3, #16]
+ 507 0064 5B69     		ldr	r3, [r3, #20]
+  69:Core/Src/SHT.c ****         { // must wait for enough time before read in Periodic mode
+ 508              		.loc 1 69 27 discriminator 1 view .LVU131
+ 509 0066 801A     		subs	r0, r0, r2
+ 510 0068 63EB4303 		sbc	r3, r3, r3, lsl #1
+  69:Core/Src/SHT.c ****         { // must wait for enough time before read in Periodic mode
+ 511              		.loc 1 69 67 discriminator 1 view .LVU132
+ 512 006c 194A     		ldr	r2, .L47+8
+ 513 006e 32F81520 		ldrh	r2, [r2, r5, lsl #1]
+  69:Core/Src/SHT.c ****         { // must wait for enough time before read in Periodic mode
+ 514              		.loc 1 69 12 discriminator 1 view .LVU133
+ 515 0072 8242     		cmp	r2, r0
+ 516 0074 4FF00002 		mov	r2, #0
+ 517 0078 9A41     		sbcs	r2, r2, r3
+ 518 007a 23DA     		bge	.L39
+  71:Core/Src/SHT.c **** 
+ 519              		.loc 1 71 13 is_stmt 1 view .LVU134
+  71:Core/Src/SHT.c **** 
+ 520              		.loc 1 71 37 is_stmt 0 view .LVU135
+ 521 007c FFF7FEFF 		bl	HAL_GetTick
+ 522              	.LVL53:
+  71:Core/Src/SHT.c **** 
+ 523              		.loc 1 71 35 discriminator 1 view .LVU136
+ 524 0080 124B     		ldr	r3, .L47
+ 525 0082 1861     		str	r0, [r3, #16]
+ 526 0084 0022     		movs	r2, #0
+ 527 0086 5A61     		str	r2, [r3, #20]
+  73:Core/Src/SHT.c ****             { // Just the first period in Periodic mode need to send command
+ 528              		.loc 1 73 13 is_stmt 1 view .LVU137
+  73:Core/Src/SHT.c ****             { // Just the first period in Periodic mode need to send command
+ 529              		.loc 1 73 22 is_stmt 0 view .LVU138
+ 530 0088 DB68     		ldr	r3, [r3, #12]
+  73:Core/Src/SHT.c ****             { // Just the first period in Periodic mode need to send command
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 14
+
+
+ 531              		.loc 1 73 16 view .LVU139
+ 532 008a 002B     		cmp	r3, #0
+ 533 008c C4D1     		bne	.L36
+  76:Core/Src/SHT.c ****                 if (ret != SHT31_OK)
+ 534              		.loc 1 76 17 is_stmt 1 view .LVU140
+  76:Core/Src/SHT.c ****                 if (ret != SHT31_OK)
+ 535              		.loc 1 76 23 is_stmt 0 view .LVU141
+ 536 008e 2046     		mov	r0, r4
+ 537 0090 FFF7FEFF 		bl	SHT31_SendCommand
+ 538              	.LVL54:
+  77:Core/Src/SHT.c ****                 {
+ 539              		.loc 1 77 17 is_stmt 1 view .LVU142
+  77:Core/Src/SHT.c ****                 {
+ 540              		.loc 1 77 20 is_stmt 0 view .LVU143
+ 541 0094 C0B9     		cbnz	r0, .L40
+  82:Core/Src/SHT.c ****             }
+ 542              		.loc 1 82 17 is_stmt 1 view .LVU144
+  82:Core/Src/SHT.c ****             }
+ 543              		.loc 1 82 43 is_stmt 0 view .LVU145
+ 544 0096 0D4B     		ldr	r3, .L47
+ 545 0098 0122     		movs	r2, #1
+ 546 009a DA60     		str	r2, [r3, #12]
+ 547 009c BCE7     		b	.L36
+ 548              	.LVL55:
+ 549              	.L45:
+ 101:Core/Src/SHT.c ****         ret = SHT31_OK;
+ 550              		.loc 1 101 9 is_stmt 1 view .LVU146
+ 101:Core/Src/SHT.c ****         ret = SHT31_OK;
+ 551              		.loc 1 101 40 is_stmt 0 view .LVU147
+ 552 009e 9DF80020 		ldrb	r2, [sp]	@ zero_extendqisi2
+ 101:Core/Src/SHT.c ****         ret = SHT31_OK;
+ 553              		.loc 1 101 58 view .LVU148
+ 554 00a2 9DF80130 		ldrb	r3, [sp, #1]	@ zero_extendqisi2
+ 101:Core/Src/SHT.c ****         ret = SHT31_OK;
+ 555              		.loc 1 101 50 view .LVU149
+ 556 00a6 03EB0223 		add	r3, r3, r2, lsl #8
+ 101:Core/Src/SHT.c ****         ret = SHT31_OK;
+ 557              		.loc 1 101 31 view .LVU150
+ 558 00aa 084A     		ldr	r2, .L47
+ 559 00ac 1383     		strh	r3, [r2, #24]	@ movhi
+ 102:Core/Src/SHT.c ****     }
+ 560              		.loc 1 102 9 is_stmt 1 view .LVU151
+ 561              	.LVL56:
+ 102:Core/Src/SHT.c ****     }
+ 562              		.loc 1 102 9 is_stmt 0 view .LVU152
+ 563 00ae C3E7     		b	.L37
+ 564              	.LVL57:
+ 565              	.L46:
+ 111:Core/Src/SHT.c ****         ret = SHT31_OK;
+ 566              		.loc 1 111 9 is_stmt 1 view .LVU153
+ 111:Core/Src/SHT.c ****         ret = SHT31_OK;
+ 567              		.loc 1 111 37 is_stmt 0 view .LVU154
+ 568 00b0 9DF80320 		ldrb	r2, [sp, #3]	@ zero_extendqisi2
+ 111:Core/Src/SHT.c ****         ret = SHT31_OK;
+ 569              		.loc 1 111 55 view .LVU155
+ 570 00b4 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 111:Core/Src/SHT.c ****         ret = SHT31_OK;
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 15
+
+
+ 571              		.loc 1 111 47 view .LVU156
+ 572 00b8 03EB0223 		add	r3, r3, r2, lsl #8
+ 111:Core/Src/SHT.c ****         ret = SHT31_OK;
+ 573              		.loc 1 111 28 view .LVU157
+ 574 00bc 034A     		ldr	r2, .L47
+ 575 00be 5383     		strh	r3, [r2, #26]	@ movhi
+ 112:Core/Src/SHT.c ****     }
+ 576              		.loc 1 112 9 is_stmt 1 view .LVU158
+ 577              	.LVL58:
+ 112:Core/Src/SHT.c ****     }
+ 578              		.loc 1 112 13 is_stmt 0 view .LVU159
+ 579 00c0 0020     		movs	r0, #0
+ 580 00c2 C3E7     		b	.L35
+ 581              	.LVL59:
+ 582              	.L39:
+  87:Core/Src/SHT.c ****         }
+ 583              		.loc 1 87 20 view .LVU160
+ 584 00c4 0320     		movs	r0, #3
+ 585 00c6 C1E7     		b	.L35
+ 586              	.LVL60:
+ 587              	.L40:
+  79:Core/Src/SHT.c ****                 }
+ 588              		.loc 1 79 28 view .LVU161
+ 589 00c8 0420     		movs	r0, #4
+ 590              	.LVL61:
+  79:Core/Src/SHT.c ****                 }
+ 591              		.loc 1 79 28 view .LVU162
+ 592 00ca BFE7     		b	.L35
+ 593              	.L48:
+ 594              		.align	2
+ 595              	.L47:
+ 596 00cc 00000000 		.word	sht31
+ 597 00d0 00000000 		.word	MeasureTime
+ 598 00d4 00000000 		.word	MilsPerMeasure
+ 599              		.cfi_endproc
+ 600              	.LFE68:
+ 602              		.global	__aeabi_i2d
+ 603              		.global	__aeabi_dmul
+ 604              		.global	__aeabi_ddiv
+ 605              		.global	__aeabi_d2f
+ 606              		.section	.text.SHT31_GetHumidity,"ax",%progbits
+ 607              		.align	1
+ 608              		.global	SHT31_GetHumidity
+ 609              		.syntax unified
+ 610              		.thumb
+ 611              		.thumb_func
+ 613              	SHT31_GetHumidity:
+ 614              	.LFB71:
+ 148:Core/Src/SHT.c **** 
+ 149:Core/Src/SHT.c **** float SHT31_GetHumidity()
+ 150:Core/Src/SHT.c **** {
+ 615              		.loc 1 150 1 is_stmt 1 view -0
+ 616              		.cfi_startproc
+ 617              		@ args = 0, pretend = 0, frame = 0
+ 618              		@ frame_needed = 0, uses_anonymous_args = 0
+ 619 0000 08B5     		push	{r3, lr}
+ 620              	.LCFI13:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 16
+
+
+ 621              		.cfi_def_cfa_offset 8
+ 622              		.cfi_offset 3, -8
+ 623              		.cfi_offset 14, -4
+ 151:Core/Src/SHT.c ****     return 100.0 * (sht31.humidity_raw) / 65535;
+ 624              		.loc 1 151 5 view .LVU164
+ 625              		.loc 1 151 18 is_stmt 0 view .LVU165
+ 626 0002 0B4B     		ldr	r3, .L51+8
+ 627 0004 588B     		ldrh	r0, [r3, #26]
+ 628 0006 FFF7FEFF 		bl	__aeabi_i2d
+ 629              	.LVL62:
+ 630 000a 0022     		movs	r2, #0
+ 631 000c 094B     		ldr	r3, .L51+12
+ 632 000e FFF7FEFF 		bl	__aeabi_dmul
+ 633              	.LVL63:
+ 634              		.loc 1 151 41 view .LVU166
+ 635 0012 05A3     		adr	r3, .L51
+ 636 0014 D3E90023 		ldrd	r2, [r3]
+ 637 0018 FFF7FEFF 		bl	__aeabi_ddiv
+ 638              	.LVL64:
+ 639 001c FFF7FEFF 		bl	__aeabi_d2f
+ 640              	.LVL65:
+ 152:Core/Src/SHT.c **** }
+ 641              		.loc 1 152 1 view .LVU167
+ 642 0020 08BD     		pop	{r3, pc}
+ 643              	.L52:
+ 644 0022 00BFAFF3 		.align	3
+ 644      0080
+ 645              	.L51:
+ 646 0028 00000000 		.word	0
+ 647 002c E0FFEF40 		.word	1089470432
+ 648 0030 00000000 		.word	sht31
+ 649 0034 00005940 		.word	1079574528
+ 650              		.cfi_endproc
+ 651              	.LFE71:
+ 653              		.global	__aeabi_dsub
+ 654              		.section	.text.SHT31_GetTemperature,"ax",%progbits
+ 655              		.align	1
+ 656              		.global	SHT31_GetTemperature
+ 657              		.syntax unified
+ 658              		.thumb
+ 659              		.thumb_func
+ 661              	SHT31_GetTemperature:
+ 662              	.LFB72:
+ 153:Core/Src/SHT.c **** float SHT31_GetTemperature()
+ 154:Core/Src/SHT.c **** {
+ 663              		.loc 1 154 1 is_stmt 1 view -0
+ 664              		.cfi_startproc
+ 665              		@ args = 0, pretend = 0, frame = 0
+ 666              		@ frame_needed = 0, uses_anonymous_args = 0
+ 667 0000 08B5     		push	{r3, lr}
+ 668              	.LCFI14:
+ 669              		.cfi_def_cfa_offset 8
+ 670              		.cfi_offset 3, -8
+ 671              		.cfi_offset 14, -4
+ 155:Core/Src/SHT.c ****     return 175.0 * (sht31.temperature_raw) / 65535 - 45;
+ 672              		.loc 1 155 5 view .LVU169
+ 673              		.loc 1 155 18 is_stmt 0 view .LVU170
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 17
+
+
+ 674 0002 0F4B     		ldr	r3, .L55+16
+ 675 0004 188B     		ldrh	r0, [r3, #24]
+ 676 0006 FFF7FEFF 		bl	__aeabi_i2d
+ 677              	.LVL66:
+ 678 000a 09A3     		adr	r3, .L55
+ 679 000c D3E90023 		ldrd	r2, [r3]
+ 680 0010 FFF7FEFF 		bl	__aeabi_dmul
+ 681              	.LVL67:
+ 682              		.loc 1 155 44 view .LVU171
+ 683 0014 08A3     		adr	r3, .L55+8
+ 684 0016 D3E90023 		ldrd	r2, [r3]
+ 685 001a FFF7FEFF 		bl	__aeabi_ddiv
+ 686              	.LVL68:
+ 687              		.loc 1 155 52 view .LVU172
+ 688 001e 0022     		movs	r2, #0
+ 689 0020 084B     		ldr	r3, .L55+20
+ 690 0022 FFF7FEFF 		bl	__aeabi_dsub
+ 691              	.LVL69:
+ 692 0026 FFF7FEFF 		bl	__aeabi_d2f
+ 693              	.LVL70:
+ 156:Core/Src/SHT.c **** }
+ 694              		.loc 1 156 1 view .LVU173
+ 695 002a 08BD     		pop	{r3, pc}
+ 696              	.L56:
+ 697 002c AFF30080 		.align	3
+ 698              	.L55:
+ 699 0030 00000000 		.word	0
+ 700 0034 00E06540 		.word	1080418304
+ 701 0038 00000000 		.word	0
+ 702 003c E0FFEF40 		.word	1089470432
+ 703 0040 00000000 		.word	sht31
+ 704 0044 00804640 		.word	1078362112
+ 705              		.cfi_endproc
+ 706              	.LFE72:
+ 708              		.section	.text.SHT31_GetHumidity_raw,"ax",%progbits
+ 709              		.align	1
+ 710              		.global	SHT31_GetHumidity_raw
+ 711              		.syntax unified
+ 712              		.thumb
+ 713              		.thumb_func
+ 715              	SHT31_GetHumidity_raw:
+ 716              	.LFB73:
+ 157:Core/Src/SHT.c **** 
+ 158:Core/Src/SHT.c **** uint16_t SHT31_GetHumidity_raw()
+ 159:Core/Src/SHT.c **** {
+ 717              		.loc 1 159 1 is_stmt 1 view -0
+ 718              		.cfi_startproc
+ 719              		@ args = 0, pretend = 0, frame = 0
+ 720              		@ frame_needed = 0, uses_anonymous_args = 0
+ 721              		@ link register save eliminated.
+ 160:Core/Src/SHT.c ****     return sht31.humidity_raw;
+ 722              		.loc 1 160 5 view .LVU175
+ 161:Core/Src/SHT.c **** }
+ 723              		.loc 1 161 1 is_stmt 0 view .LVU176
+ 724 0000 014B     		ldr	r3, .L58
+ 725 0002 588B     		ldrh	r0, [r3, #26]
+ 726 0004 7047     		bx	lr
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 18
+
+
+ 727              	.L59:
+ 728 0006 00BF     		.align	2
+ 729              	.L58:
+ 730 0008 00000000 		.word	sht31
+ 731              		.cfi_endproc
+ 732              	.LFE73:
+ 734              		.section	.text.SHT31_GetTemperature_raw,"ax",%progbits
+ 735              		.align	1
+ 736              		.global	SHT31_GetTemperature_raw
+ 737              		.syntax unified
+ 738              		.thumb
+ 739              		.thumb_func
+ 741              	SHT31_GetTemperature_raw:
+ 742              	.LFB74:
+ 162:Core/Src/SHT.c **** uint16_t SHT31_GetTemperature_raw()
+ 163:Core/Src/SHT.c **** {
+ 743              		.loc 1 163 1 is_stmt 1 view -0
+ 744              		.cfi_startproc
+ 745              		@ args = 0, pretend = 0, frame = 0
+ 746              		@ frame_needed = 0, uses_anonymous_args = 0
+ 747              		@ link register save eliminated.
+ 164:Core/Src/SHT.c ****     return sht31.temperature_raw;
+ 748              		.loc 1 164 5 view .LVU178
+ 165:Core/Src/SHT.c **** }
+ 749              		.loc 1 165 1 is_stmt 0 view .LVU179
+ 750 0000 014B     		ldr	r3, .L61
+ 751 0002 188B     		ldrh	r0, [r3, #24]
+ 752 0004 7047     		bx	lr
+ 753              	.L62:
+ 754 0006 00BF     		.align	2
+ 755              	.L61:
+ 756 0008 00000000 		.word	sht31
+ 757              		.cfi_endproc
+ 758              	.LFE74:
+ 760              		.global	MeasureTime
+ 761              		.section	.data.MeasureTime,"aw"
+ 762              		.align	2
+ 765              	MeasureTime:
+ 766 0000 0D0503   		.ascii	"\015\005\003"
+ 767              		.global	MilsPerMeasure
+ 768              		.section	.data.MilsPerMeasure,"aw"
+ 769              		.align	2
+ 772              	MilsPerMeasure:
+ 773 0000 D507     		.short	2005
+ 774 0002 ED03     		.short	1005
+ 775 0004 F901     		.short	505
+ 776 0006 FF00     		.short	255
+ 777 0008 6900     		.short	105
+ 778              		.global	MeasurePeriodicCMD
+ 779              		.section	.data.MeasurePeriodicCMD,"aw"
+ 780              		.align	2
+ 783              	MeasurePeriodicCMD:
+ 784 0000 3220     		.short	8242
+ 785 0002 2420     		.short	8228
+ 786 0004 2F20     		.short	8239
+ 787 0006 3021     		.short	8496
+ 788 0008 2621     		.short	8486
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 19
+
+
+ 789 000a 2D21     		.short	8493
+ 790 000c 3622     		.short	8758
+ 791 000e 2022     		.short	8736
+ 792 0010 2B22     		.short	8747
+ 793 0012 3423     		.short	9012
+ 794 0014 2223     		.short	8994
+ 795 0016 2923     		.short	9001
+ 796 0018 3727     		.short	10039
+ 797 001a 2127     		.short	10017
+ 798 001c 2A27     		.short	10026
+ 799              		.global	MeasureSingleShotCMD
+ 800              		.section	.data.MeasureSingleShotCMD,"aw"
+ 801              		.align	2
+ 804              	MeasureSingleShotCMD:
+ 805 0000 062C     		.short	11270
+ 806 0002 0D2C     		.short	11277
+ 807 0004 102C     		.short	11280
+ 808 0006 0024     		.short	9216
+ 809 0008 0B24     		.short	9227
+ 810 000a 1624     		.short	9238
+ 811              		.global	sht31
+ 812              		.section	.bss.sht31,"aw",%nobits
+ 813              		.align	3
+ 816              	sht31:
+ 817 0000 00000000 		.space	40
+ 817      00000000 
+ 817      00000000 
+ 817      00000000 
+ 817      00000000 
+ 818              		.text
+ 819              	.Letext0:
+ 820              		.file 2 "C:/Users/Dell/Downloads/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi/arm-none
+ 821              		.file 3 "C:/Users/Dell/Downloads/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi/arm-none
+ 822              		.file 4 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 823              		.file 5 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 824              		.file 6 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 825              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+ 826              		.file 8 "Core/Inc/SHT.h"
+ 827              		.file 9 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s 			page 20
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 SHT.c
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:19     .text.SHT31_Config:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:25     .text.SHT31_Config:00000000 SHT31_Config
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:66     .text.SHT31_Config:00000018 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:816    .bss.sht31:00000000 sht31
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:71     .text.SHT31_SendCommand:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:77     .text.SHT31_SendCommand:00000000 SHT31_SendCommand
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:127    .text.SHT31_SendCommand:00000030 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:132    .text.SHT31_GetBytes:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:138    .text.SHT31_GetBytes:00000000 SHT31_GetBytes
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:186    .text.SHT31_GetBytes:00000028 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:191    .text.SHT31_GetCommand:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:197    .text.SHT31_GetCommand:00000000 SHT31_GetCommand
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:263    .text.SHT31_GetCommand:00000030 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:804    .data.MeasureSingleShotCMD:00000000 MeasureSingleShotCMD
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:783    .data.MeasurePeriodicCMD:00000000 MeasurePeriodicCMD
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:270    .text.SHT31_CRC_8:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:276    .text.SHT31_CRC_8:00000000 SHT31_CRC_8
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:391    .text.SHT31_GetData:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:397    .text.SHT31_GetData:00000000 SHT31_GetData
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:596    .text.SHT31_GetData:000000cc $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:765    .data.MeasureTime:00000000 MeasureTime
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:772    .data.MilsPerMeasure:00000000 MilsPerMeasure
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:607    .text.SHT31_GetHumidity:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:613    .text.SHT31_GetHumidity:00000000 SHT31_GetHumidity
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:646    .text.SHT31_GetHumidity:00000028 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:655    .text.SHT31_GetTemperature:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:661    .text.SHT31_GetTemperature:00000000 SHT31_GetTemperature
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:699    .text.SHT31_GetTemperature:00000030 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:709    .text.SHT31_GetHumidity_raw:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:715    .text.SHT31_GetHumidity_raw:00000000 SHT31_GetHumidity_raw
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:730    .text.SHT31_GetHumidity_raw:00000008 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:735    .text.SHT31_GetTemperature_raw:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:741    .text.SHT31_GetTemperature_raw:00000000 SHT31_GetTemperature_raw
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:756    .text.SHT31_GetTemperature_raw:00000008 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:762    .data.MeasureTime:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:769    .data.MilsPerMeasure:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:780    .data.MeasurePeriodicCMD:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:801    .data.MeasureSingleShotCMD:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccGPuHO4.s:813    .bss.sht31:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_GetTick
+HAL_I2C_Master_Transmit
+HAL_I2C_Master_Receive
+HAL_Delay
+__aeabi_i2d
+__aeabi_dmul
+__aeabi_ddiv
+__aeabi_d2f
+__aeabi_dsub

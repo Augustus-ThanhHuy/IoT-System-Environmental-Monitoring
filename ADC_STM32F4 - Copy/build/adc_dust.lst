@@ -1,0 +1,500 @@
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"adc_dust.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.file 1 "Core/Src/adc_dust.c"
+  20              		.section	.text.delay_us,"ax",%progbits
+  21              		.align	1
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	delay_us:
+  27              	.LVL0:
+  28              	.LFB239:
+   1:Core/Src/adc_dust.c **** #include "adc_dust.h"
+   2:Core/Src/adc_dust.c **** #include "stdint.h"
+   3:Core/Src/adc_dust.c **** #include "stm32f407xx.h"
+   4:Core/Src/adc_dust.c **** // Khai báo các biến toàn cục đã được định nghĩa trong main.c
+   5:Core/Src/adc_dust.c **** extern ADC_HandleTypeDef hadc1;
+   6:Core/Src/adc_dust.c **** extern TIM_HandleTypeDef htim2;
+   7:Core/Src/adc_dust.c **** #define LED_GPIO_Port GPIOC
+   8:Core/Src/adc_dust.c **** #define LED_Pin GPIO_PIN_3
+   9:Core/Src/adc_dust.c **** 
+  10:Core/Src/adc_dust.c **** // Định nghĩa thời gian trễ
+  11:Core/Src/adc_dust.c **** #define DELAY_TIME 280 // microseconds
+  12:Core/Src/adc_dust.c **** #define DELAY_TIME2 40 // microseconds
+  13:Core/Src/adc_dust.c **** #define OFF_TIME 9680  // microseconds
+  14:Core/Src/adc_dust.c **** 
+  15:Core/Src/adc_dust.c **** uint32_t dustVal = 0;
+  16:Core/Src/adc_dust.c **** float voltage = 0;
+  17:Core/Src/adc_dust.c **** float dustDensity = 0;
+  18:Core/Src/adc_dust.c **** /**
+  19:Core/Src/adc_dust.c ****  * @brief Tạo độ trễ theo microsecond sử dụng Timer
+  20:Core/Src/adc_dust.c ****  * @param delay Thời gian trễ tính bằng microseconds
+  21:Core/Src/adc_dust.c ****  */
+  22:Core/Src/adc_dust.c **** static void delay_us(uint16_t delay)
+  23:Core/Src/adc_dust.c **** {
+  29              		.loc 1 23 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  24:Core/Src/adc_dust.c ****     __HAL_TIM_SET_COUNTER(&htim2, 0); // Đặt lại bộ đếm về 0
+  34              		.loc 1 24 5 view .LVU1
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s 			page 2
+
+
+  35 0000 034B     		ldr	r3, .L3
+  36 0002 1A68     		ldr	r2, [r3]
+  37 0004 0023     		movs	r3, #0
+  38 0006 5362     		str	r3, [r2, #36]
+  25:Core/Src/adc_dust.c ****     while (__HAL_TIM_GET_COUNTER(&htim2) < delay)
+  39              		.loc 1 25 5 view .LVU2
+  40              	.L2:
+  41              		.loc 1 25 42 discriminator 1 view .LVU3
+  42              		.loc 1 25 12 is_stmt 0 discriminator 1 view .LVU4
+  43 0008 536A     		ldr	r3, [r2, #36]
+  44              		.loc 1 25 42 discriminator 1 view .LVU5
+  45 000a 8342     		cmp	r3, r0
+  46 000c FCD3     		bcc	.L2
+  26:Core/Src/adc_dust.c ****         ; // Chờ đến khi bộ đếm đạt giá trị delay
+  27:Core/Src/adc_dust.c **** }
+  47              		.loc 1 27 1 view .LVU6
+  48 000e 7047     		bx	lr
+  49              	.L4:
+  50              		.align	2
+  51              	.L3:
+  52 0010 00000000 		.word	htim2
+  53              		.cfi_endproc
+  54              	.LFE239:
+  56              		.section	.text.ADC_Module_Init,"ax",%progbits
+  57              		.align	1
+  58              		.global	ADC_Module_Init
+  59              		.syntax unified
+  60              		.thumb
+  61              		.thumb_func
+  63              	ADC_Module_Init:
+  64              	.LFB240:
+  28:Core/Src/adc_dust.c **** 
+  29:Core/Src/adc_dust.c **** /**
+  30:Core/Src/adc_dust.c ****  * @brief Khởi tạo module ADC (bao gồm ADC và Timer)
+  31:Core/Src/adc_dust.c ****  */
+  32:Core/Src/adc_dust.c **** void ADC_Module_Init(void)
+  33:Core/Src/adc_dust.c **** {
+  65              		.loc 1 33 1 is_stmt 1 view -0
+  66              		.cfi_startproc
+  67              		@ args = 0, pretend = 0, frame = 0
+  68              		@ frame_needed = 0, uses_anonymous_args = 0
+  69 0000 08B5     		push	{r3, lr}
+  70              	.LCFI0:
+  71              		.cfi_def_cfa_offset 8
+  72              		.cfi_offset 3, -8
+  73              		.cfi_offset 14, -4
+  34:Core/Src/adc_dust.c ****     // Khởi tạo ADC và Timer đã được gọi trong main.c
+  35:Core/Src/adc_dust.c ****     // Nếu cần thêm cấu hình, thực hiện tại đây
+  36:Core/Src/adc_dust.c ****     // Ví dụ: bắt đầu Timer
+  37:Core/Src/adc_dust.c ****     HAL_TIM_Base_Start(&htim2);
+  74              		.loc 1 37 5 view .LVU8
+  75 0002 0248     		ldr	r0, .L7
+  76 0004 FFF7FEFF 		bl	HAL_TIM_Base_Start
+  77              	.LVL1:
+  38:Core/Src/adc_dust.c **** }
+  78              		.loc 1 38 1 is_stmt 0 view .LVU9
+  79 0008 08BD     		pop	{r3, pc}
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s 			page 3
+
+
+  80              	.L8:
+  81 000a 00BF     		.align	2
+  82              	.L7:
+  83 000c 00000000 		.word	htim2
+  84              		.cfi_endproc
+  85              	.LFE240:
+  87              		.section	.text.ADC_Module_ReadValue,"ax",%progbits
+  88              		.align	1
+  89              		.global	ADC_Module_ReadValue
+  90              		.syntax unified
+  91              		.thumb
+  92              		.thumb_func
+  94              	ADC_Module_ReadValue:
+  95              	.LFB241:
+  39:Core/Src/adc_dust.c **** 
+  40:Core/Src/adc_dust.c **** /**
+  41:Core/Src/adc_dust.c ****  * @brief Đọc giá trị ADC từ cảm biến bụi
+  42:Core/Src/adc_dust.c ****  * @return Giá trị ADC (0 - 4095 cho ADC 12-bit)
+  43:Core/Src/adc_dust.c ****  */
+  44:Core/Src/adc_dust.c **** uint32_t ADC_Module_ReadValue(void)
+  45:Core/Src/adc_dust.c **** {
+  96              		.loc 1 45 1 is_stmt 1 view -0
+  97              		.cfi_startproc
+  98              		@ args = 0, pretend = 0, frame = 0
+  99              		@ frame_needed = 0, uses_anonymous_args = 0
+ 100 0000 10B5     		push	{r4, lr}
+ 101              	.LCFI1:
+ 102              		.cfi_def_cfa_offset 8
+ 103              		.cfi_offset 4, -8
+ 104              		.cfi_offset 14, -4
+  46:Core/Src/adc_dust.c ****     uint32_t dustVal = 0;
+ 105              		.loc 1 46 5 view .LVU11
+ 106              	.LVL2:
+  47:Core/Src/adc_dust.c **** 
+  48:Core/Src/adc_dust.c ****     // Bật LED (Power on)
+  49:Core/Src/adc_dust.c ****     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);      // LOW: LED bật
+ 107              		.loc 1 49 5 view .LVU12
+ 108 0002 0122     		movs	r2, #1
+ 109 0004 0821     		movs	r1, #8
+ 110 0006 1348     		ldr	r0, .L14
+ 111 0008 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 112              	.LVL3:
+  50:Core/Src/adc_dust.c ****     delay_us(DELAY_TIME);                                    // Delay 0.28ms
+ 113              		.loc 1 50 5 view .LVU13
+ 114 000c 4FF48C70 		mov	r0, #280
+ 115 0010 FFF7FEFF 		bl	delay_us
+ 116              	.LVL4:
+  51:Core/Src/adc_dust.c **** 
+  52:Core/Src/adc_dust.c ****     // Đọc giá trị ADC
+  53:Core/Src/adc_dust.c ****     HAL_ADC_Start(&hadc1);
+ 117              		.loc 1 53 5 view .LVU14
+ 118 0014 104C     		ldr	r4, .L14+4
+ 119 0016 2046     		mov	r0, r4
+ 120 0018 FFF7FEFF 		bl	HAL_ADC_Start
+ 121              	.LVL5:
+  54:Core/Src/adc_dust.c ****     if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+ 122              		.loc 1 54 5 view .LVU15
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s 			page 4
+
+
+ 123              		.loc 1 54 9 is_stmt 0 view .LVU16
+ 124 001c 6421     		movs	r1, #100
+ 125 001e 2046     		mov	r0, r4
+ 126 0020 FFF7FEFF 		bl	HAL_ADC_PollForConversion
+ 127              	.LVL6:
+ 128              		.loc 1 54 8 view .LVU17
+ 129 0024 88B1     		cbz	r0, .L13
+  46:Core/Src/adc_dust.c **** 
+ 130              		.loc 1 46 14 view .LVU18
+ 131 0026 0024     		movs	r4, #0
+ 132              	.LVL7:
+ 133              	.L10:
+  55:Core/Src/adc_dust.c ****     {
+  56:Core/Src/adc_dust.c ****         dustVal = HAL_ADC_GetValue(&hadc1);
+  57:Core/Src/adc_dust.c ****     }
+  58:Core/Src/adc_dust.c ****     HAL_ADC_Stop(&hadc1);
+ 134              		.loc 1 58 5 is_stmt 1 view .LVU19
+ 135 0028 0B48     		ldr	r0, .L14+4
+ 136 002a FFF7FEFF 		bl	HAL_ADC_Stop
+ 137              	.LVL8:
+  59:Core/Src/adc_dust.c **** 
+  60:Core/Src/adc_dust.c ****     // Tắt LED
+  61:Core/Src/adc_dust.c ****     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET); // HIGH: LED tắt
+ 138              		.loc 1 61 5 view .LVU20
+ 139 002e 0022     		movs	r2, #0
+ 140 0030 0821     		movs	r1, #8
+ 141 0032 0848     		ldr	r0, .L14
+ 142 0034 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 143              	.LVL9:
+  62:Core/Src/adc_dust.c ****     delay_us(DELAY_TIME2);
+ 144              		.loc 1 62 5 view .LVU21
+ 145 0038 2820     		movs	r0, #40
+ 146 003a FFF7FEFF 		bl	delay_us
+ 147              	.LVL10:
+  63:Core/Src/adc_dust.c ****     delay_us(OFF_TIME);
+ 148              		.loc 1 63 5 view .LVU22
+ 149 003e 42F2D050 		movw	r0, #9680
+ 150 0042 FFF7FEFF 		bl	delay_us
+ 151              	.LVL11:
+  64:Core/Src/adc_dust.c **** 
+  65:Core/Src/adc_dust.c ****     return dustVal;
+ 152              		.loc 1 65 5 view .LVU23
+  66:Core/Src/adc_dust.c **** }
+ 153              		.loc 1 66 1 is_stmt 0 view .LVU24
+ 154 0046 2046     		mov	r0, r4
+ 155 0048 10BD     		pop	{r4, pc}
+ 156              	.LVL12:
+ 157              	.L13:
+  56:Core/Src/adc_dust.c ****     }
+ 158              		.loc 1 56 9 is_stmt 1 view .LVU25
+  56:Core/Src/adc_dust.c ****     }
+ 159              		.loc 1 56 19 is_stmt 0 view .LVU26
+ 160 004a 2046     		mov	r0, r4
+ 161 004c FFF7FEFF 		bl	HAL_ADC_GetValue
+ 162              	.LVL13:
+ 163 0050 0446     		mov	r4, r0
+ 164              	.LVL14:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s 			page 5
+
+
+  56:Core/Src/adc_dust.c ****     }
+ 165              		.loc 1 56 19 view .LVU27
+ 166 0052 E9E7     		b	.L10
+ 167              	.L15:
+ 168              		.align	2
+ 169              	.L14:
+ 170 0054 00080240 		.word	1073874944
+ 171 0058 00000000 		.word	hadc1
+ 172              		.cfi_endproc
+ 173              	.LFE241:
+ 175              		.section	.text.ADC_Module_GetVoltage,"ax",%progbits
+ 176              		.align	1
+ 177              		.global	ADC_Module_GetVoltage
+ 178              		.syntax unified
+ 179              		.thumb
+ 180              		.thumb_func
+ 182              	ADC_Module_GetVoltage:
+ 183              	.LVL15:
+ 184              	.LFB242:
+  67:Core/Src/adc_dust.c **** 
+  68:Core/Src/adc_dust.c **** /**
+  69:Core/Src/adc_dust.c ****  * @brief Chuyển đổi giá trị ADC thành điện áp
+  70:Core/Src/adc_dust.c ****  * @param adcValue Giá trị ADC đọc được
+  71:Core/Src/adc_dust.c ****  * @return Điện áp tương ứng (V)
+  72:Core/Src/adc_dust.c ****  */
+  73:Core/Src/adc_dust.c **** float ADC_Module_GetVoltage(uint32_t adcValue)
+  74:Core/Src/adc_dust.c **** {
+ 185              		.loc 1 74 1 is_stmt 1 view -0
+ 186              		.cfi_startproc
+ 187              		@ args = 0, pretend = 0, frame = 0
+ 188              		@ frame_needed = 0, uses_anonymous_args = 0
+ 189              		@ link register save eliminated.
+ 190              		.loc 1 74 1 is_stmt 0 view .LVU29
+ 191 0000 07EE900A 		vmov	s15, r0	@ int
+  75:Core/Src/adc_dust.c ****     return ((float)adcValue) * (3.3f / 4095.0f); // STM32 ADC 12-bit: 0-4095 tương ứng 0-3.3V
+ 192              		.loc 1 75 5 is_stmt 1 view .LVU30
+ 193              		.loc 1 75 13 is_stmt 0 view .LVU31
+ 194 0004 F8EE677A 		vcvt.f32.u32	s15, s15
+  76:Core/Src/adc_dust.c **** }
+ 195              		.loc 1 76 1 view .LVU32
+ 196 0008 9FED020A 		vldr.32	s0, .L17
+ 197 000c 27EE800A 		vmul.f32	s0, s15, s0
+ 198 0010 7047     		bx	lr
+ 199              	.L18:
+ 200 0012 00BF     		.align	2
+ 201              	.L17:
+ 202 0014 6740533A 		.word	978534503
+ 203              		.cfi_endproc
+ 204              	.LFE242:
+ 206              		.section	.text.ADC_Module_GetDustDensity,"ax",%progbits
+ 207              		.align	1
+ 208              		.global	ADC_Module_GetDustDensity
+ 209              		.syntax unified
+ 210              		.thumb
+ 211              		.thumb_func
+ 213              	ADC_Module_GetDustDensity:
+ 214              	.LVL16:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s 			page 6
+
+
+ 215              	.LFB243:
+  77:Core/Src/adc_dust.c **** 
+  78:Core/Src/adc_dust.c **** /**
+  79:Core/Src/adc_dust.c ****  * @brief Tính toán mật độ bụi từ điện áp
+  80:Core/Src/adc_dust.c ****  * @param voltage Điện áp đọc được từ ADC
+  81:Core/Src/adc_dust.c ****  * @return Mật độ bụi (mg/m³)
+  82:Core/Src/adc_dust.c ****  */
+  83:Core/Src/adc_dust.c **** float ADC_Module_GetDustDensity(float voltage)
+  84:Core/Src/adc_dust.c **** {
+ 216              		.loc 1 84 1 is_stmt 1 view -0
+ 217              		.cfi_startproc
+ 218              		@ args = 0, pretend = 0, frame = 0
+ 219              		@ frame_needed = 0, uses_anonymous_args = 0
+ 220              		@ link register save eliminated.
+  85:Core/Src/adc_dust.c ****     float dustDensity = 0.172f * voltage - 0.1f;
+ 221              		.loc 1 85 5 view .LVU34
+ 222              		.loc 1 85 32 is_stmt 0 view .LVU35
+ 223 0000 DFED0C7A 		vldr.32	s15, .L25
+ 224 0004 20EE270A 		vmul.f32	s0, s0, s15
+ 225              	.LVL17:
+ 226              		.loc 1 85 11 view .LVU36
+ 227 0008 DFED0B7A 		vldr.32	s15, .L25+4
+ 228 000c 30EE670A 		vsub.f32	s0, s0, s15
+ 229              	.LVL18:
+  86:Core/Src/adc_dust.c **** 
+  87:Core/Src/adc_dust.c ****     if (dustDensity < 0.0f)
+ 230              		.loc 1 87 5 is_stmt 1 view .LVU37
+ 231              		.loc 1 87 8 is_stmt 0 view .LVU38
+ 232 0010 B5EEC00A 		vcmpe.f32	s0, #0
+ 233 0014 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 234 0018 09D4     		bmi	.L24
+ 235              	.LVL19:
+ 236              	.L20:
+  88:Core/Src/adc_dust.c ****         dustDensity = 0.0f;
+  89:Core/Src/adc_dust.c ****     if (dustDensity > 0.5f)
+ 237              		.loc 1 89 5 is_stmt 1 view .LVU39
+ 238              		.loc 1 89 8 is_stmt 0 view .LVU40
+ 239 001a F6EE007A 		vmov.f32	s15, #5.0e-1
+ 240 001e B4EEE70A 		vcmpe.f32	s0, s15
+ 241 0022 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 242 0026 01DD     		ble	.L19
+  90:Core/Src/adc_dust.c ****         dustDensity = 0.5f;
+ 243              		.loc 1 90 21 view .LVU41
+ 244 0028 B0EE670A 		vmov.f32	s0, s15
+ 245              	.LVL20:
+  91:Core/Src/adc_dust.c **** 
+  92:Core/Src/adc_dust.c ****     return dustDensity;
+ 246              		.loc 1 92 5 is_stmt 1 view .LVU42
+ 247              	.L19:
+  93:Core/Src/adc_dust.c **** }
+ 248              		.loc 1 93 1 is_stmt 0 view .LVU43
+ 249 002c 7047     		bx	lr
+ 250              	.LVL21:
+ 251              	.L24:
+  88:Core/Src/adc_dust.c ****     if (dustDensity > 0.5f)
+ 252              		.loc 1 88 21 view .LVU44
+ 253 002e 9FED030A 		vldr.32	s0, .L25+8
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s 			page 7
+
+
+ 254              	.LVL22:
+  88:Core/Src/adc_dust.c ****     if (dustDensity > 0.5f)
+ 255              		.loc 1 88 21 view .LVU45
+ 256 0032 F2E7     		b	.L20
+ 257              	.L26:
+ 258              		.align	2
+ 259              	.L25:
+ 260 0034 C520303E 		.word	1043341509
+ 261 0038 CDCCCC3D 		.word	1036831949
+ 262 003c 00000000 		.word	0
+ 263              		.cfi_endproc
+ 264              	.LFE243:
+ 266              		.section	.text.ADC_Module_ReadDustDensity,"ax",%progbits
+ 267              		.align	1
+ 268              		.global	ADC_Module_ReadDustDensity
+ 269              		.syntax unified
+ 270              		.thumb
+ 271              		.thumb_func
+ 273              	ADC_Module_ReadDustDensity:
+ 274              	.LFB244:
+  94:Core/Src/adc_dust.c **** 
+  95:Core/Src/adc_dust.c **** /**
+  96:Core/Src/adc_dust.c ****  * @brief Hàm tổng hợp để đọc và tính toán mật độ bụi
+  97:Core/Src/adc_dust.c ****  * @return Mật độ bụi (mg/m³)
+  98:Core/Src/adc_dust.c ****  */
+  99:Core/Src/adc_dust.c **** float ADC_Module_ReadDustDensity(void)
+ 100:Core/Src/adc_dust.c **** {
+ 275              		.loc 1 100 1 is_stmt 1 view -0
+ 276              		.cfi_startproc
+ 277              		@ args = 0, pretend = 0, frame = 0
+ 278              		@ frame_needed = 0, uses_anonymous_args = 0
+ 279 0000 08B5     		push	{r3, lr}
+ 280              	.LCFI2:
+ 281              		.cfi_def_cfa_offset 8
+ 282              		.cfi_offset 3, -8
+ 283              		.cfi_offset 14, -4
+ 101:Core/Src/adc_dust.c ****     uint32_t adcValue = ADC_Module_ReadValue();
+ 284              		.loc 1 101 5 view .LVU47
+ 285              		.loc 1 101 25 is_stmt 0 view .LVU48
+ 286 0002 FFF7FEFF 		bl	ADC_Module_ReadValue
+ 287              	.LVL23:
+ 102:Core/Src/adc_dust.c ****     voltage = ADC_Module_GetVoltage(adcValue);
+ 288              		.loc 1 102 5 is_stmt 1 view .LVU49
+ 289              		.loc 1 102 15 is_stmt 0 view .LVU50
+ 290 0006 FFF7FEFF 		bl	ADC_Module_GetVoltage
+ 291              	.LVL24:
+ 292              		.loc 1 102 13 view .LVU51
+ 293 000a 044B     		ldr	r3, .L29
+ 294 000c 83ED000A 		vstr.32	s0, [r3]
+ 103:Core/Src/adc_dust.c ****     dustDensity = ADC_Module_GetDustDensity(voltage);
+ 295              		.loc 1 103 5 is_stmt 1 view .LVU52
+ 296              		.loc 1 103 19 is_stmt 0 view .LVU53
+ 297 0010 FFF7FEFF 		bl	ADC_Module_GetDustDensity
+ 298              	.LVL25:
+ 299              		.loc 1 103 17 view .LVU54
+ 300 0014 024B     		ldr	r3, .L29+4
+ 301 0016 83ED000A 		vstr.32	s0, [r3]
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s 			page 8
+
+
+ 104:Core/Src/adc_dust.c ****     return dustDensity;
+ 302              		.loc 1 104 5 is_stmt 1 view .LVU55
+ 105:Core/Src/adc_dust.c **** }
+ 303              		.loc 1 105 1 is_stmt 0 view .LVU56
+ 304 001a 08BD     		pop	{r3, pc}
+ 305              	.L30:
+ 306              		.align	2
+ 307              	.L29:
+ 308 001c 00000000 		.word	voltage
+ 309 0020 00000000 		.word	dustDensity
+ 310              		.cfi_endproc
+ 311              	.LFE244:
+ 313              		.global	dustDensity
+ 314              		.section	.bss.dustDensity,"aw",%nobits
+ 315              		.align	2
+ 318              	dustDensity:
+ 319 0000 00000000 		.space	4
+ 320              		.global	voltage
+ 321              		.section	.bss.voltage,"aw",%nobits
+ 322              		.align	2
+ 325              	voltage:
+ 326 0000 00000000 		.space	4
+ 327              		.global	dustVal
+ 328              		.section	.bss.dustVal,"aw",%nobits
+ 329              		.align	2
+ 332              	dustVal:
+ 333 0000 00000000 		.space	4
+ 334              		.text
+ 335              	.Letext0:
+ 336              		.file 2 "C:\\ST\\STM32CubeCLT_1.16.0\\GNU-tools-for-STM32\\bin\\../lib/gcc/arm-none-eabi/12.3.1/..
+ 337              		.file 3 "C:\\ST\\STM32CubeCLT_1.16.0\\GNU-tools-for-STM32\\bin\\../lib/gcc/arm-none-eabi/12.3.1/..
+ 338              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 339              		.file 5 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
+ 340              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 341              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h"
+ 342              		.file 8 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 343              		.file 9 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h"
+ 344              		.file 10 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h"
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 adc_dust.c
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:21     .text.delay_us:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:26     .text.delay_us:00000000 delay_us
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:52     .text.delay_us:00000010 $d
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:57     .text.ADC_Module_Init:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:63     .text.ADC_Module_Init:00000000 ADC_Module_Init
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:83     .text.ADC_Module_Init:0000000c $d
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:88     .text.ADC_Module_ReadValue:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:94     .text.ADC_Module_ReadValue:00000000 ADC_Module_ReadValue
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:170    .text.ADC_Module_ReadValue:00000054 $d
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:176    .text.ADC_Module_GetVoltage:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:182    .text.ADC_Module_GetVoltage:00000000 ADC_Module_GetVoltage
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:202    .text.ADC_Module_GetVoltage:00000014 $d
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:207    .text.ADC_Module_GetDustDensity:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:213    .text.ADC_Module_GetDustDensity:00000000 ADC_Module_GetDustDensity
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:260    .text.ADC_Module_GetDustDensity:00000034 $d
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:267    .text.ADC_Module_ReadDustDensity:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:273    .text.ADC_Module_ReadDustDensity:00000000 ADC_Module_ReadDustDensity
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:308    .text.ADC_Module_ReadDustDensity:0000001c $d
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:325    .bss.voltage:00000000 voltage
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:318    .bss.dustDensity:00000000 dustDensity
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:315    .bss.dustDensity:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:322    .bss.voltage:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:332    .bss.dustVal:00000000 dustVal
+C:\Users\Dell\AppData\Local\Temp\cc7QxTUp.s:329    .bss.dustVal:00000000 $d
+
+UNDEFINED SYMBOLS
+htim2
+HAL_TIM_Base_Start
+HAL_GPIO_WritePin
+HAL_ADC_Start
+HAL_ADC_PollForConversion
+HAL_ADC_Stop
+HAL_ADC_GetValue
+hadc1

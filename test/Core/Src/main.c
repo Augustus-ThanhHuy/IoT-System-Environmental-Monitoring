@@ -44,6 +44,7 @@
 /* USER CODE BEGIN PV */
 uint32_t tick;
 uint32_t count = 0;
+uint32_t Max = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -97,7 +98,10 @@ int main(void)
   {
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
     count++;
-    HAL_Delay(tick*100);
+    HAL_Delay(500);
+    if(count %2==0){
+      Max+=1;
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

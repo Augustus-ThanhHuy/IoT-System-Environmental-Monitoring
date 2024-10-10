@@ -79,6 +79,7 @@ PUTCHAR_PROTOTYPE
 
 BMP280_HandleTypedef bmp280;
 bmp280_params_t bmp280_params;
+uint16_t tick = 0;
 /* USER CODE END 0 */
 
 /**
@@ -151,6 +152,7 @@ int main(void)
       // Xử lý lỗi đọc dữ liệu
     }
     HAL_Delay(1000);
+    tick+=1;
   }
   /* USER CODE END 3 */
 }
