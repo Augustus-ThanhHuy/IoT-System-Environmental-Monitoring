@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 1
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -58,7 +58,7 @@ ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 1
   33              		@ link register save eliminated.
   24:Core/Src/adc_dust.c ****     __HAL_TIM_SET_COUNTER(&htim2, 0); // Đặt lại bộ đếm về 0
   34              		.loc 1 24 5 view .LVU1
-ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 2
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s 			page 2
 
 
   35 0000 034B     		ldr	r3, .L3
@@ -118,7 +118,7 @@ ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 1
   78              		.loc 1 37 1 is_stmt 0 view .LVU9
   79 0008 08BD     		pop	{r3, pc}
   80              	.L8:
-ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 3
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s 			page 3
 
 
   81 000a 00BF     		.align	2
@@ -178,7 +178,7 @@ ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 1
   53:Core/Src/adc_dust.c ****     if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
  122              		.loc 1 53 5 view .LVU15
  123              		.loc 1 53 9 is_stmt 0 view .LVU16
-ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 4
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s 			page 4
 
 
  124 001c 6421     		movs	r1, #100
@@ -238,7 +238,7 @@ ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 1
  163 0050 0446     		mov	r4, r0
  164              	.LVL14:
   55:Core/Src/adc_dust.c ****     }
-ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 5
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s 			page 5
 
 
  165              		.loc 1 55 19 view .LVU27
@@ -298,7 +298,7 @@ ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 1
  213              	ADC_Module_GetDustDensity:
  214              	.LVL16:
  215              	.LFB243:
-ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 6
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s 			page 6
 
 
   76:Core/Src/adc_dust.c **** 
@@ -358,7 +358,7 @@ ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 1
  252              		.loc 1 87 21 view .LVU44
  253 002e 9FED030A 		vldr.32	s0, .L25+8
  254              	.LVL22:
-ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 7
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s 			page 7
 
 
   87:Core/Src/adc_dust.c ****     if (dustDensity > 0.5f)
@@ -418,7 +418,7 @@ ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 1
  300 0014 024B     		ldr	r3, .L29+4
  301 0016 83ED000A 		vstr.32	s0, [r3]
  103:Core/Src/adc_dust.c ****     return dustDensity;
-ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 8
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s 			page 8
 
 
  302              		.loc 1 103 5 is_stmt 1 view .LVU55
@@ -458,35 +458,35 @@ ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 1
  342              		.file 8 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
  343              		.file 9 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h"
  344              		.file 10 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h"
-ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s 			page 9
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s 			page 9
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 adc_dust.c
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:21     .text.delay_us:00000000 $t
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:26     .text.delay_us:00000000 delay_us
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:52     .text.delay_us:00000010 $d
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:57     .text.ADC_Module_Init:00000000 $t
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:63     .text.ADC_Module_Init:00000000 ADC_Module_Init
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:83     .text.ADC_Module_Init:0000000c $d
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:88     .text.ADC_Module_ReadValue:00000000 $t
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:94     .text.ADC_Module_ReadValue:00000000 ADC_Module_ReadValue
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:170    .text.ADC_Module_ReadValue:00000054 $d
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:176    .text.ADC_Module_GetVoltage:00000000 $t
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:182    .text.ADC_Module_GetVoltage:00000000 ADC_Module_GetVoltage
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:202    .text.ADC_Module_GetVoltage:00000014 $d
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:207    .text.ADC_Module_GetDustDensity:00000000 $t
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:213    .text.ADC_Module_GetDustDensity:00000000 ADC_Module_GetDustDensity
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:260    .text.ADC_Module_GetDustDensity:00000034 $d
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:267    .text.ADC_Module_ReadDustDensity:00000000 $t
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:273    .text.ADC_Module_ReadDustDensity:00000000 ADC_Module_ReadDustDensity
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:308    .text.ADC_Module_ReadDustDensity:0000001c $d
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:325    .bss.voltage:00000000 voltage
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:318    .bss.dustDensity:00000000 dustDensity
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:315    .bss.dustDensity:00000000 $d
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:322    .bss.voltage:00000000 $d
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:332    .bss.dustVal:00000000 dustVal
-C:\Users\Dell\AppData\Local\Temp\ccS6o91O.s:329    .bss.dustVal:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:21     .text.delay_us:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:26     .text.delay_us:00000000 delay_us
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:52     .text.delay_us:00000010 $d
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:57     .text.ADC_Module_Init:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:63     .text.ADC_Module_Init:00000000 ADC_Module_Init
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:83     .text.ADC_Module_Init:0000000c $d
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:88     .text.ADC_Module_ReadValue:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:94     .text.ADC_Module_ReadValue:00000000 ADC_Module_ReadValue
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:170    .text.ADC_Module_ReadValue:00000054 $d
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:176    .text.ADC_Module_GetVoltage:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:182    .text.ADC_Module_GetVoltage:00000000 ADC_Module_GetVoltage
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:202    .text.ADC_Module_GetVoltage:00000014 $d
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:207    .text.ADC_Module_GetDustDensity:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:213    .text.ADC_Module_GetDustDensity:00000000 ADC_Module_GetDustDensity
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:260    .text.ADC_Module_GetDustDensity:00000034 $d
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:267    .text.ADC_Module_ReadDustDensity:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:273    .text.ADC_Module_ReadDustDensity:00000000 ADC_Module_ReadDustDensity
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:308    .text.ADC_Module_ReadDustDensity:0000001c $d
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:325    .bss.voltage:00000000 voltage
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:318    .bss.dustDensity:00000000 dustDensity
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:315    .bss.dustDensity:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:322    .bss.voltage:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:332    .bss.dustVal:00000000 dustVal
+C:\Users\Dell\AppData\Local\Temp\ccuw2mgA.s:329    .bss.dustVal:00000000 $d
 
 UNDEFINED SYMBOLS
 htim2

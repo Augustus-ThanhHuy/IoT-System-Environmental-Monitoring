@@ -1,0 +1,1409 @@
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"DS3231.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.file 1 "Core/Src/DS3231.c"
+  20              		.section	.text.B2D,"ax",%progbits
+  21              		.align	1
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	B2D:
+  27              	.LVL0:
+  28              	.LFB142:
+   1:Core/Src/DS3231.c **** /*
+   2:Core/Src/DS3231.c ****  * stm32_ds3231.c
+   3:Core/Src/DS3231.c ****  *
+   4:Core/Src/DS3231.c ****  *  Created on: 20. 10. 19.
+   5:Core/Src/DS3231.c ****  *      Author: Sano
+   6:Core/Src/DS3231.c ****  */
+   7:Core/Src/DS3231.c **** #include "stm32f4xx_hal.h"
+   8:Core/Src/DS3231.c **** #include "DS3231.h"
+   9:Core/Src/DS3231.c **** #include "stdint.h"
+  10:Core/Src/DS3231.c **** 
+  11:Core/Src/DS3231.c **** #define DS3231_ADDR (0x68 << 1)
+  12:Core/Src/DS3231.c **** 
+  13:Core/Src/DS3231.c **** I2C_HandleTypeDef *i2c;
+  14:Core/Src/DS3231.c **** 
+  15:Core/Src/DS3231.c **** static uint8_t B2D(uint8_t bcd);
+  16:Core/Src/DS3231.c **** static uint8_t D2B(uint8_t decimal);
+  17:Core/Src/DS3231.c **** 
+  18:Core/Src/DS3231.c **** void DS3231_Init(I2C_HandleTypeDef *handle)
+  19:Core/Src/DS3231.c **** {
+  20:Core/Src/DS3231.c ****     i2c = handle;
+  21:Core/Src/DS3231.c **** }
+  22:Core/Src/DS3231.c **** 
+  23:Core/Src/DS3231.c **** bool DS3231_GetTime(_RTC *rtc)
+  24:Core/Src/DS3231.c **** {
+  25:Core/Src/DS3231.c ****     uint8_t startAddr = DS3231_REG_TIME;
+  26:Core/Src/DS3231.c ****     uint8_t buffer[7] = {
+  27:Core/Src/DS3231.c ****         0,
+  28:Core/Src/DS3231.c ****     };
+  29:Core/Src/DS3231.c **** 
+  30:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &startAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 2
+
+
+  31:Core/Src/DS3231.c ****         return false;
+  32:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+  33:Core/Src/DS3231.c ****         return false;
+  34:Core/Src/DS3231.c **** 
+  35:Core/Src/DS3231.c ****     rtc->Sec = B2D(buffer[0] & 0x7F);
+  36:Core/Src/DS3231.c ****     rtc->Min = B2D(buffer[1] & 0x7F);
+  37:Core/Src/DS3231.c ****     rtc->Hour = B2D(buffer[2] & 0x3F);
+  38:Core/Src/DS3231.c ****     rtc->DaysOfWeek = buffer[3] & 0x07;
+  39:Core/Src/DS3231.c ****     rtc->Date = B2D(buffer[4] & 0x3F);
+  40:Core/Src/DS3231.c ****     rtc->Month = B2D(buffer[5] & 0x1F);
+  41:Core/Src/DS3231.c ****     rtc->Year = B2D(buffer[6]);
+  42:Core/Src/DS3231.c **** 
+  43:Core/Src/DS3231.c ****     return true;
+  44:Core/Src/DS3231.c **** }
+  45:Core/Src/DS3231.c **** 
+  46:Core/Src/DS3231.c **** bool DS3231_SetTime(_RTC *rtc)
+  47:Core/Src/DS3231.c **** {
+  48:Core/Src/DS3231.c ****     uint8_t startAddr = DS3231_REG_TIME;
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+  50:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+  51:Core/Src/DS3231.c ****         return false;
+  52:Core/Src/DS3231.c **** 
+  53:Core/Src/DS3231.c ****     return true;
+  54:Core/Src/DS3231.c **** }
+  55:Core/Src/DS3231.c **** 
+  56:Core/Src/DS3231.c **** bool DS3231_ReadTemperature(float *temp)
+  57:Core/Src/DS3231.c **** {
+  58:Core/Src/DS3231.c ****     uint8_t startAddr = DS3231_REG_TEMP;
+  59:Core/Src/DS3231.c ****     uint8_t buffer[2] = {
+  60:Core/Src/DS3231.c ****         0,
+  61:Core/Src/DS3231.c ****     };
+  62:Core/Src/DS3231.c **** 
+  63:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &startAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+  64:Core/Src/DS3231.c ****         return false;
+  65:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+  66:Core/Src/DS3231.c ****         return false;
+  67:Core/Src/DS3231.c **** 
+  68:Core/Src/DS3231.c ****     int16_t value = (buffer[0] << 8) | (buffer[1]);
+  69:Core/Src/DS3231.c ****     value = (value >> 6);
+  70:Core/Src/DS3231.c **** 
+  71:Core/Src/DS3231.c ****     *temp = value / 4.0f;
+  72:Core/Src/DS3231.c ****     return true;
+  73:Core/Src/DS3231.c **** }
+  74:Core/Src/DS3231.c **** 
+  75:Core/Src/DS3231.c **** bool DS3231_SetAlarm1(uint8_t mode, uint8_t date, uint8_t hour, uint8_t min, uint8_t sec)
+  76:Core/Src/DS3231.c **** {
+  77:Core/Src/DS3231.c ****     uint8_t alarmSecond = D2B(sec);
+  78:Core/Src/DS3231.c ****     uint8_t alarmMinute = D2B(min);
+  79:Core/Src/DS3231.c ****     uint8_t alarmHour = D2B(hour);
+  80:Core/Src/DS3231.c ****     uint8_t alarmDate = D2B(date);
+  81:Core/Src/DS3231.c **** 
+  82:Core/Src/DS3231.c ****     switch (mode)
+  83:Core/Src/DS3231.c ****     {
+  84:Core/Src/DS3231.c ****     case ALARM_MODE_ALL_MATCHED:
+  85:Core/Src/DS3231.c ****         break;
+  86:Core/Src/DS3231.c ****     case ALARM_MODE_HOUR_MIN_SEC_MATCHED:
+  87:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 3
+
+
+  88:Core/Src/DS3231.c ****         break;
+  89:Core/Src/DS3231.c ****     case ALARM_MODE_MIN_SEC_MATCHED:
+  90:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+  91:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+  92:Core/Src/DS3231.c ****         break;
+  93:Core/Src/DS3231.c ****     case ALARM_MODE_SEC_MATCHED:
+  94:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+  95:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+  96:Core/Src/DS3231.c ****         alarmMinute |= 0x80;
+  97:Core/Src/DS3231.c ****         break;
+  98:Core/Src/DS3231.c ****     case ALARM_MODE_ONCE_PER_SECOND:
+  99:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 100:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+ 101:Core/Src/DS3231.c ****         alarmMinute |= 0x80;
+ 102:Core/Src/DS3231.c ****         alarmSecond |= 0x80;
+ 103:Core/Src/DS3231.c ****         break;
+ 104:Core/Src/DS3231.c ****     default:
+ 105:Core/Src/DS3231.c ****         break;
+ 106:Core/Src/DS3231.c ****     }
+ 107:Core/Src/DS3231.c **** 
+ 108:Core/Src/DS3231.c ****     /* Write Alarm Registers */
+ 109:Core/Src/DS3231.c ****     uint8_t startAddr = DS3231_REG_ALARM1;
+ 110:Core/Src/DS3231.c ****     uint8_t buffer[5] = {startAddr, alarmSecond, alarmMinute, alarmHour, alarmDate};
+ 111:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 112:Core/Src/DS3231.c ****         return false;
+ 113:Core/Src/DS3231.c **** 
+ 114:Core/Src/DS3231.c ****     /* Enable Alarm1 at Control Register */
+ 115:Core/Src/DS3231.c ****     uint8_t ctrlReg = 0x00;
+ 116:Core/Src/DS3231.c ****     ReadRegister(DS3231_REG_CONTROL, &ctrlReg);
+ 117:Core/Src/DS3231.c ****     ctrlReg |= DS3231_CON_A1IE;
+ 118:Core/Src/DS3231.c ****     ctrlReg |= DS3231_CON_INTCN;
+ 119:Core/Src/DS3231.c ****     WriteRegister(DS3231_REG_CONTROL, ctrlReg);
+ 120:Core/Src/DS3231.c **** 
+ 121:Core/Src/DS3231.c ****     return true;
+ 122:Core/Src/DS3231.c **** }
+ 123:Core/Src/DS3231.c **** 
+ 124:Core/Src/DS3231.c **** bool DS3231_ClearAlarm1()
+ 125:Core/Src/DS3231.c **** {
+ 126:Core/Src/DS3231.c ****     uint8_t ctrlReg;
+ 127:Core/Src/DS3231.c ****     uint8_t statusReg;
+ 128:Core/Src/DS3231.c **** 
+ 129:Core/Src/DS3231.c ****     /* Clear Control Register */
+ 130:Core/Src/DS3231.c ****     ReadRegister(DS3231_REG_CONTROL, &ctrlReg);
+ 131:Core/Src/DS3231.c ****     ctrlReg &= ~DS3231_CON_A1IE;
+ 132:Core/Src/DS3231.c ****     WriteRegister(DS3231_REG_CONTROL, ctrlReg);
+ 133:Core/Src/DS3231.c **** 
+ 134:Core/Src/DS3231.c ****     /* Clear Status Register */
+ 135:Core/Src/DS3231.c ****     ReadRegister(DS3231_REG_STATUS, &statusReg);
+ 136:Core/Src/DS3231.c ****     statusReg &= ~DS3231_STA_A1F;
+ 137:Core/Src/DS3231.c ****     WriteRegister(DS3231_REG_STATUS, statusReg);
+ 138:Core/Src/DS3231.c **** 
+ 139:Core/Src/DS3231.c ****     return true;
+ 140:Core/Src/DS3231.c **** }
+ 141:Core/Src/DS3231.c **** 
+ 142:Core/Src/DS3231.c **** bool ReadRegister(uint8_t regAddr, uint8_t *value)
+ 143:Core/Src/DS3231.c **** {
+ 144:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &regAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 4
+
+
+ 145:Core/Src/DS3231.c ****         return false;
+ 146:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, value, 1, HAL_MAX_DELAY) != HAL_OK)
+ 147:Core/Src/DS3231.c ****         return false;
+ 148:Core/Src/DS3231.c **** 
+ 149:Core/Src/DS3231.c ****     return true;
+ 150:Core/Src/DS3231.c **** }
+ 151:Core/Src/DS3231.c **** 
+ 152:Core/Src/DS3231.c **** bool WriteRegister(uint8_t regAddr, uint8_t value)
+ 153:Core/Src/DS3231.c **** {
+ 154:Core/Src/DS3231.c ****     uint8_t buffer[2] = {regAddr, value};
+ 155:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 156:Core/Src/DS3231.c ****         return false;
+ 157:Core/Src/DS3231.c **** 
+ 158:Core/Src/DS3231.c ****     return true;
+ 159:Core/Src/DS3231.c **** }
+ 160:Core/Src/DS3231.c **** 
+ 161:Core/Src/DS3231.c **** static uint8_t B2D(uint8_t bcd)
+ 162:Core/Src/DS3231.c **** {
+  29              		.loc 1 162 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+ 163:Core/Src/DS3231.c ****     return (bcd >> 4) * 10 + (bcd & 0x0F);
+  34              		.loc 1 163 5 view .LVU1
+  35              		.loc 1 163 35 is_stmt 0 view .LVU2
+  36 0000 00F00F03 		and	r3, r0, #15
+  37              		.loc 1 163 28 view .LVU3
+  38 0004 0009     		lsrs	r0, r0, #4
+  39              	.LVL1:
+  40              		.loc 1 163 28 view .LVU4
+  41 0006 00EB8000 		add	r0, r0, r0, lsl #2
+  42 000a 03EB4000 		add	r0, r3, r0, lsl #1
+ 164:Core/Src/DS3231.c **** }
+  43              		.loc 1 164 1 view .LVU5
+  44 000e C0B2     		uxtb	r0, r0
+  45 0010 7047     		bx	lr
+  46              		.cfi_endproc
+  47              	.LFE142:
+  49              		.section	.text.D2B,"ax",%progbits
+  50              		.align	1
+  51              		.syntax unified
+  52              		.thumb
+  53              		.thumb_func
+  55              	D2B:
+  56              	.LVL2:
+  57              	.LFB143:
+ 165:Core/Src/DS3231.c **** 
+ 166:Core/Src/DS3231.c **** static uint8_t D2B(uint8_t decimal)
+ 167:Core/Src/DS3231.c **** {
+  58              		.loc 1 167 1 is_stmt 1 view -0
+  59              		.cfi_startproc
+  60              		@ args = 0, pretend = 0, frame = 0
+  61              		@ frame_needed = 0, uses_anonymous_args = 0
+  62              		@ link register save eliminated.
+ 168:Core/Src/DS3231.c ****     return (((decimal / 10) << 4) | (decimal % 10));
+  63              		.loc 1 168 5 view .LVU7
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 5
+
+
+  64              		.loc 1 168 23 is_stmt 0 view .LVU8
+  65 0000 064B     		ldr	r3, .L3
+  66 0002 A3FB0023 		umull	r2, r3, r3, r0
+  67 0006 DA08     		lsrs	r2, r3, #3
+  68 0008 1346     		mov	r3, r2
+  69              		.loc 1 168 35 view .LVU9
+  70 000a 02EB8202 		add	r2, r2, r2, lsl #2
+  71 000e A0EB4200 		sub	r0, r0, r2, lsl #1
+  72              	.LVL3:
+  73              		.loc 1 168 35 view .LVU10
+  74 0012 40EA0310 		orr	r0, r0, r3, lsl #4
+ 169:Core/Src/DS3231.c **** }...
+  75              		.loc 1 169 1 view .LVU11
+  76 0016 C0B2     		uxtb	r0, r0
+  77 0018 7047     		bx	lr
+  78              	.L4:
+  79 001a 00BF     		.align	2
+  80              	.L3:
+  81 001c CDCCCCCC 		.word	-858993459
+  82              		.cfi_endproc
+  83              	.LFE143:
+  85              		.section	.text.DS3231_Init,"ax",%progbits
+  86              		.align	1
+  87              		.global	DS3231_Init
+  88              		.syntax unified
+  89              		.thumb
+  90              		.thumb_func
+  92              	DS3231_Init:
+  93              	.LVL4:
+  94              	.LFB134:
+  19:Core/Src/DS3231.c **** {
+  95              		.loc 1 19 1 is_stmt 1 view -0
+  96              		.cfi_startproc
+  97              		@ args = 0, pretend = 0, frame = 0
+  98              		@ frame_needed = 0, uses_anonymous_args = 0
+  99              		@ link register save eliminated.
+  20:Core/Src/DS3231.c ****     i2c = handle;
+ 100              		.loc 1 20 5 view .LVU13
+  20:Core/Src/DS3231.c ****     i2c = handle;
+ 101              		.loc 1 20 9 is_stmt 0 view .LVU14
+ 102 0000 014B     		ldr	r3, .L6
+ 103 0002 1860     		str	r0, [r3]
+  21:Core/Src/DS3231.c **** }
+ 104              		.loc 1 21 1 view .LVU15
+ 105 0004 7047     		bx	lr
+ 106              	.L7:
+ 107 0006 00BF     		.align	2
+ 108              	.L6:
+ 109 0008 00000000 		.word	i2c
+ 110              		.cfi_endproc
+ 111              	.LFE134:
+ 113              		.section	.text.DS3231_GetTime,"ax",%progbits
+ 114              		.align	1
+ 115              		.global	DS3231_GetTime
+ 116              		.syntax unified
+ 117              		.thumb
+ 118              		.thumb_func
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 6
+
+
+ 120              	DS3231_GetTime:
+ 121              	.LVL5:
+ 122              	.LFB135:
+  24:Core/Src/DS3231.c **** {
+ 123              		.loc 1 24 1 is_stmt 1 view -0
+ 124              		.cfi_startproc
+ 125              		@ args = 0, pretend = 0, frame = 8
+ 126              		@ frame_needed = 0, uses_anonymous_args = 0
+  24:Core/Src/DS3231.c **** {
+ 127              		.loc 1 24 1 is_stmt 0 view .LVU17
+ 128 0000 10B5     		push	{r4, lr}
+ 129              	.LCFI0:
+ 130              		.cfi_def_cfa_offset 8
+ 131              		.cfi_offset 4, -8
+ 132              		.cfi_offset 14, -4
+ 133 0002 84B0     		sub	sp, sp, #16
+ 134              	.LCFI1:
+ 135              		.cfi_def_cfa_offset 24
+ 136 0004 0446     		mov	r4, r0
+  25:Core/Src/DS3231.c ****     uint8_t startAddr = DS3231_REG_TIME;
+ 137              		.loc 1 25 5 is_stmt 1 view .LVU18
+  25:Core/Src/DS3231.c ****     uint8_t startAddr = DS3231_REG_TIME;
+ 138              		.loc 1 25 13 is_stmt 0 view .LVU19
+ 139 0006 0023     		movs	r3, #0
+ 140 0008 8DF80F30 		strb	r3, [sp, #15]
+  26:Core/Src/DS3231.c ****     uint8_t buffer[7] = {
+ 141              		.loc 1 26 5 is_stmt 1 view .LVU20
+  26:Core/Src/DS3231.c ****     uint8_t buffer[7] = {
+ 142              		.loc 1 26 13 is_stmt 0 view .LVU21
+ 143 000c 0293     		str	r3, [sp, #8]
+ 144 000e ADF80C30 		strh	r3, [sp, #12]	@ movhi
+ 145 0012 8DF80E30 		strb	r3, [sp, #14]
+  30:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &startAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 146              		.loc 1 30 5 is_stmt 1 view .LVU22
+  30:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &startAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 147              		.loc 1 30 9 is_stmt 0 view .LVU23
+ 148 0016 4FF0FF33 		mov	r3, #-1
+ 149 001a 0093     		str	r3, [sp]
+ 150 001c 0123     		movs	r3, #1
+ 151 001e 0DF10F02 		add	r2, sp, #15
+ 152 0022 D021     		movs	r1, #208
+ 153 0024 2148     		ldr	r0, .L14
+ 154              	.LVL6:
+  30:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &startAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 155              		.loc 1 30 9 view .LVU24
+ 156 0026 0068     		ldr	r0, [r0]
+ 157 0028 FFF7FEFF 		bl	HAL_I2C_Master_Transmit
+ 158              	.LVL7:
+  30:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &startAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 159              		.loc 1 30 8 view .LVU25
+ 160 002c 10B1     		cbz	r0, .L13
+  31:Core/Src/DS3231.c ****         return false;
+ 161              		.loc 1 31 16 view .LVU26
+ 162 002e 0020     		movs	r0, #0
+ 163              	.L9:
+  44:Core/Src/DS3231.c **** }
+ 164              		.loc 1 44 1 view .LVU27
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 7
+
+
+ 165 0030 04B0     		add	sp, sp, #16
+ 166              	.LCFI2:
+ 167              		.cfi_remember_state
+ 168              		.cfi_def_cfa_offset 8
+ 169              		@ sp needed
+ 170 0032 10BD     		pop	{r4, pc}
+ 171              	.LVL8:
+ 172              	.L13:
+ 173              	.LCFI3:
+ 174              		.cfi_restore_state
+  32:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 175              		.loc 1 32 5 is_stmt 1 view .LVU28
+  32:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 176              		.loc 1 32 9 is_stmt 0 view .LVU29
+ 177 0034 4FF0FF33 		mov	r3, #-1
+ 178 0038 0093     		str	r3, [sp]
+ 179 003a 0723     		movs	r3, #7
+ 180 003c 02AA     		add	r2, sp, #8
+ 181 003e D021     		movs	r1, #208
+ 182 0040 1A48     		ldr	r0, .L14
+ 183 0042 0068     		ldr	r0, [r0]
+ 184 0044 FFF7FEFF 		bl	HAL_I2C_Master_Receive
+ 185              	.LVL9:
+  32:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 186              		.loc 1 32 8 view .LVU30
+ 187 0048 70BB     		cbnz	r0, .L11
+  35:Core/Src/DS3231.c ****     rtc->Sec = B2D(buffer[0] & 0x7F);
+ 188              		.loc 1 35 5 is_stmt 1 view .LVU31
+  35:Core/Src/DS3231.c ****     rtc->Sec = B2D(buffer[0] & 0x7F);
+ 189              		.loc 1 35 26 is_stmt 0 view .LVU32
+ 190 004a 9DF80800 		ldrb	r0, [sp, #8]	@ zero_extendqisi2
+  35:Core/Src/DS3231.c ****     rtc->Sec = B2D(buffer[0] & 0x7F);
+ 191              		.loc 1 35 16 view .LVU33
+ 192 004e 00F07F00 		and	r0, r0, #127
+ 193 0052 FFF7FEFF 		bl	B2D
+ 194              	.LVL10:
+  35:Core/Src/DS3231.c ****     rtc->Sec = B2D(buffer[0] & 0x7F);
+ 195              		.loc 1 35 14 view .LVU34
+ 196 0056 A071     		strb	r0, [r4, #6]
+  36:Core/Src/DS3231.c ****     rtc->Min = B2D(buffer[1] & 0x7F);
+ 197              		.loc 1 36 5 is_stmt 1 view .LVU35
+  36:Core/Src/DS3231.c ****     rtc->Min = B2D(buffer[1] & 0x7F);
+ 198              		.loc 1 36 26 is_stmt 0 view .LVU36
+ 199 0058 9DF80900 		ldrb	r0, [sp, #9]	@ zero_extendqisi2
+  36:Core/Src/DS3231.c ****     rtc->Min = B2D(buffer[1] & 0x7F);
+ 200              		.loc 1 36 16 view .LVU37
+ 201 005c 00F07F00 		and	r0, r0, #127
+ 202 0060 FFF7FEFF 		bl	B2D
+ 203              	.LVL11:
+  36:Core/Src/DS3231.c ****     rtc->Min = B2D(buffer[1] & 0x7F);
+ 204              		.loc 1 36 14 view .LVU38
+ 205 0064 6071     		strb	r0, [r4, #5]
+  37:Core/Src/DS3231.c ****     rtc->Hour = B2D(buffer[2] & 0x3F);
+ 206              		.loc 1 37 5 is_stmt 1 view .LVU39
+  37:Core/Src/DS3231.c ****     rtc->Hour = B2D(buffer[2] & 0x3F);
+ 207              		.loc 1 37 27 is_stmt 0 view .LVU40
+ 208 0066 9DF80A00 		ldrb	r0, [sp, #10]	@ zero_extendqisi2
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 8
+
+
+  37:Core/Src/DS3231.c ****     rtc->Hour = B2D(buffer[2] & 0x3F);
+ 209              		.loc 1 37 17 view .LVU41
+ 210 006a 00F03F00 		and	r0, r0, #63
+ 211 006e FFF7FEFF 		bl	B2D
+ 212              	.LVL12:
+  37:Core/Src/DS3231.c ****     rtc->Hour = B2D(buffer[2] & 0x3F);
+ 213              		.loc 1 37 15 view .LVU42
+ 214 0072 2071     		strb	r0, [r4, #4]
+  38:Core/Src/DS3231.c ****     rtc->DaysOfWeek = buffer[3] & 0x07;
+ 215              		.loc 1 38 5 is_stmt 1 view .LVU43
+  38:Core/Src/DS3231.c ****     rtc->DaysOfWeek = buffer[3] & 0x07;
+ 216              		.loc 1 38 29 is_stmt 0 view .LVU44
+ 217 0074 9DF80B30 		ldrb	r3, [sp, #11]	@ zero_extendqisi2
+  38:Core/Src/DS3231.c ****     rtc->DaysOfWeek = buffer[3] & 0x07;
+ 218              		.loc 1 38 33 view .LVU45
+ 219 0078 03F00703 		and	r3, r3, #7
+  38:Core/Src/DS3231.c ****     rtc->DaysOfWeek = buffer[3] & 0x07;
+ 220              		.loc 1 38 21 view .LVU46
+ 221 007c E370     		strb	r3, [r4, #3]
+  39:Core/Src/DS3231.c ****     rtc->Date = B2D(buffer[4] & 0x3F);
+ 222              		.loc 1 39 5 is_stmt 1 view .LVU47
+  39:Core/Src/DS3231.c ****     rtc->Date = B2D(buffer[4] & 0x3F);
+ 223              		.loc 1 39 27 is_stmt 0 view .LVU48
+ 224 007e 9DF80C00 		ldrb	r0, [sp, #12]	@ zero_extendqisi2
+  39:Core/Src/DS3231.c ****     rtc->Date = B2D(buffer[4] & 0x3F);
+ 225              		.loc 1 39 17 view .LVU49
+ 226 0082 00F03F00 		and	r0, r0, #63
+ 227 0086 FFF7FEFF 		bl	B2D
+ 228              	.LVL13:
+  39:Core/Src/DS3231.c ****     rtc->Date = B2D(buffer[4] & 0x3F);
+ 229              		.loc 1 39 15 view .LVU50
+ 230 008a A070     		strb	r0, [r4, #2]
+  40:Core/Src/DS3231.c ****     rtc->Month = B2D(buffer[5] & 0x1F);
+ 231              		.loc 1 40 5 is_stmt 1 view .LVU51
+  40:Core/Src/DS3231.c ****     rtc->Month = B2D(buffer[5] & 0x1F);
+ 232              		.loc 1 40 28 is_stmt 0 view .LVU52
+ 233 008c 9DF80D00 		ldrb	r0, [sp, #13]	@ zero_extendqisi2
+  40:Core/Src/DS3231.c ****     rtc->Month = B2D(buffer[5] & 0x1F);
+ 234              		.loc 1 40 18 view .LVU53
+ 235 0090 00F01F00 		and	r0, r0, #31
+ 236 0094 FFF7FEFF 		bl	B2D
+ 237              	.LVL14:
+  40:Core/Src/DS3231.c ****     rtc->Month = B2D(buffer[5] & 0x1F);
+ 238              		.loc 1 40 16 view .LVU54
+ 239 0098 6070     		strb	r0, [r4, #1]
+  41:Core/Src/DS3231.c ****     rtc->Year = B2D(buffer[6]);
+ 240              		.loc 1 41 5 is_stmt 1 view .LVU55
+  41:Core/Src/DS3231.c ****     rtc->Year = B2D(buffer[6]);
+ 241              		.loc 1 41 17 is_stmt 0 view .LVU56
+ 242 009a 9DF80E00 		ldrb	r0, [sp, #14]	@ zero_extendqisi2
+ 243 009e FFF7FEFF 		bl	B2D
+ 244              	.LVL15:
+  41:Core/Src/DS3231.c ****     rtc->Year = B2D(buffer[6]);
+ 245              		.loc 1 41 15 view .LVU57
+ 246 00a2 2070     		strb	r0, [r4]
+  43:Core/Src/DS3231.c ****     return true;
+ 247              		.loc 1 43 5 is_stmt 1 view .LVU58
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 9
+
+
+  43:Core/Src/DS3231.c ****     return true;
+ 248              		.loc 1 43 12 is_stmt 0 view .LVU59
+ 249 00a4 0120     		movs	r0, #1
+ 250 00a6 C3E7     		b	.L9
+ 251              	.L11:
+  33:Core/Src/DS3231.c ****         return false;
+ 252              		.loc 1 33 16 view .LVU60
+ 253 00a8 0020     		movs	r0, #0
+ 254 00aa C1E7     		b	.L9
+ 255              	.L15:
+ 256              		.align	2
+ 257              	.L14:
+ 258 00ac 00000000 		.word	i2c
+ 259              		.cfi_endproc
+ 260              	.LFE135:
+ 262              		.section	.text.DS3231_SetTime,"ax",%progbits
+ 263              		.align	1
+ 264              		.global	DS3231_SetTime
+ 265              		.syntax unified
+ 266              		.thumb
+ 267              		.thumb_func
+ 269              	DS3231_SetTime:
+ 270              	.LVL16:
+ 271              	.LFB136:
+  47:Core/Src/DS3231.c **** {
+ 272              		.loc 1 47 1 is_stmt 1 view -0
+ 273              		.cfi_startproc
+ 274              		@ args = 0, pretend = 0, frame = 8
+ 275              		@ frame_needed = 0, uses_anonymous_args = 0
+  47:Core/Src/DS3231.c **** {
+ 276              		.loc 1 47 1 is_stmt 0 view .LVU62
+ 277 0000 10B5     		push	{r4, lr}
+ 278              	.LCFI4:
+ 279              		.cfi_def_cfa_offset 8
+ 280              		.cfi_offset 4, -8
+ 281              		.cfi_offset 14, -4
+ 282 0002 84B0     		sub	sp, sp, #16
+ 283              	.LCFI5:
+ 284              		.cfi_def_cfa_offset 24
+ 285 0004 0446     		mov	r4, r0
+  48:Core/Src/DS3231.c ****     uint8_t startAddr = DS3231_REG_TIME;
+ 286              		.loc 1 48 5 is_stmt 1 view .LVU63
+ 287              	.LVL17:
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 288              		.loc 1 49 5 view .LVU64
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 289              		.loc 1 49 13 is_stmt 0 view .LVU65
+ 290 0006 0023     		movs	r3, #0
+ 291 0008 8DF80830 		strb	r3, [sp, #8]
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 292              		.loc 1 49 37 view .LVU66
+ 293 000c 8079     		ldrb	r0, [r0, #6]	@ zero_extendqisi2
+ 294              	.LVL18:
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 295              		.loc 1 49 37 view .LVU67
+ 296 000e FFF7FEFF 		bl	D2B
+ 297              	.LVL19:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 10
+
+
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 298              		.loc 1 49 13 view .LVU68
+ 299 0012 8DF80900 		strb	r0, [sp, #9]
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 300              		.loc 1 49 52 view .LVU69
+ 301 0016 6079     		ldrb	r0, [r4, #5]	@ zero_extendqisi2
+ 302 0018 FFF7FEFF 		bl	D2B
+ 303              	.LVL20:
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 304              		.loc 1 49 13 view .LVU70
+ 305 001c 8DF80A00 		strb	r0, [sp, #10]
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 306              		.loc 1 49 67 view .LVU71
+ 307 0020 2079     		ldrb	r0, [r4, #4]	@ zero_extendqisi2
+ 308 0022 FFF7FEFF 		bl	D2B
+ 309              	.LVL21:
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 310              		.loc 1 49 13 view .LVU72
+ 311 0026 8DF80B00 		strb	r0, [sp, #11]
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 312              		.loc 1 49 86 view .LVU73
+ 313 002a E378     		ldrb	r3, [r4, #3]	@ zero_extendqisi2
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 314              		.loc 1 49 13 view .LVU74
+ 315 002c 8DF80C30 		strb	r3, [sp, #12]
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 316              		.loc 1 49 100 view .LVU75
+ 317 0030 A078     		ldrb	r0, [r4, #2]	@ zero_extendqisi2
+ 318 0032 FFF7FEFF 		bl	D2B
+ 319              	.LVL22:
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 320              		.loc 1 49 13 view .LVU76
+ 321 0036 8DF80D00 		strb	r0, [sp, #13]
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 322              		.loc 1 49 116 view .LVU77
+ 323 003a 6078     		ldrb	r0, [r4, #1]	@ zero_extendqisi2
+ 324 003c FFF7FEFF 		bl	D2B
+ 325              	.LVL23:
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 326              		.loc 1 49 13 view .LVU78
+ 327 0040 8DF80E00 		strb	r0, [sp, #14]
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 328              		.loc 1 49 133 view .LVU79
+ 329 0044 2078     		ldrb	r0, [r4]	@ zero_extendqisi2
+ 330 0046 FFF7FEFF 		bl	D2B
+ 331              	.LVL24:
+  49:Core/Src/DS3231.c ****     uint8_t buffer[8] = {startAddr, D2B(rtc->Sec), D2B(rtc->Min), D2B(rtc->Hour), rtc->DaysOfWeek, 
+ 332              		.loc 1 49 13 view .LVU80
+ 333 004a 8DF80F00 		strb	r0, [sp, #15]
+  50:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 334              		.loc 1 50 5 is_stmt 1 view .LVU81
+  50:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 335              		.loc 1 50 9 is_stmt 0 view .LVU82
+ 336 004e 4FF0FF33 		mov	r3, #-1
+ 337 0052 0093     		str	r3, [sp]
+ 338 0054 0823     		movs	r3, #8
+ 339 0056 0DEB0302 		add	r2, sp, r3
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 11
+
+
+ 340 005a D021     		movs	r1, #208
+ 341 005c 0448     		ldr	r0, .L20
+ 342 005e 0068     		ldr	r0, [r0]
+ 343 0060 FFF7FEFF 		bl	HAL_I2C_Master_Transmit
+ 344              	.LVL25:
+  50:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 345              		.loc 1 50 8 view .LVU83
+ 346 0064 10B9     		cbnz	r0, .L18
+  53:Core/Src/DS3231.c ****     return true;
+ 347              		.loc 1 53 12 view .LVU84
+ 348 0066 0120     		movs	r0, #1
+ 349              	.L17:
+  54:Core/Src/DS3231.c **** }
+ 350              		.loc 1 54 1 view .LVU85
+ 351 0068 04B0     		add	sp, sp, #16
+ 352              	.LCFI6:
+ 353              		.cfi_remember_state
+ 354              		.cfi_def_cfa_offset 8
+ 355              		@ sp needed
+ 356 006a 10BD     		pop	{r4, pc}
+ 357              	.LVL26:
+ 358              	.L18:
+ 359              	.LCFI7:
+ 360              		.cfi_restore_state
+  51:Core/Src/DS3231.c ****         return false;
+ 361              		.loc 1 51 16 view .LVU86
+ 362 006c 0020     		movs	r0, #0
+ 363 006e FBE7     		b	.L17
+ 364              	.L21:
+ 365              		.align	2
+ 366              	.L20:
+ 367 0070 00000000 		.word	i2c
+ 368              		.cfi_endproc
+ 369              	.LFE136:
+ 371              		.section	.text.DS3231_ReadTemperature,"ax",%progbits
+ 372              		.align	1
+ 373              		.global	DS3231_ReadTemperature
+ 374              		.syntax unified
+ 375              		.thumb
+ 376              		.thumb_func
+ 378              	DS3231_ReadTemperature:
+ 379              	.LVL27:
+ 380              	.LFB137:
+  57:Core/Src/DS3231.c **** {
+ 381              		.loc 1 57 1 is_stmt 1 view -0
+ 382              		.cfi_startproc
+ 383              		@ args = 0, pretend = 0, frame = 8
+ 384              		@ frame_needed = 0, uses_anonymous_args = 0
+  57:Core/Src/DS3231.c **** {
+ 385              		.loc 1 57 1 is_stmt 0 view .LVU88
+ 386 0000 10B5     		push	{r4, lr}
+ 387              	.LCFI8:
+ 388              		.cfi_def_cfa_offset 8
+ 389              		.cfi_offset 4, -8
+ 390              		.cfi_offset 14, -4
+ 391 0002 84B0     		sub	sp, sp, #16
+ 392              	.LCFI9:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 12
+
+
+ 393              		.cfi_def_cfa_offset 24
+ 394 0004 0446     		mov	r4, r0
+  58:Core/Src/DS3231.c ****     uint8_t startAddr = DS3231_REG_TEMP;
+ 395              		.loc 1 58 5 is_stmt 1 view .LVU89
+  58:Core/Src/DS3231.c ****     uint8_t startAddr = DS3231_REG_TEMP;
+ 396              		.loc 1 58 13 is_stmt 0 view .LVU90
+ 397 0006 1123     		movs	r3, #17
+ 398 0008 8DF80F30 		strb	r3, [sp, #15]
+  59:Core/Src/DS3231.c ****     uint8_t buffer[2] = {
+ 399              		.loc 1 59 5 is_stmt 1 view .LVU91
+  59:Core/Src/DS3231.c ****     uint8_t buffer[2] = {
+ 400              		.loc 1 59 13 is_stmt 0 view .LVU92
+ 401 000c 0023     		movs	r3, #0
+ 402 000e ADF80C30 		strh	r3, [sp, #12]	@ movhi
+  63:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &startAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 403              		.loc 1 63 5 is_stmt 1 view .LVU93
+  63:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &startAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 404              		.loc 1 63 9 is_stmt 0 view .LVU94
+ 405 0012 4FF0FF33 		mov	r3, #-1
+ 406 0016 0093     		str	r3, [sp]
+ 407 0018 0123     		movs	r3, #1
+ 408 001a 0DF10F02 		add	r2, sp, #15
+ 409 001e D021     		movs	r1, #208
+ 410 0020 1448     		ldr	r0, .L28
+ 411              	.LVL28:
+  63:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &startAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 412              		.loc 1 63 9 view .LVU95
+ 413 0022 0068     		ldr	r0, [r0]
+ 414 0024 FFF7FEFF 		bl	HAL_I2C_Master_Transmit
+ 415              	.LVL29:
+  63:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &startAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 416              		.loc 1 63 8 view .LVU96
+ 417 0028 10B1     		cbz	r0, .L27
+  64:Core/Src/DS3231.c ****         return false;
+ 418              		.loc 1 64 16 view .LVU97
+ 419 002a 0020     		movs	r0, #0
+ 420              	.L23:
+  73:Core/Src/DS3231.c **** }
+ 421              		.loc 1 73 1 view .LVU98
+ 422 002c 04B0     		add	sp, sp, #16
+ 423              	.LCFI10:
+ 424              		.cfi_remember_state
+ 425              		.cfi_def_cfa_offset 8
+ 426              		@ sp needed
+ 427 002e 10BD     		pop	{r4, pc}
+ 428              	.LVL30:
+ 429              	.L27:
+ 430              	.LCFI11:
+ 431              		.cfi_restore_state
+  65:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 432              		.loc 1 65 5 is_stmt 1 view .LVU99
+  65:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 433              		.loc 1 65 9 is_stmt 0 view .LVU100
+ 434 0030 4FF0FF33 		mov	r3, #-1
+ 435 0034 0093     		str	r3, [sp]
+ 436 0036 0223     		movs	r3, #2
+ 437 0038 03AA     		add	r2, sp, #12
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 13
+
+
+ 438 003a D021     		movs	r1, #208
+ 439 003c 0D48     		ldr	r0, .L28
+ 440 003e 0068     		ldr	r0, [r0]
+ 441 0040 FFF7FEFF 		bl	HAL_I2C_Master_Receive
+ 442              	.LVL31:
+  65:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 443              		.loc 1 65 8 view .LVU101
+ 444 0044 98B9     		cbnz	r0, .L25
+  68:Core/Src/DS3231.c ****     int16_t value = (buffer[0] << 8) | (buffer[1]);
+ 445              		.loc 1 68 5 is_stmt 1 view .LVU102
+  68:Core/Src/DS3231.c ****     int16_t value = (buffer[0] << 8) | (buffer[1]);
+ 446              		.loc 1 68 28 is_stmt 0 view .LVU103
+ 447 0046 9DF80C30 		ldrb	r3, [sp, #12]	@ zero_extendqisi2
+  68:Core/Src/DS3231.c ****     int16_t value = (buffer[0] << 8) | (buffer[1]);
+ 448              		.loc 1 68 32 view .LVU104
+ 449 004a 1B02     		lsls	r3, r3, #8
+  68:Core/Src/DS3231.c ****     int16_t value = (buffer[0] << 8) | (buffer[1]);
+ 450              		.loc 1 68 38 view .LVU105
+ 451 004c 1BB2     		sxth	r3, r3
+  68:Core/Src/DS3231.c ****     int16_t value = (buffer[0] << 8) | (buffer[1]);
+ 452              		.loc 1 68 47 view .LVU106
+ 453 004e 9DF80D20 		ldrb	r2, [sp, #13]	@ zero_extendqisi2
+  68:Core/Src/DS3231.c ****     int16_t value = (buffer[0] << 8) | (buffer[1]);
+ 454              		.loc 1 68 13 view .LVU107
+ 455 0052 1343     		orrs	r3, r3, r2
+ 456              	.LVL32:
+  69:Core/Src/DS3231.c ****     value = (value >> 6);
+ 457              		.loc 1 69 5 is_stmt 1 view .LVU108
+  69:Core/Src/DS3231.c ****     value = (value >> 6);
+ 458              		.loc 1 69 11 is_stmt 0 view .LVU109
+ 459 0054 9B11     		asrs	r3, r3, #6
+ 460              	.LVL33:
+  69:Core/Src/DS3231.c ****     value = (value >> 6);
+ 461              		.loc 1 69 11 view .LVU110
+ 462 0056 07EE903A 		vmov	s15, r3	@ int
+ 463              	.LVL34:
+  71:Core/Src/DS3231.c ****     *temp = value / 4.0f;
+ 464              		.loc 1 71 5 is_stmt 1 view .LVU111
+  71:Core/Src/DS3231.c ****     *temp = value / 4.0f;
+ 465              		.loc 1 71 19 is_stmt 0 view .LVU112
+ 466 005a F8EEE77A 		vcvt.f32.s32	s15, s15
+ 467              	.LVL35:
+  71:Core/Src/DS3231.c ****     *temp = value / 4.0f;
+ 468              		.loc 1 71 19 view .LVU113
+ 469 005e B5EE007A 		vmov.f32	s14, #2.5e-1
+ 470 0062 67EE877A 		vmul.f32	s15, s15, s14
+  71:Core/Src/DS3231.c ****     *temp = value / 4.0f;
+ 471              		.loc 1 71 11 view .LVU114
+ 472 0066 C4ED007A 		vstr.32	s15, [r4]
+  72:Core/Src/DS3231.c ****     return true;
+ 473              		.loc 1 72 5 is_stmt 1 view .LVU115
+  72:Core/Src/DS3231.c ****     return true;
+ 474              		.loc 1 72 12 is_stmt 0 view .LVU116
+ 475 006a 0120     		movs	r0, #1
+ 476 006c DEE7     		b	.L23
+ 477              	.LVL36:
+ 478              	.L25:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 14
+
+
+  66:Core/Src/DS3231.c ****         return false;
+ 479              		.loc 1 66 16 view .LVU117
+ 480 006e 0020     		movs	r0, #0
+ 481 0070 DCE7     		b	.L23
+ 482              	.L29:
+ 483 0072 00BF     		.align	2
+ 484              	.L28:
+ 485 0074 00000000 		.word	i2c
+ 486              		.cfi_endproc
+ 487              	.LFE137:
+ 489              		.section	.text.ReadRegister,"ax",%progbits
+ 490              		.align	1
+ 491              		.global	ReadRegister
+ 492              		.syntax unified
+ 493              		.thumb
+ 494              		.thumb_func
+ 496              	ReadRegister:
+ 497              	.LVL37:
+ 498              	.LFB140:
+ 143:Core/Src/DS3231.c **** {
+ 499              		.loc 1 143 1 is_stmt 1 view -0
+ 500              		.cfi_startproc
+ 501              		@ args = 0, pretend = 0, frame = 8
+ 502              		@ frame_needed = 0, uses_anonymous_args = 0
+ 143:Core/Src/DS3231.c **** {
+ 503              		.loc 1 143 1 is_stmt 0 view .LVU119
+ 504 0000 10B5     		push	{r4, lr}
+ 505              	.LCFI12:
+ 506              		.cfi_def_cfa_offset 8
+ 507              		.cfi_offset 4, -8
+ 508              		.cfi_offset 14, -4
+ 509 0002 84B0     		sub	sp, sp, #16
+ 510              	.LCFI13:
+ 511              		.cfi_def_cfa_offset 24
+ 512 0004 0C46     		mov	r4, r1
+ 513 0006 8DF80F00 		strb	r0, [sp, #15]
+ 144:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &regAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 514              		.loc 1 144 5 is_stmt 1 view .LVU120
+ 144:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &regAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 515              		.loc 1 144 9 is_stmt 0 view .LVU121
+ 516 000a 4FF0FF33 		mov	r3, #-1
+ 517 000e 0093     		str	r3, [sp]
+ 518 0010 0123     		movs	r3, #1
+ 519 0012 0DF10F02 		add	r2, sp, #15
+ 520 0016 D021     		movs	r1, #208
+ 521              	.LVL38:
+ 144:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &regAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 522              		.loc 1 144 9 view .LVU122
+ 523 0018 0B48     		ldr	r0, .L36
+ 524              	.LVL39:
+ 144:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &regAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 525              		.loc 1 144 9 view .LVU123
+ 526 001a 0068     		ldr	r0, [r0]
+ 527 001c FFF7FEFF 		bl	HAL_I2C_Master_Transmit
+ 528              	.LVL40:
+ 144:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, &regAddr, 1, HAL_MAX_DELAY) != HAL_OK)
+ 529              		.loc 1 144 8 view .LVU124
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 15
+
+
+ 530 0020 10B1     		cbz	r0, .L35
+ 145:Core/Src/DS3231.c ****         return false;
+ 531              		.loc 1 145 16 view .LVU125
+ 532 0022 0020     		movs	r0, #0
+ 533              	.L31:
+ 150:Core/Src/DS3231.c **** }
+ 534              		.loc 1 150 1 view .LVU126
+ 535 0024 04B0     		add	sp, sp, #16
+ 536              	.LCFI14:
+ 537              		.cfi_remember_state
+ 538              		.cfi_def_cfa_offset 8
+ 539              		@ sp needed
+ 540 0026 10BD     		pop	{r4, pc}
+ 541              	.LVL41:
+ 542              	.L35:
+ 543              	.LCFI15:
+ 544              		.cfi_restore_state
+ 146:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, value, 1, HAL_MAX_DELAY) != HAL_OK)
+ 545              		.loc 1 146 5 is_stmt 1 view .LVU127
+ 146:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, value, 1, HAL_MAX_DELAY) != HAL_OK)
+ 546              		.loc 1 146 9 is_stmt 0 view .LVU128
+ 547 0028 4FF0FF33 		mov	r3, #-1
+ 548 002c 0093     		str	r3, [sp]
+ 549 002e 0123     		movs	r3, #1
+ 550 0030 2246     		mov	r2, r4
+ 551 0032 D021     		movs	r1, #208
+ 552 0034 0448     		ldr	r0, .L36
+ 553 0036 0068     		ldr	r0, [r0]
+ 554 0038 FFF7FEFF 		bl	HAL_I2C_Master_Receive
+ 555              	.LVL42:
+ 146:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Receive(i2c, DS3231_ADDR, value, 1, HAL_MAX_DELAY) != HAL_OK)
+ 556              		.loc 1 146 8 view .LVU129
+ 557 003c 08B9     		cbnz	r0, .L33
+ 149:Core/Src/DS3231.c ****     return true;
+ 558              		.loc 1 149 12 view .LVU130
+ 559 003e 0120     		movs	r0, #1
+ 560 0040 F0E7     		b	.L31
+ 561              	.L33:
+ 147:Core/Src/DS3231.c ****         return false;
+ 562              		.loc 1 147 16 view .LVU131
+ 563 0042 0020     		movs	r0, #0
+ 564 0044 EEE7     		b	.L31
+ 565              	.L37:
+ 566 0046 00BF     		.align	2
+ 567              	.L36:
+ 568 0048 00000000 		.word	i2c
+ 569              		.cfi_endproc
+ 570              	.LFE140:
+ 572              		.section	.text.WriteRegister,"ax",%progbits
+ 573              		.align	1
+ 574              		.global	WriteRegister
+ 575              		.syntax unified
+ 576              		.thumb
+ 577              		.thumb_func
+ 579              	WriteRegister:
+ 580              	.LVL43:
+ 581              	.LFB141:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 16
+
+
+ 153:Core/Src/DS3231.c **** {
+ 582              		.loc 1 153 1 is_stmt 1 view -0
+ 583              		.cfi_startproc
+ 584              		@ args = 0, pretend = 0, frame = 8
+ 585              		@ frame_needed = 0, uses_anonymous_args = 0
+ 153:Core/Src/DS3231.c **** {
+ 586              		.loc 1 153 1 is_stmt 0 view .LVU133
+ 587 0000 00B5     		push	{lr}
+ 588              	.LCFI16:
+ 589              		.cfi_def_cfa_offset 4
+ 590              		.cfi_offset 14, -4
+ 591 0002 85B0     		sub	sp, sp, #20
+ 592              	.LCFI17:
+ 593              		.cfi_def_cfa_offset 24
+ 154:Core/Src/DS3231.c ****     uint8_t buffer[2] = {regAddr, value};
+ 594              		.loc 1 154 5 is_stmt 1 view .LVU134
+ 154:Core/Src/DS3231.c ****     uint8_t buffer[2] = {regAddr, value};
+ 595              		.loc 1 154 13 is_stmt 0 view .LVU135
+ 596 0004 8DF80C00 		strb	r0, [sp, #12]
+ 597 0008 8DF80D10 		strb	r1, [sp, #13]
+ 155:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 598              		.loc 1 155 5 is_stmt 1 view .LVU136
+ 155:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 599              		.loc 1 155 9 is_stmt 0 view .LVU137
+ 600 000c 4FF0FF33 		mov	r3, #-1
+ 601 0010 0093     		str	r3, [sp]
+ 602 0012 0223     		movs	r3, #2
+ 603 0014 03AA     		add	r2, sp, #12
+ 604 0016 D021     		movs	r1, #208
+ 605              	.LVL44:
+ 155:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 606              		.loc 1 155 9 view .LVU138
+ 607 0018 0548     		ldr	r0, .L42
+ 608              	.LVL45:
+ 155:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 609              		.loc 1 155 9 view .LVU139
+ 610 001a 0068     		ldr	r0, [r0]
+ 611 001c FFF7FEFF 		bl	HAL_I2C_Master_Transmit
+ 612              	.LVL46:
+ 155:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 613              		.loc 1 155 8 view .LVU140
+ 614 0020 18B9     		cbnz	r0, .L40
+ 158:Core/Src/DS3231.c ****     return true;
+ 615              		.loc 1 158 12 view .LVU141
+ 616 0022 0120     		movs	r0, #1
+ 617              	.L39:
+ 159:Core/Src/DS3231.c **** }
+ 618              		.loc 1 159 1 view .LVU142
+ 619 0024 05B0     		add	sp, sp, #20
+ 620              	.LCFI18:
+ 621              		.cfi_remember_state
+ 622              		.cfi_def_cfa_offset 4
+ 623              		@ sp needed
+ 624 0026 5DF804FB 		ldr	pc, [sp], #4
+ 625              	.L40:
+ 626              	.LCFI19:
+ 627              		.cfi_restore_state
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 17
+
+
+ 156:Core/Src/DS3231.c ****         return false;
+ 628              		.loc 1 156 16 view .LVU143
+ 629 002a 0020     		movs	r0, #0
+ 630 002c FAE7     		b	.L39
+ 631              	.L43:
+ 632 002e 00BF     		.align	2
+ 633              	.L42:
+ 634 0030 00000000 		.word	i2c
+ 635              		.cfi_endproc
+ 636              	.LFE141:
+ 638              		.section	.text.DS3231_SetAlarm1,"ax",%progbits
+ 639              		.align	1
+ 640              		.global	DS3231_SetAlarm1
+ 641              		.syntax unified
+ 642              		.thumb
+ 643              		.thumb_func
+ 645              	DS3231_SetAlarm1:
+ 646              	.LVL47:
+ 647              	.LFB138:
+  76:Core/Src/DS3231.c **** {
+ 648              		.loc 1 76 1 is_stmt 1 view -0
+ 649              		.cfi_startproc
+ 650              		@ args = 4, pretend = 0, frame = 16
+ 651              		@ frame_needed = 0, uses_anonymous_args = 0
+  76:Core/Src/DS3231.c **** {
+ 652              		.loc 1 76 1 is_stmt 0 view .LVU145
+ 653 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 654              	.LCFI20:
+ 655              		.cfi_def_cfa_offset 24
+ 656              		.cfi_offset 4, -24
+ 657              		.cfi_offset 5, -20
+ 658              		.cfi_offset 6, -16
+ 659              		.cfi_offset 7, -12
+ 660              		.cfi_offset 8, -8
+ 661              		.cfi_offset 14, -4
+ 662 0004 86B0     		sub	sp, sp, #24
+ 663              	.LCFI21:
+ 664              		.cfi_def_cfa_offset 48
+ 665 0006 0746     		mov	r7, r0
+ 666 0008 8846     		mov	r8, r1
+ 667 000a 1446     		mov	r4, r2
+ 668 000c 1D46     		mov	r5, r3
+  77:Core/Src/DS3231.c ****     uint8_t alarmSecond = D2B(sec);
+ 669              		.loc 1 77 5 is_stmt 1 view .LVU146
+  77:Core/Src/DS3231.c ****     uint8_t alarmSecond = D2B(sec);
+ 670              		.loc 1 77 27 is_stmt 0 view .LVU147
+ 671 000e 9DF83000 		ldrb	r0, [sp, #48]	@ zero_extendqisi2
+ 672              	.LVL48:
+  77:Core/Src/DS3231.c ****     uint8_t alarmSecond = D2B(sec);
+ 673              		.loc 1 77 27 view .LVU148
+ 674 0012 FFF7FEFF 		bl	D2B
+ 675              	.LVL49:
+  77:Core/Src/DS3231.c ****     uint8_t alarmSecond = D2B(sec);
+ 676              		.loc 1 77 27 view .LVU149
+ 677 0016 0646     		mov	r6, r0
+ 678              	.LVL50:
+  78:Core/Src/DS3231.c ****     uint8_t alarmMinute = D2B(min);
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 18
+
+
+ 679              		.loc 1 78 5 is_stmt 1 view .LVU150
+  78:Core/Src/DS3231.c ****     uint8_t alarmMinute = D2B(min);
+ 680              		.loc 1 78 27 is_stmt 0 view .LVU151
+ 681 0018 2846     		mov	r0, r5
+ 682 001a FFF7FEFF 		bl	D2B
+ 683              	.LVL51:
+ 684 001e 0546     		mov	r5, r0
+ 685              	.LVL52:
+  79:Core/Src/DS3231.c ****     uint8_t alarmHour = D2B(hour);
+ 686              		.loc 1 79 5 is_stmt 1 view .LVU152
+  79:Core/Src/DS3231.c ****     uint8_t alarmHour = D2B(hour);
+ 687              		.loc 1 79 25 is_stmt 0 view .LVU153
+ 688 0020 2046     		mov	r0, r4
+ 689 0022 FFF7FEFF 		bl	D2B
+ 690              	.LVL53:
+ 691 0026 0446     		mov	r4, r0
+ 692              	.LVL54:
+  80:Core/Src/DS3231.c ****     uint8_t alarmDate = D2B(date);
+ 693              		.loc 1 80 5 is_stmt 1 view .LVU154
+  80:Core/Src/DS3231.c ****     uint8_t alarmDate = D2B(date);
+ 694              		.loc 1 80 25 is_stmt 0 view .LVU155
+ 695 0028 4046     		mov	r0, r8
+ 696 002a FFF7FEFF 		bl	D2B
+ 697              	.LVL55:
+ 698 002e 0346     		mov	r3, r0
+ 699              	.LVL56:
+  82:Core/Src/DS3231.c ****     switch (mode)
+ 700              		.loc 1 82 5 is_stmt 1 view .LVU156
+ 701 0030 781E     		subs	r0, r7, #1
+ 702 0032 0328     		cmp	r0, #3
+ 703 0034 06D8     		bhi	.L45
+ 704 0036 DFE800F0 		tbb	[pc, r0]
+ 705              	.L47:
+ 706 003a 02       		.byte	(.L50-.L47)/2
+ 707 003b 1F       		.byte	(.L49-.L47)/2
+ 708 003c 26       		.byte	(.L48-.L47)/2
+ 709 003d 30       		.byte	(.L46-.L47)/2
+ 710              		.p2align 1
+ 711              	.L50:
+  87:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 712              		.loc 1 87 9 view .LVU157
+  87:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 713              		.loc 1 87 19 is_stmt 0 view .LVU158
+ 714 003e 63F07F03 		orn	r3, r3, #127
+ 715              	.LVL57:
+  87:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 716              		.loc 1 87 19 view .LVU159
+ 717 0042 DBB2     		uxtb	r3, r3
+ 718              	.LVL58:
+  88:Core/Src/DS3231.c ****         break;
+ 719              		.loc 1 88 9 is_stmt 1 view .LVU160
+ 720              	.L45:
+ 109:Core/Src/DS3231.c ****     uint8_t startAddr = DS3231_REG_ALARM1;
+ 721              		.loc 1 109 5 view .LVU161
+ 110:Core/Src/DS3231.c ****     uint8_t buffer[5] = {startAddr, alarmSecond, alarmMinute, alarmHour, alarmDate};
+ 722              		.loc 1 110 5 view .LVU162
+ 110:Core/Src/DS3231.c ****     uint8_t buffer[5] = {startAddr, alarmSecond, alarmMinute, alarmHour, alarmDate};
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 19
+
+
+ 723              		.loc 1 110 13 is_stmt 0 view .LVU163
+ 724 0044 0722     		movs	r2, #7
+ 725 0046 8DF81020 		strb	r2, [sp, #16]
+ 726 004a 8DF81160 		strb	r6, [sp, #17]
+ 727 004e 8DF81250 		strb	r5, [sp, #18]
+ 728 0052 8DF81340 		strb	r4, [sp, #19]
+ 729 0056 8DF81430 		strb	r3, [sp, #20]
+ 111:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 730              		.loc 1 111 5 is_stmt 1 view .LVU164
+ 111:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 731              		.loc 1 111 9 is_stmt 0 view .LVU165
+ 732 005a 4FF0FF33 		mov	r3, #-1
+ 733              	.LVL59:
+ 111:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 734              		.loc 1 111 9 view .LVU166
+ 735 005e 0093     		str	r3, [sp]
+ 736 0060 0523     		movs	r3, #5
+ 737 0062 04AA     		add	r2, sp, #16
+ 738 0064 D021     		movs	r1, #208
+ 739 0066 1F48     		ldr	r0, .L56
+ 740 0068 0068     		ldr	r0, [r0]
+ 741 006a FFF7FEFF 		bl	HAL_I2C_Master_Transmit
+ 742              	.LVL60:
+ 111:Core/Src/DS3231.c ****     if (HAL_I2C_Master_Transmit(i2c, DS3231_ADDR, buffer, sizeof(buffer), HAL_MAX_DELAY) != HAL_OK)
+ 743              		.loc 1 111 8 view .LVU167
+ 744 006e 08B3     		cbz	r0, .L55
+ 112:Core/Src/DS3231.c ****         return false;
+ 745              		.loc 1 112 16 view .LVU168
+ 746 0070 0020     		movs	r0, #0
+ 747              	.L51:
+ 122:Core/Src/DS3231.c **** }
+ 748              		.loc 1 122 1 view .LVU169
+ 749 0072 06B0     		add	sp, sp, #24
+ 750              	.LCFI22:
+ 751              		.cfi_remember_state
+ 752              		.cfi_def_cfa_offset 24
+ 753              		@ sp needed
+ 754 0074 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 755              	.LVL61:
+ 756              	.L49:
+ 757              	.LCFI23:
+ 758              		.cfi_restore_state
+  90:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 759              		.loc 1 90 9 is_stmt 1 view .LVU170
+  90:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 760              		.loc 1 90 19 is_stmt 0 view .LVU171
+ 761 0078 63F07F03 		orn	r3, r3, #127
+ 762              	.LVL62:
+  90:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 763              		.loc 1 90 19 view .LVU172
+ 764 007c DBB2     		uxtb	r3, r3
+ 765              	.LVL63:
+  91:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+ 766              		.loc 1 91 9 is_stmt 1 view .LVU173
+  91:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+ 767              		.loc 1 91 19 is_stmt 0 view .LVU174
+ 768 007e 64F07F04 		orn	r4, r4, #127
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 20
+
+
+ 769              	.LVL64:
+  91:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+ 770              		.loc 1 91 19 view .LVU175
+ 771 0082 E4B2     		uxtb	r4, r4
+ 772              	.LVL65:
+  92:Core/Src/DS3231.c ****         break;
+ 773              		.loc 1 92 9 is_stmt 1 view .LVU176
+ 774 0084 DEE7     		b	.L45
+ 775              	.L48:
+  94:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 776              		.loc 1 94 9 view .LVU177
+  94:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 777              		.loc 1 94 19 is_stmt 0 view .LVU178
+ 778 0086 63F07F03 		orn	r3, r3, #127
+ 779              	.LVL66:
+  94:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 780              		.loc 1 94 19 view .LVU179
+ 781 008a DBB2     		uxtb	r3, r3
+ 782              	.LVL67:
+  95:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+ 783              		.loc 1 95 9 is_stmt 1 view .LVU180
+  95:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+ 784              		.loc 1 95 19 is_stmt 0 view .LVU181
+ 785 008c 64F07F04 		orn	r4, r4, #127
+ 786              	.LVL68:
+  95:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+ 787              		.loc 1 95 19 view .LVU182
+ 788 0090 E4B2     		uxtb	r4, r4
+ 789              	.LVL69:
+  96:Core/Src/DS3231.c ****         alarmMinute |= 0x80;
+ 790              		.loc 1 96 9 is_stmt 1 view .LVU183
+  96:Core/Src/DS3231.c ****         alarmMinute |= 0x80;
+ 791              		.loc 1 96 21 is_stmt 0 view .LVU184
+ 792 0092 65F07F05 		orn	r5, r5, #127
+ 793              	.LVL70:
+  96:Core/Src/DS3231.c ****         alarmMinute |= 0x80;
+ 794              		.loc 1 96 21 view .LVU185
+ 795 0096 EDB2     		uxtb	r5, r5
+ 796              	.LVL71:
+  97:Core/Src/DS3231.c ****         break;
+ 797              		.loc 1 97 9 is_stmt 1 view .LVU186
+ 798 0098 D4E7     		b	.L45
+ 799              	.L46:
+  99:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 800              		.loc 1 99 9 view .LVU187
+  99:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 801              		.loc 1 99 19 is_stmt 0 view .LVU188
+ 802 009a 63F07F03 		orn	r3, r3, #127
+ 803              	.LVL72:
+  99:Core/Src/DS3231.c ****         alarmDate |= 0x80;
+ 804              		.loc 1 99 19 view .LVU189
+ 805 009e DBB2     		uxtb	r3, r3
+ 806              	.LVL73:
+ 100:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+ 807              		.loc 1 100 9 is_stmt 1 view .LVU190
+ 100:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+ 808              		.loc 1 100 19 is_stmt 0 view .LVU191
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 21
+
+
+ 809 00a0 64F07F04 		orn	r4, r4, #127
+ 810              	.LVL74:
+ 100:Core/Src/DS3231.c ****         alarmHour |= 0x80;
+ 811              		.loc 1 100 19 view .LVU192
+ 812 00a4 E4B2     		uxtb	r4, r4
+ 813              	.LVL75:
+ 101:Core/Src/DS3231.c ****         alarmMinute |= 0x80;
+ 814              		.loc 1 101 9 is_stmt 1 view .LVU193
+ 101:Core/Src/DS3231.c ****         alarmMinute |= 0x80;
+ 815              		.loc 1 101 21 is_stmt 0 view .LVU194
+ 816 00a6 65F07F05 		orn	r5, r5, #127
+ 817              	.LVL76:
+ 101:Core/Src/DS3231.c ****         alarmMinute |= 0x80;
+ 818              		.loc 1 101 21 view .LVU195
+ 819 00aa EDB2     		uxtb	r5, r5
+ 820              	.LVL77:
+ 102:Core/Src/DS3231.c ****         alarmSecond |= 0x80;
+ 821              		.loc 1 102 9 is_stmt 1 view .LVU196
+ 102:Core/Src/DS3231.c ****         alarmSecond |= 0x80;
+ 822              		.loc 1 102 21 is_stmt 0 view .LVU197
+ 823 00ac 66F07F06 		orn	r6, r6, #127
+ 824              	.LVL78:
+ 102:Core/Src/DS3231.c ****         alarmSecond |= 0x80;
+ 825              		.loc 1 102 21 view .LVU198
+ 826 00b0 F6B2     		uxtb	r6, r6
+ 827              	.LVL79:
+ 103:Core/Src/DS3231.c ****         break;
+ 828              		.loc 1 103 9 is_stmt 1 view .LVU199
+ 829 00b2 C7E7     		b	.L45
+ 830              	.LVL80:
+ 831              	.L55:
+ 115:Core/Src/DS3231.c ****     uint8_t ctrlReg = 0x00;
+ 832              		.loc 1 115 5 view .LVU200
+ 115:Core/Src/DS3231.c ****     uint8_t ctrlReg = 0x00;
+ 833              		.loc 1 115 13 is_stmt 0 view .LVU201
+ 834 00b4 0023     		movs	r3, #0
+ 835 00b6 8DF80F30 		strb	r3, [sp, #15]
+ 116:Core/Src/DS3231.c ****     ReadRegister(DS3231_REG_CONTROL, &ctrlReg);
+ 836              		.loc 1 116 5 is_stmt 1 view .LVU202
+ 837 00ba 0DF10F01 		add	r1, sp, #15
+ 838 00be 0E20     		movs	r0, #14
+ 839 00c0 FFF7FEFF 		bl	ReadRegister
+ 840              	.LVL81:
+ 117:Core/Src/DS3231.c ****     ctrlReg |= DS3231_CON_A1IE;
+ 841              		.loc 1 117 5 view .LVU203
+ 117:Core/Src/DS3231.c ****     ctrlReg |= DS3231_CON_A1IE;
+ 842              		.loc 1 117 13 is_stmt 0 view .LVU204
+ 843 00c4 9DF80F10 		ldrb	r1, [sp, #15]	@ zero_extendqisi2
+ 844 00c8 41F00103 		orr	r3, r1, #1
+ 845 00cc 8DF80F30 		strb	r3, [sp, #15]
+ 118:Core/Src/DS3231.c ****     ctrlReg |= DS3231_CON_INTCN;
+ 846              		.loc 1 118 5 is_stmt 1 view .LVU205
+ 118:Core/Src/DS3231.c ****     ctrlReg |= DS3231_CON_INTCN;
+ 847              		.loc 1 118 13 is_stmt 0 view .LVU206
+ 848 00d0 41F00501 		orr	r1, r1, #5
+ 849 00d4 8DF80F10 		strb	r1, [sp, #15]
+ 119:Core/Src/DS3231.c ****     WriteRegister(DS3231_REG_CONTROL, ctrlReg);
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 22
+
+
+ 850              		.loc 1 119 5 is_stmt 1 view .LVU207
+ 851 00d8 0E20     		movs	r0, #14
+ 852 00da FFF7FEFF 		bl	WriteRegister
+ 853              	.LVL82:
+ 121:Core/Src/DS3231.c ****     return true;
+ 854              		.loc 1 121 5 view .LVU208
+ 121:Core/Src/DS3231.c ****     return true;
+ 855              		.loc 1 121 12 is_stmt 0 view .LVU209
+ 856 00de 0120     		movs	r0, #1
+ 857 00e0 C7E7     		b	.L51
+ 858              	.L57:
+ 859 00e2 00BF     		.align	2
+ 860              	.L56:
+ 861 00e4 00000000 		.word	i2c
+ 862              		.cfi_endproc
+ 863              	.LFE138:
+ 865              		.section	.text.DS3231_ClearAlarm1,"ax",%progbits
+ 866              		.align	1
+ 867              		.global	DS3231_ClearAlarm1
+ 868              		.syntax unified
+ 869              		.thumb
+ 870              		.thumb_func
+ 872              	DS3231_ClearAlarm1:
+ 873              	.LFB139:
+ 125:Core/Src/DS3231.c **** {
+ 874              		.loc 1 125 1 is_stmt 1 view -0
+ 875              		.cfi_startproc
+ 876              		@ args = 0, pretend = 0, frame = 8
+ 877              		@ frame_needed = 0, uses_anonymous_args = 0
+ 878 0000 00B5     		push	{lr}
+ 879              	.LCFI24:
+ 880              		.cfi_def_cfa_offset 4
+ 881              		.cfi_offset 14, -4
+ 882 0002 83B0     		sub	sp, sp, #12
+ 883              	.LCFI25:
+ 884              		.cfi_def_cfa_offset 16
+ 126:Core/Src/DS3231.c ****     uint8_t ctrlReg;
+ 885              		.loc 1 126 5 view .LVU211
+ 127:Core/Src/DS3231.c ****     uint8_t statusReg;
+ 886              		.loc 1 127 5 view .LVU212
+ 130:Core/Src/DS3231.c ****     ReadRegister(DS3231_REG_CONTROL, &ctrlReg);
+ 887              		.loc 1 130 5 view .LVU213
+ 888 0004 0DF10701 		add	r1, sp, #7
+ 889 0008 0E20     		movs	r0, #14
+ 890 000a FFF7FEFF 		bl	ReadRegister
+ 891              	.LVL83:
+ 131:Core/Src/DS3231.c ****     ctrlReg &= ~DS3231_CON_A1IE;
+ 892              		.loc 1 131 5 view .LVU214
+ 131:Core/Src/DS3231.c ****     ctrlReg &= ~DS3231_CON_A1IE;
+ 893              		.loc 1 131 13 is_stmt 0 view .LVU215
+ 894 000e 9DF80710 		ldrb	r1, [sp, #7]	@ zero_extendqisi2
+ 895 0012 01F0FE01 		and	r1, r1, #254
+ 896 0016 8DF80710 		strb	r1, [sp, #7]
+ 132:Core/Src/DS3231.c ****     WriteRegister(DS3231_REG_CONTROL, ctrlReg);
+ 897              		.loc 1 132 5 is_stmt 1 view .LVU216
+ 898 001a 0E20     		movs	r0, #14
+ 899 001c FFF7FEFF 		bl	WriteRegister
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 23
+
+
+ 900              	.LVL84:
+ 135:Core/Src/DS3231.c ****     ReadRegister(DS3231_REG_STATUS, &statusReg);
+ 901              		.loc 1 135 5 view .LVU217
+ 902 0020 0DF10601 		add	r1, sp, #6
+ 903 0024 0F20     		movs	r0, #15
+ 904 0026 FFF7FEFF 		bl	ReadRegister
+ 905              	.LVL85:
+ 136:Core/Src/DS3231.c ****     statusReg &= ~DS3231_STA_A1F;
+ 906              		.loc 1 136 5 view .LVU218
+ 136:Core/Src/DS3231.c ****     statusReg &= ~DS3231_STA_A1F;
+ 907              		.loc 1 136 15 is_stmt 0 view .LVU219
+ 908 002a 9DF80610 		ldrb	r1, [sp, #6]	@ zero_extendqisi2
+ 909 002e 01F0FE01 		and	r1, r1, #254
+ 910 0032 8DF80610 		strb	r1, [sp, #6]
+ 137:Core/Src/DS3231.c ****     WriteRegister(DS3231_REG_STATUS, statusReg);
+ 911              		.loc 1 137 5 is_stmt 1 view .LVU220
+ 912 0036 0F20     		movs	r0, #15
+ 913 0038 FFF7FEFF 		bl	WriteRegister
+ 914              	.LVL86:
+ 139:Core/Src/DS3231.c ****     return true;
+ 915              		.loc 1 139 5 view .LVU221
+ 140:Core/Src/DS3231.c **** }
+ 916              		.loc 1 140 1 is_stmt 0 view .LVU222
+ 917 003c 0120     		movs	r0, #1
+ 918 003e 03B0     		add	sp, sp, #12
+ 919              	.LCFI26:
+ 920              		.cfi_def_cfa_offset 4
+ 921              		@ sp needed
+ 922 0040 5DF804FB 		ldr	pc, [sp], #4
+ 923              		.cfi_endproc
+ 924              	.LFE139:
+ 926              		.global	i2c
+ 927              		.section	.bss.i2c,"aw",%nobits
+ 928              		.align	2
+ 931              	i2c:
+ 932 0000 00000000 		.space	4
+ 933              		.text
+ 934              	.Letext0:
+ 935              		.file 2 "C:\\ST\\STM32CubeCLT_1.16.0\\GNU-tools-for-STM32\\bin\\../lib/gcc/arm-none-eabi/12.3.1/..
+ 936              		.file 3 "C:\\ST\\STM32CubeCLT_1.16.0\\GNU-tools-for-STM32\\bin\\../lib/gcc/arm-none-eabi/12.3.1/..
+ 937              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 938              		.file 5 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 939              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 940              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c.h"
+ 941              		.file 8 "Core/Inc/DS3231.h"
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s 			page 24
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 DS3231.c
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:21     .text.B2D:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:26     .text.B2D:00000000 B2D
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:50     .text.D2B:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:55     .text.D2B:00000000 D2B
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:81     .text.D2B:0000001c $d
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:86     .text.DS3231_Init:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:92     .text.DS3231_Init:00000000 DS3231_Init
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:109    .text.DS3231_Init:00000008 $d
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:931    .bss.i2c:00000000 i2c
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:114    .text.DS3231_GetTime:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:120    .text.DS3231_GetTime:00000000 DS3231_GetTime
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:258    .text.DS3231_GetTime:000000ac $d
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:263    .text.DS3231_SetTime:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:269    .text.DS3231_SetTime:00000000 DS3231_SetTime
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:367    .text.DS3231_SetTime:00000070 $d
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:372    .text.DS3231_ReadTemperature:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:378    .text.DS3231_ReadTemperature:00000000 DS3231_ReadTemperature
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:485    .text.DS3231_ReadTemperature:00000074 $d
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:490    .text.ReadRegister:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:496    .text.ReadRegister:00000000 ReadRegister
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:568    .text.ReadRegister:00000048 $d
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:573    .text.WriteRegister:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:579    .text.WriteRegister:00000000 WriteRegister
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:634    .text.WriteRegister:00000030 $d
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:639    .text.DS3231_SetAlarm1:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:645    .text.DS3231_SetAlarm1:00000000 DS3231_SetAlarm1
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:706    .text.DS3231_SetAlarm1:0000003a $d
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:710    .text.DS3231_SetAlarm1:0000003e $t
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:861    .text.DS3231_SetAlarm1:000000e4 $d
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:866    .text.DS3231_ClearAlarm1:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:872    .text.DS3231_ClearAlarm1:00000000 DS3231_ClearAlarm1
+C:\Users\Dell\AppData\Local\Temp\ccCHpQ9g.s:928    .bss.i2c:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_I2C_Master_Transmit
+HAL_I2C_Master_Receive

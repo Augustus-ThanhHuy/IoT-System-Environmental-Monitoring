@@ -1,4 +1,4 @@
-build/adc_dust.o: Core/Src/adc_dust.c Core/Src/adc_dust.h Core/Inc/main.h \
+build/adc_dust.o: Core/Src/adc_dust.c Core/Inc/adc_dust.h Core/Inc/main.h \
  Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  Core/Inc/stm32f4xx_hal_conf.h \
  Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -28,7 +28,7 @@ build/adc_dust.o: Core/Src/adc_dust.c Core/Src/adc_dust.h Core/Inc/main.h \
  Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h
-Core/Src/adc_dust.h:
+Core/Inc/adc_dust.h:
 Core/Inc/main.h:
 Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 Core/Inc/stm32f4xx_hal_conf.h:
