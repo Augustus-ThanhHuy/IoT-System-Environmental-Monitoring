@@ -1,0 +1,9 @@
+../Core/LIB/BH1750/BH1750.c:41:6:_Error_Handler	1
+../Core/LIB/BH1750/BH1750.c:48:19:BH1750_init_i2c	2
+../Core/LIB/BH1750/BH1750.c:69:19:BH1750_send_command	2
+../Core/LIB/BH1750/BH1750.c:83:6:BH1750_poll_self	1
+../Core/LIB/BH1750/BH1750.c:88:18:BH1750_init_dev_struct	4
+../Core/LIB/BH1750/BH1750.c:117:19:BH1750_init_dev	1
+../Core/LIB/BH1750/BH1750.c:126:19:BH1750_read_dev	2
+../Core/LIB/BH1750/BH1750.c:138:19:BH1750_convert	1
+../Core/LIB/BH1750/BH1750.c:149:19:BH1750_get_lumen	1

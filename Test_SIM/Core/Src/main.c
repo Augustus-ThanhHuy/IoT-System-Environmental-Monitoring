@@ -23,6 +23,11 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
+#include "SHT.h"
+#include "bmp280.h"
+#include <stdlib.h>
+#define I2C_TIMEOUT_BUSY_FLAG 1000
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,6 +46,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart6;
 
@@ -53,6 +60,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART6_UART_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -60,15 +68,116 @@ static void MX_USART6_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 const char apn[] = "v-internet";                                 // Change this to your Provider details
-const char server[] = "huy.assfa.net";                           // Change this to your domain
+const char server[] = "huyed2.assfa.net";                        // Change this to your domain
 const int port = 443;
-const char resource[] = "/insert.php"; // Endpoint của API trên server
-const uint32_t timeOut = 20000;        // Thời gian chờ cho các lệnh AT (ms)
-char content[80];                      // Nội dung dữ liệu POST
+const char resource[] = "/DoAn2.php"; // Endpoint của API trên server
+const uint32_t timeOut = 15000;        // Th�?i gian ch�? cho các lệnh AT (ms)
+char content[256];                      // Nội dung dữ liệu POST
 char ATcommand[80];                    // Chuỗi lệnh AT được xây dựng
 uint8_t buffer[100] = {0};             // Bộ đệm nhận dữ liệu từ module SIM
-uint32_t previousTick;                 // Biến lưu thời gian trước đó
-uint16_t distance;                     // Khoảng cách hoặc dữ liệu cần gửi
+uint32_t previousTick;                 // Biến lưu th�?i gian trước đó
+float temperature;
+float humidity;
+uint16_t dust;
+// uint16_t airperssure;
+// uint16_t temperature;
+// uint16_t humidity;
+// uint16_t nodeid;
+uint16_t longitude;
+uint16_t latitude;
+char nodeid[10] = "B1EFRT6"; // nodeid là chuỗi
+
+
+/*Cảm biến ÁP suất BMP280*/
+BMP280_HandleTypedef bmp280;
+bmp280_params_t bmp280_params;
+
+float airperssure;
+float temperature_BMP280;
+void I2C_ResetBus(I2C_HandleTypeDef *hi2c)
+{
+  if (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_BUSY))
+  {
+    HAL_I2C_DeInit(hi2c); // Hủy cấu hình hiện tại của I2C
+    HAL_Delay(10);        // Chờ một thời gian để ổn định
+    HAL_I2C_Init(hi2c);   // Khởi tạo lại I2C
+  }
+}
+/*Cảm biến ÁP suất BMP280*/
+
+/*RTC DS3231*/
+#define DS3231_ADDRESS 0xD0
+
+// Convert normal decimal numbers to binary coded decimal
+uint8_t decToBcd(int val)
+{
+  return (uint8_t)((val / 10 * 16) + (val % 10));
+}
+// Convert binary coded decimal to normal decimal numbers
+int bcdToDec(uint8_t val)
+{
+  return (int)((val / 16 * 10) + (val % 16));
+}
+
+typedef struct
+{
+  uint8_t seconds;
+  uint8_t minutes;
+  uint8_t hour;
+  uint8_t dayofweek;
+  uint8_t dayofmonth;
+  uint8_t month;
+  uint8_t year;
+} TIME_T;
+
+TIME_T time;
+// function to set time
+void Set_Time(uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, uint8_t month, uint8_t year)
+{
+  uint8_t set_time[7];
+  set_time[0] = decToBcd(sec);
+  set_time[1] = decToBcd(min);
+  set_time[2] = decToBcd(hour);
+  set_time[3] = decToBcd(dow);
+  set_time[4] = decToBcd(dom);
+  set_time[5] = decToBcd(month);
+  set_time[6] = decToBcd(year);
+
+  HAL_I2C_Mem_Write(&hi2c1, DS3231_ADDRESS, 0x00, 1, set_time, 7, 1000);
+}
+void Get_Time(void)
+{
+  uint8_t get_time[7];
+  HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, 0x00, 1, get_time, 7, 1000);
+  time.seconds = bcdToDec(get_time[0]);
+  time.minutes = bcdToDec(get_time[1]);
+  time.hour = bcdToDec(get_time[2]);
+  time.dayofweek = bcdToDec(get_time[3]);
+  time.dayofmonth = bcdToDec(get_time[4]);
+  time.month = bcdToDec(get_time[5]);
+  time.year = bcdToDec(get_time[6]);
+}
+float Get_Temp(void)
+{
+  uint8_t temp[2];
+
+  HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, 0x11, 1, temp, 2, 1000);
+  return ((temp[0]) + (temp[1] >> 6) / 4.0);
+}
+void force_temp_conv(void)
+{
+  uint8_t status = 0;
+  uint8_t control = 0;
+  HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, 0x0F, 1, &status, 1, 100); // read status register
+  if (!(status & 0x04))
+  {
+    HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, 0x0E, 1, &control, 1, 100); // read control register
+    HAL_I2C_Mem_Write(&hi2c1, DS3231_ADDRESS, 0x0E, 1, (uint8_t *)(control | (0x20)), 1, 100);
+  }
+}
+float TEMP;
+char bufferDS3231[30];
+/*RTC DS3231*/
 
 // Hàm gửi lệnh AT đến module SIM và nhận phản hồi
 void SIMTransmit(char *cmd)
@@ -87,7 +196,7 @@ void SIMTransmit(char *cmd)
 void checkAPN(void)
 {
   uint8_t APNisOK = 0;
-  previousTick = HAL_GetTick(); // Ghi nhận thời gian bắt đầu kiểm tra
+  previousTick = HAL_GetTick(); // Ghi nhận th�?i gian bắt đầu kiểm tra
 
   while (!APNisOK && previousTick + timeOut > HAL_GetTick())
   {
@@ -104,10 +213,10 @@ void checkAPN(void)
       sprintf(ATcommand, "AT+CGDCONT=1,\"IP\",\"%s\",\"0.0.0.0\",0,0\r\n", apn); // Lệnh cấu hình lại APN
       SIMTransmit(ATcommand);
     }
-    HAL_Delay(1000); // Đợi 1 giây trước khi thử lại
+    HAL_Delay(1000); // �?ợi 1 giây trước khi thử lại
   }
 
-  if (!APNisOK) // Nếu không thành công sau thời gian chờ
+  if (!APNisOK) // Nếu không thành công sau th�?i gian ch�?
   {
     HAL_UART_Transmit(&huart6, (uint8_t *)"APN configuration failed.\r\n", strlen("APN configuration failed.\r\n"), 1000);
   }
@@ -117,7 +226,7 @@ void httpPost(void)
 {
   // Cấu hình HTTP
   SIMTransmit("AT+HTTPINIT\r\n"); // Khởi tạo HTTP
-  HAL_Delay(2000);                // Đợi một chút sau khi khởi tạo
+  HAL_Delay(2000);                // �?ợi một chút sau khi khởi tạo
 
   // Cấu hình URL (Server và Endpoint)
   sprintf(ATcommand, "AT+HTTPPARA=\"URL\",\"https://%s%s\"\r\n", server, resource);
@@ -129,7 +238,7 @@ void httpPost(void)
   HAL_Delay(2000);
 
   // Xác định kích thước dữ liệu POST
-  sprintf(ATcommand, "AT+HTTPDATA=%d,10000\r\n", strlen(content)); // Thời gian chờ 10000ms
+  sprintf(ATcommand, "AT+HTTPDATA=%d,10000\r\n", strlen(content)); // Th�?i gian ch�? 10000ms
   SIMTransmit(ATcommand);
   HAL_Delay(2000);
 
@@ -139,19 +248,19 @@ void httpPost(void)
 
   // Gửi lệnh POST đến server
   SIMTransmit("AT+HTTPACTION=1\r\n"); // 1 là HTTP POST
-  HAL_Delay(5000);                    // Đợi phản hồi từ server
+  HAL_Delay(5000);                    // �?ợi phản hồi từ server
 
   // Kiểm tra mã trạng thái HTTP từ server (200 OK)
   if (strstr((char *)buffer, "+HTTPACTION: 1,200"))
   {
-    HAL_UART_Transmit(&huart6, (uint8_t *)"POST success.\r\n", strlen("POST success.\r\n"), 1000);
+    HAL_UART_Transmit(&huart6, (uint8_t *)"POST success!!!!\r\n", strlen("POST success.\r\n"), 1000);
   }
   else
   {
     HAL_UART_Transmit(&huart6, (uint8_t *)"POST failed.\r\n", strlen("POST failed.\r\n"), 1000);
   }
 
-  // Đóng HTTP
+  // �?óng HTTP
   SIMTransmit("AT+HTTPTERM\r\n");
   HAL_Delay(2000);
 }
@@ -189,8 +298,38 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_USART6_UART_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+  SHT31_Config(SHT31_ADDRESS_A, &hi2c1);
+  // Kiểm tra và reset bus I2C nếu có lỗi
+  I2C_ResetBus(&hi2c1);
+  // Đảm bảo rằng I2C không còn bận trước khi tiếp tục
+  while (hi2c1.State != HAL_I2C_STATE_READY)
+  {
+    // Có thể thêm một delay nhỏ nếu cần thiết
+    HAL_Delay(1); // Thử lại sau 1ms
+  }
+
+  bmp280.i2c = &hi2c1;                // hi2c1 là biến I2C đã khởi tạo
+  bmp280.addr = BMP280_I2C_ADDRESS_0; // hoặc BME280_I2C_ADDRESS_1
+
+  // Khởi tạo các tham số mặc định cho BMP280
+  bmp280_init_default_params(&bmp280_params);
+
+  // Khởi tạo BMP280
+  if (!bmp280_init(&bmp280, &bmp280_params))
+  {
+    // Xử lý lỗi khởi tạo
+    while (1)
+      ;
+  }
+
+  // Khởi tạo RTC
+  rtc_init(&hi2c1);
+
+  HAL_Delay(2000);
   checkAPN(); // Kiểm tra APN trước khi sử dụng HTTP POST
+
 
   /* USER CODE END 2 */
 
@@ -201,9 +340,30 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    distance = 100;
-    sprintf(content, "distance=%d", distance);
+    // temperature = rand() % 41 + 20; // random giá trị từ 20 đến 60
+    // humidity = rand() % 51 + 50;    // random giá trị từ 50 đến 100
+    dust = 101;            // random giá trị từ 0 đến 100
+    airperssure = 30; // random giá trị từ 30 đến 50
+    longitude = 100;
+    latitude = 200;
+    // dust = rand() % 101;            // random giá trị từ 0 đến 100
+    // airperssure = rand() % 21 + 30; // random giá trị từ 30 đến 50
+    // longitude = rand() % 201+100;
+    // latitude = rand() % 201+100;
+    if (SHT31_GetData(SHT31_Periodic, SHT31_Medium, SHT31_NON_Stretch, SHT31_1) == SHT31_OK)
+    {
+      temperature = SHT31_GetTemperature();
+      humidity = SHT31_GetHumidity();
+    }
+    HAL_Delay(2000);
+    bmp280_read_float(&bmp280, &temperature_BMP280, &airperssure);
+    sprintf(content, "temperature=%.2f&humidity=%.2f&dust=%d&airperssure=%.2f&nodeid=%s&longitude=%d&latitude=%d",
+            temperature, humidity, dust, airperssure, nodeid, longitude, latitude);
+    // sprintf(content, "temperature=%.2f&humidity=%.2f&dust=%d&airperssure=%d&nodeid=%s&longitude=%d&latitude=%d",
+    //         temperature, humidity, dust, airperssure, nodeid, longitude, latitude);
+    // sprintf(content, "temperature=%d&humidity=%d&dust=%d&airperssure=%d",temperature, humidity, dust, airperssure);
     httpPost();
+    
   }
   /* USER CODE END 3 */
 }
@@ -252,6 +412,40 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
 }
 
 /**
@@ -334,6 +528,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */

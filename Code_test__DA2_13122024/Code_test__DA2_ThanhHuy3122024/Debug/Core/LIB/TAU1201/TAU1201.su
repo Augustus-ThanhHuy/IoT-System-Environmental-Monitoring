@@ -1,0 +1,10 @@
+../Core/LIB/TAU1201/TAU1201.c:56:5:auto_baud	16	static
+../Core/LIB/TAU1201/TAU1201.c:73:5:GPS_Init	16	static
+../Core/LIB/TAU1201/TAU1201.c:80:6:GPS_UART_CallBack	16	static
+../Core/LIB/TAU1201/TAU1201.c:107:5:GPS_validate	32	static
+../Core/LIB/TAU1201/TAU1201.c:146:6:GPS_parse	80	static
+../Core/LIB/TAU1201/TAU1201.c:268:7:GPS_nmea_to_dec	32	static
+../Core/LIB/TAU1201/TAU1201.c:279:7:getLatitude	16	static
+../Core/LIB/TAU1201/TAU1201.c:283:7:getLongitude	16	static
+../Core/LIB/TAU1201/TAU1201.c:287:7:getSpeed	16	static
+../Core/LIB/TAU1201/TAU1201.c:291:7:getSatelitesNum	16	static
