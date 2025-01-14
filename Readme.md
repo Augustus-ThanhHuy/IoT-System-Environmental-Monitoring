@@ -5,7 +5,7 @@ Below is an overview diagram.
 ## Knowledge used in the project
 1. Embedded software
 * Use HAL library and STM32CubeMX software (**use makefile and VScode editor**)
-* Use **UART** protocol to communicate with SIim7600 by AT command and Neo-8M GPS
+* Use **UART** protocol to communicate with SIM7600E-H by AT command and Neo-8M GPS
 * Use **I2C** protocol to communication with BMP280 sensor, SHT31 sensor and RTC DS3231.
 2. Website Monitoring
 ![output](/web.jpg)
