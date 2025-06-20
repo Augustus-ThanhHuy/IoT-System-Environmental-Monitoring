@@ -1,0 +1,3379 @@
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"main.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.file 1 "Core/Src/main.c"
+  20              		.section	.text.MX_GPIO_Init,"ax",%progbits
+  21              		.align	1
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	MX_GPIO_Init:
+  27              	.LFB146:
+   1:Core/Src/main.c **** /* USER CODE BEGIN Header */
+   2:Core/Src/main.c **** /**
+   3:Core/Src/main.c ****   ******************************************************************************
+   4:Core/Src/main.c ****   * @file           : main.c
+   5:Core/Src/main.c ****   * @brief          : Main program body
+   6:Core/Src/main.c ****   ******************************************************************************
+   7:Core/Src/main.c ****   * @attention
+   8:Core/Src/main.c ****   *
+   9:Core/Src/main.c ****   * Copyright (c) 2024 STMicroelectronics.
+  10:Core/Src/main.c ****   * All rights reserved.
+  11:Core/Src/main.c ****   *
+  12:Core/Src/main.c ****   * This software is licensed under terms that can be found in the LICENSE file
+  13:Core/Src/main.c ****   * in the root directory of this software component.
+  14:Core/Src/main.c ****   * If no LICENSE file comes with this software, it is provided AS-IS.
+  15:Core/Src/main.c ****   *
+  16:Core/Src/main.c ****   ******************************************************************************
+  17:Core/Src/main.c ****   */
+  18:Core/Src/main.c **** /* USER CODE END Header */
+  19:Core/Src/main.c **** /* Includes ------------------------------------------------------------------*/
+  20:Core/Src/main.c **** #include "main.h"
+  21:Core/Src/main.c **** 
+  22:Core/Src/main.c **** /* Private includes ----------------------------------------------------------*/
+  23:Core/Src/main.c **** /* USER CODE BEGIN Includes */
+  24:Core/Src/main.c **** #include <string.h>
+  25:Core/Src/main.c **** #include <stdio.h>
+  26:Core/Src/main.c **** #include <time.h>
+  27:Core/Src/main.c **** #include "SHT.h"
+  28:Core/Src/main.c **** #include "bmp280.h"
+  29:Core/Src/main.c **** #include <stdlib.h>
+  30:Core/Src/main.c **** #define I2C_TIMEOUT_BUSY_FLAG 1000
+  31:Core/Src/main.c **** /* USER CODE END Includes */
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 2
+
+
+  32:Core/Src/main.c **** 
+  33:Core/Src/main.c **** /* Private typedef -----------------------------------------------------------*/
+  34:Core/Src/main.c **** /* USER CODE BEGIN PTD */
+  35:Core/Src/main.c **** 
+  36:Core/Src/main.c **** /* USER CODE END PTD */
+  37:Core/Src/main.c **** 
+  38:Core/Src/main.c **** /* Private define ------------------------------------------------------------*/
+  39:Core/Src/main.c **** /* USER CODE BEGIN PD */
+  40:Core/Src/main.c **** 
+  41:Core/Src/main.c **** /* USER CODE END PD */
+  42:Core/Src/main.c **** 
+  43:Core/Src/main.c **** /* Private macro -------------------------------------------------------------*/
+  44:Core/Src/main.c **** /* USER CODE BEGIN PM */
+  45:Core/Src/main.c **** 
+  46:Core/Src/main.c **** /* USER CODE END PM */
+  47:Core/Src/main.c **** 
+  48:Core/Src/main.c **** /* Private variables ---------------------------------------------------------*/
+  49:Core/Src/main.c **** I2C_HandleTypeDef hi2c1;
+  50:Core/Src/main.c **** 
+  51:Core/Src/main.c **** UART_HandleTypeDef huart2;
+  52:Core/Src/main.c **** UART_HandleTypeDef huart6;
+  53:Core/Src/main.c **** 
+  54:Core/Src/main.c **** /* USER CODE BEGIN PV */
+  55:Core/Src/main.c **** 
+  56:Core/Src/main.c **** /* USER CODE END PV */
+  57:Core/Src/main.c **** 
+  58:Core/Src/main.c **** /* Private function prototypes -----------------------------------------------*/
+  59:Core/Src/main.c **** void SystemClock_Config(void);
+  60:Core/Src/main.c **** static void MX_GPIO_Init(void);
+  61:Core/Src/main.c **** static void MX_USART2_UART_Init(void);
+  62:Core/Src/main.c **** static void MX_USART6_UART_Init(void);
+  63:Core/Src/main.c **** static void MX_I2C1_Init(void);
+  64:Core/Src/main.c **** /* USER CODE BEGIN PFP */
+  65:Core/Src/main.c **** 
+  66:Core/Src/main.c **** /* USER CODE END PFP */
+  67:Core/Src/main.c **** 
+  68:Core/Src/main.c **** /* Private user code ---------------------------------------------------------*/
+  69:Core/Src/main.c **** /* USER CODE BEGIN 0 */
+  70:Core/Src/main.c **** const char apn[] = "v-internet";                                 // Change this to your Provider de
+  71:Core/Src/main.c **** const char server[] = "huyed2.assfa.net";                        // Change this to your domain
+  72:Core/Src/main.c **** const int port = 443;
+  73:Core/Src/main.c **** const char resource[] = "/DoAn2.php"; // Endpoint của API trên server
+  74:Core/Src/main.c **** const uint32_t timeOut = 15000;        // Th�?i gian ch�? cho các lệnh AT (ms)
+  75:Core/Src/main.c **** char content[256];                      // Nội dung dữ liệu POST
+  76:Core/Src/main.c **** char ATcommand[80];                    // Chuỗi lệnh AT được xây dựng
+  77:Core/Src/main.c **** uint8_t buffer[100] = {0};             // Bộ đệm nhận dữ liệu từ module SIM
+  78:Core/Src/main.c **** uint32_t previousTick;                 // Biến lưu th�?i gian trước đó
+  79:Core/Src/main.c **** float temperature;
+  80:Core/Src/main.c **** float humidity;
+  81:Core/Src/main.c **** uint16_t dust;
+  82:Core/Src/main.c **** // uint16_t airperssure;
+  83:Core/Src/main.c **** // uint16_t temperature;
+  84:Core/Src/main.c **** // uint16_t humidity;
+  85:Core/Src/main.c **** // uint16_t nodeid;
+  86:Core/Src/main.c **** uint16_t longitude;
+  87:Core/Src/main.c **** uint16_t latitude;
+  88:Core/Src/main.c **** char nodeid[10] = "B1EFRT6"; // nodeid là chuỗi
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 3
+
+
+  89:Core/Src/main.c **** 
+  90:Core/Src/main.c **** 
+  91:Core/Src/main.c **** /*Cảm biến ÁP suất BMP280*/
+  92:Core/Src/main.c **** BMP280_HandleTypedef bmp280;
+  93:Core/Src/main.c **** bmp280_params_t bmp280_params;
+  94:Core/Src/main.c **** 
+  95:Core/Src/main.c **** float airperssure;
+  96:Core/Src/main.c **** float temperature_BMP280;
+  97:Core/Src/main.c **** void I2C_ResetBus(I2C_HandleTypeDef *hi2c)
+  98:Core/Src/main.c **** {
+  99:Core/Src/main.c ****   if (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_BUSY))
+ 100:Core/Src/main.c ****   {
+ 101:Core/Src/main.c ****     HAL_I2C_DeInit(hi2c); // Hủy cấu hình hiện tại của I2C
+ 102:Core/Src/main.c ****     HAL_Delay(10);        // Chờ một thời gian để ổn định
+ 103:Core/Src/main.c ****     HAL_I2C_Init(hi2c);   // Khởi tạo lại I2C
+ 104:Core/Src/main.c ****   }
+ 105:Core/Src/main.c **** }
+ 106:Core/Src/main.c **** /*Cảm biến ÁP suất BMP280*/
+ 107:Core/Src/main.c **** // Hàm gửi lệnh AT đến module SIM và nhận phản hồi
+ 108:Core/Src/main.c **** void SIMTransmit(char *cmd)
+ 109:Core/Src/main.c **** {
+ 110:Core/Src/main.c ****   memset(buffer, 0, sizeof(buffer));                             // Xóa bộ đệm trước khi s
+ 111:Core/Src/main.c ****   HAL_UART_Transmit(&huart2, (uint8_t *)cmd, strlen(cmd), 1000); // Gửi lệnh AT qua UART2
+ 112:Core/Src/main.c ****   HAL_UART_Receive(&huart2, buffer, 100, 1000);                  // Nhận phản hồi từ module
+ 113:Core/Src/main.c **** 
+ 114:Core/Src/main.c ****   // Gửi phản hồi nhận được qua UART6 để debug
+ 115:Core/Src/main.c ****   HAL_UART_Transmit(&huart6, (uint8_t *)"Response: ", strlen("Response: "), 1000);
+ 116:Core/Src/main.c ****   HAL_UART_Transmit(&huart6, buffer, strlen((char *)buffer), 1000);
+ 117:Core/Src/main.c ****   HAL_UART_Transmit(&huart6, (uint8_t *)"\r\n", 2, 1000);
+ 118:Core/Src/main.c **** }
+ 119:Core/Src/main.c **** 
+ 120:Core/Src/main.c **** // Hàm kiểm tra cấu hình APN trên module SIM
+ 121:Core/Src/main.c **** void checkAPN(void)
+ 122:Core/Src/main.c **** {
+ 123:Core/Src/main.c ****   uint8_t APNisOK = 0;
+ 124:Core/Src/main.c ****   previousTick = HAL_GetTick(); // Ghi nhận th�?i gian bắt đầu kiểm tra
+ 125:Core/Src/main.c **** 
+ 126:Core/Src/main.c ****   while (!APNisOK && previousTick + timeOut > HAL_GetTick())
+ 127:Core/Src/main.c ****   {
+ 128:Core/Src/main.c ****     SIMTransmit("AT+CGDCONT?\r\n"); // Gửi lệnh kiểm tra cấu hình APN hiện tại
+ 129:Core/Src/main.c **** 
+ 130:Core/Src/main.c ****     if (strstr((char *)buffer, apn)) // Kiểm tra phản hồi chứa thông tin APN đúng
+ 131:Core/Src/main.c ****     {
+ 132:Core/Src/main.c ****       APNisOK = 1;
+ 133:Core/Src/main.c ****       HAL_UART_Transmit(&huart6, (uint8_t *)"APN duoc cau hinh thanh cong!.\r\n", strlen("APN duoc 
+ 134:Core/Src/main.c ****     }
+ 135:Core/Src/main.c ****     else
+ 136:Core/Src/main.c ****     {
+ 137:Core/Src/main.c ****       HAL_UART_Transmit(&huart6, (uint8_t *)"APN cau hinh sai...\r\n", strlen("APN cau hinh sai...\
+ 138:Core/Src/main.c ****       sprintf(ATcommand, "AT+CGDCONT=1,\"IP\",\"%s\",\"0.0.0.0\",0,0\r\n", apn); // Lệnh cấu h�
+ 139:Core/Src/main.c ****       SIMTransmit(ATcommand);
+ 140:Core/Src/main.c ****     }
+ 141:Core/Src/main.c ****     HAL_Delay(1000); // �?ợi 1 giây trước khi thử lại
+ 142:Core/Src/main.c ****   }
+ 143:Core/Src/main.c **** 
+ 144:Core/Src/main.c ****   if (!APNisOK) // Nếu không thành công sau th�?i gian ch�?
+ 145:Core/Src/main.c ****   {
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 4
+
+
+ 146:Core/Src/main.c ****     HAL_UART_Transmit(&huart6, (uint8_t *)"APN configuration failed.\r\n", strlen("APN configuratio
+ 147:Core/Src/main.c ****   }
+ 148:Core/Src/main.c **** }
+ 149:Core/Src/main.c **** 
+ 150:Core/Src/main.c **** void httpPost(void)
+ 151:Core/Src/main.c **** {
+ 152:Core/Src/main.c ****   // Cấu hình HTTP
+ 153:Core/Src/main.c ****   SIMTransmit("AT+HTTPINIT\r\n"); // Khởi tạo HTTP
+ 154:Core/Src/main.c ****   HAL_Delay(2000);                // �?ợi một chút sau khi khởi tạo
+ 155:Core/Src/main.c **** 
+ 156:Core/Src/main.c ****   // Cấu hình URL (Server và Endpoint)
+ 157:Core/Src/main.c ****   sprintf(ATcommand, "AT+HTTPPARA=\"URL\",\"https://%s%s\"\r\n", server, resource);
+ 158:Core/Src/main.c ****   SIMTransmit(ATcommand); // Cấu hình URL của server
+ 159:Core/Src/main.c ****   HAL_Delay(2000);
+ 160:Core/Src/main.c **** 
+ 161:Core/Src/main.c ****   // Cấu hình loại nội dung (Content-Type)
+ 162:Core/Src/main.c ****   SIMTransmit("AT+HTTPPARA=\"CONTENT\",\"application/x-www-form-urlencoded\"\r\n");
+ 163:Core/Src/main.c ****   HAL_Delay(2000);
+ 164:Core/Src/main.c **** 
+ 165:Core/Src/main.c ****   // Xác định kích thước dữ liệu POST
+ 166:Core/Src/main.c ****   sprintf(ATcommand, "AT+HTTPDATA=%d,10000\r\n", strlen(content)); // Th�?i gian ch�? 10000ms
+ 167:Core/Src/main.c ****   SIMTransmit(ATcommand);
+ 168:Core/Src/main.c ****   HAL_Delay(2000);
+ 169:Core/Src/main.c **** 
+ 170:Core/Src/main.c ****   // Gửi dữ liệu POST
+ 171:Core/Src/main.c ****   SIMTransmit(content); // Nội dung sẽ được gửi dưới dạng body của POST
+ 172:Core/Src/main.c ****   HAL_Delay(2000);
+ 173:Core/Src/main.c **** 
+ 174:Core/Src/main.c ****   // Gửi lệnh POST đến server
+ 175:Core/Src/main.c ****   SIMTransmit("AT+HTTPACTION=1\r\n"); // 1 là HTTP POST
+ 176:Core/Src/main.c ****   HAL_Delay(5000);                    // �?ợi phản hồi từ server
+ 177:Core/Src/main.c **** 
+ 178:Core/Src/main.c ****   // Kiểm tra mã trạng thái HTTP từ server (200 OK)
+ 179:Core/Src/main.c ****   if (strstr((char *)buffer, "+HTTPACTION: 1,200"))
+ 180:Core/Src/main.c ****   {
+ 181:Core/Src/main.c ****     HAL_UART_Transmit(&huart6, (uint8_t *)"POST success!!!!\r\n", strlen("POST success.\r\n"), 1000
+ 182:Core/Src/main.c ****   }
+ 183:Core/Src/main.c ****   else
+ 184:Core/Src/main.c ****   {
+ 185:Core/Src/main.c ****     HAL_UART_Transmit(&huart6, (uint8_t *)"POST failed.\r\n", strlen("POST failed.\r\n"), 1000);
+ 186:Core/Src/main.c ****   }
+ 187:Core/Src/main.c **** 
+ 188:Core/Src/main.c ****   // �?óng HTTP
+ 189:Core/Src/main.c ****   SIMTransmit("AT+HTTPTERM\r\n");
+ 190:Core/Src/main.c ****   HAL_Delay(2000);
+ 191:Core/Src/main.c **** }
+ 192:Core/Src/main.c **** 
+ 193:Core/Src/main.c **** /* USER CODE END 0 */
+ 194:Core/Src/main.c **** 
+ 195:Core/Src/main.c **** /**
+ 196:Core/Src/main.c ****   * @brief  The application entry point.
+ 197:Core/Src/main.c ****   * @retval int
+ 198:Core/Src/main.c ****   */
+ 199:Core/Src/main.c **** int main(void)
+ 200:Core/Src/main.c **** {
+ 201:Core/Src/main.c **** 
+ 202:Core/Src/main.c ****   /* USER CODE BEGIN 1 */
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 5
+
+
+ 203:Core/Src/main.c **** 
+ 204:Core/Src/main.c ****   /* USER CODE END 1 */
+ 205:Core/Src/main.c **** 
+ 206:Core/Src/main.c ****   /* MCU Configuration--------------------------------------------------------*/
+ 207:Core/Src/main.c **** 
+ 208:Core/Src/main.c ****   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+ 209:Core/Src/main.c ****   HAL_Init();
+ 210:Core/Src/main.c **** 
+ 211:Core/Src/main.c ****   /* USER CODE BEGIN Init */
+ 212:Core/Src/main.c **** 
+ 213:Core/Src/main.c ****   /* USER CODE END Init */
+ 214:Core/Src/main.c **** 
+ 215:Core/Src/main.c ****   /* Configure the system clock */
+ 216:Core/Src/main.c ****   SystemClock_Config();
+ 217:Core/Src/main.c **** 
+ 218:Core/Src/main.c ****   /* USER CODE BEGIN SysInit */
+ 219:Core/Src/main.c **** 
+ 220:Core/Src/main.c ****   /* USER CODE END SysInit */
+ 221:Core/Src/main.c **** 
+ 222:Core/Src/main.c ****   /* Initialize all configured peripherals */
+ 223:Core/Src/main.c ****   MX_GPIO_Init();
+ 224:Core/Src/main.c ****   MX_USART2_UART_Init();
+ 225:Core/Src/main.c ****   MX_USART6_UART_Init();
+ 226:Core/Src/main.c ****   MX_I2C1_Init();
+ 227:Core/Src/main.c ****   /* USER CODE BEGIN 2 */
+ 228:Core/Src/main.c ****   SHT31_Config(SHT31_ADDRESS_A, &hi2c1);
+ 229:Core/Src/main.c ****   // Kiểm tra và reset bus I2C nếu có lỗi
+ 230:Core/Src/main.c ****   I2C_ResetBus(&hi2c1);
+ 231:Core/Src/main.c ****   // Đảm bảo rằng I2C không còn bận trước khi tiếp tục
+ 232:Core/Src/main.c ****   while (hi2c1.State != HAL_I2C_STATE_READY)
+ 233:Core/Src/main.c ****   {
+ 234:Core/Src/main.c ****     // Có thể thêm một delay nhỏ nếu cần thiết
+ 235:Core/Src/main.c ****     HAL_Delay(1); // Thử lại sau 1ms
+ 236:Core/Src/main.c ****   }
+ 237:Core/Src/main.c **** 
+ 238:Core/Src/main.c ****   bmp280.i2c = &hi2c1;                // hi2c1 là biến I2C đã khởi tạo
+ 239:Core/Src/main.c ****   bmp280.addr = BMP280_I2C_ADDRESS_0; // hoặc BME280_I2C_ADDRESS_1
+ 240:Core/Src/main.c **** 
+ 241:Core/Src/main.c ****   // Khởi tạo các tham số mặc định cho BMP280
+ 242:Core/Src/main.c ****   bmp280_init_default_params(&bmp280_params);
+ 243:Core/Src/main.c **** 
+ 244:Core/Src/main.c ****   // Khởi tạo BMP280
+ 245:Core/Src/main.c ****   if (!bmp280_init(&bmp280, &bmp280_params))
+ 246:Core/Src/main.c ****   {
+ 247:Core/Src/main.c ****     // Xử lý lỗi khởi tạo
+ 248:Core/Src/main.c ****     while (1)
+ 249:Core/Src/main.c ****       ;
+ 250:Core/Src/main.c ****   }
+ 251:Core/Src/main.c ****   HAL_Delay(2000);
+ 252:Core/Src/main.c ****   checkAPN(); // Kiểm tra APN trước khi sử dụng HTTP POST
+ 253:Core/Src/main.c **** 
+ 254:Core/Src/main.c **** 
+ 255:Core/Src/main.c ****   /* USER CODE END 2 */
+ 256:Core/Src/main.c **** 
+ 257:Core/Src/main.c ****   /* Infinite loop */
+ 258:Core/Src/main.c ****   /* USER CODE BEGIN WHILE */
+ 259:Core/Src/main.c ****   while (1)
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 6
+
+
+ 260:Core/Src/main.c ****   {
+ 261:Core/Src/main.c ****     /* USER CODE END WHILE */
+ 262:Core/Src/main.c **** 
+ 263:Core/Src/main.c ****     /* USER CODE BEGIN 3 */
+ 264:Core/Src/main.c ****     // temperature = rand() % 41 + 20; // random giá trị từ 20 đến 60
+ 265:Core/Src/main.c ****     // humidity = rand() % 51 + 50;    // random giá trị từ 50 đến 100
+ 266:Core/Src/main.c ****     dust = 101;            // random giá trị từ 0 đến 100
+ 267:Core/Src/main.c ****     airperssure = 30; // random giá trị từ 30 đến 50
+ 268:Core/Src/main.c ****     longitude = 100;
+ 269:Core/Src/main.c ****     latitude = 200;
+ 270:Core/Src/main.c ****     // dust = rand() % 101;            // random giá trị từ 0 đến 100
+ 271:Core/Src/main.c ****     // airperssure = rand() % 21 + 30; // random giá trị từ 30 đến 50
+ 272:Core/Src/main.c ****     // longitude = rand() % 201+100;
+ 273:Core/Src/main.c ****     // latitude = rand() % 201+100;
+ 274:Core/Src/main.c ****     if (SHT31_GetData(SHT31_Periodic, SHT31_Medium, SHT31_NON_Stretch, SHT31_1) == SHT31_OK)
+ 275:Core/Src/main.c ****     {
+ 276:Core/Src/main.c ****       temperature = SHT31_GetTemperature();
+ 277:Core/Src/main.c ****       humidity = SHT31_GetHumidity();
+ 278:Core/Src/main.c ****     }
+ 279:Core/Src/main.c ****     HAL_Delay(2000);
+ 280:Core/Src/main.c ****     bmp280_read_float(&bmp280, &temperature_BMP280, &airperssure);
+ 281:Core/Src/main.c ****     sprintf(content, "temperature=%.2f&humidity=%.2f&dust=%d&airperssure=%.2f&nodeid=%s&longitude=%
+ 282:Core/Src/main.c ****             temperature, humidity, dust, airperssure, nodeid, longitude, latitude);
+ 283:Core/Src/main.c ****     // sprintf(content, "temperature=%.2f&humidity=%.2f&dust=%d&airperssure=%d&nodeid=%s&longitude=
+ 284:Core/Src/main.c ****     //         temperature, humidity, dust, airperssure, nodeid, longitude, latitude);
+ 285:Core/Src/main.c ****     // sprintf(content, "temperature=%d&humidity=%d&dust=%d&airperssure=%d",temperature, humidity, 
+ 286:Core/Src/main.c ****     httpPost();
+ 287:Core/Src/main.c ****     
+ 288:Core/Src/main.c ****   }
+ 289:Core/Src/main.c ****   /* USER CODE END 3 */
+ 290:Core/Src/main.c **** }
+ 291:Core/Src/main.c **** 
+ 292:Core/Src/main.c **** /**
+ 293:Core/Src/main.c ****   * @brief System Clock Configuration
+ 294:Core/Src/main.c ****   * @retval None
+ 295:Core/Src/main.c ****   */
+ 296:Core/Src/main.c **** void SystemClock_Config(void)
+ 297:Core/Src/main.c **** {
+ 298:Core/Src/main.c ****   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+ 299:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 300:Core/Src/main.c **** 
+ 301:Core/Src/main.c ****   /** Configure the main internal regulator output voltage
+ 302:Core/Src/main.c ****   */
+ 303:Core/Src/main.c ****   __HAL_RCC_PWR_CLK_ENABLE();
+ 304:Core/Src/main.c ****   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+ 305:Core/Src/main.c **** 
+ 306:Core/Src/main.c ****   /** Initializes the RCC Oscillators according to the specified parameters
+ 307:Core/Src/main.c ****   * in the RCC_OscInitTypeDef structure.
+ 308:Core/Src/main.c ****   */
+ 309:Core/Src/main.c ****   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+ 310:Core/Src/main.c ****   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+ 311:Core/Src/main.c ****   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+ 312:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+ 313:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+ 314:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLM = 8;
+ 315:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLN = 72;
+ 316:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 7
+
+
+ 317:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLQ = 4;
+ 318:Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 319:Core/Src/main.c ****   {
+ 320:Core/Src/main.c ****     Error_Handler();
+ 321:Core/Src/main.c ****   }
+ 322:Core/Src/main.c **** 
+ 323:Core/Src/main.c ****   /** Initializes the CPU, AHB and APB buses clocks
+ 324:Core/Src/main.c ****   */
+ 325:Core/Src/main.c ****   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+ 326:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+ 327:Core/Src/main.c ****   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+ 328:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 329:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+ 330:Core/Src/main.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 331:Core/Src/main.c **** 
+ 332:Core/Src/main.c ****   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+ 333:Core/Src/main.c ****   {
+ 334:Core/Src/main.c ****     Error_Handler();
+ 335:Core/Src/main.c ****   }
+ 336:Core/Src/main.c **** }
+ 337:Core/Src/main.c **** 
+ 338:Core/Src/main.c **** /**
+ 339:Core/Src/main.c ****   * @brief I2C1 Initialization Function
+ 340:Core/Src/main.c ****   * @param None
+ 341:Core/Src/main.c ****   * @retval None
+ 342:Core/Src/main.c ****   */
+ 343:Core/Src/main.c **** static void MX_I2C1_Init(void)
+ 344:Core/Src/main.c **** {
+ 345:Core/Src/main.c **** 
+ 346:Core/Src/main.c ****   /* USER CODE BEGIN I2C1_Init 0 */
+ 347:Core/Src/main.c **** 
+ 348:Core/Src/main.c ****   /* USER CODE END I2C1_Init 0 */
+ 349:Core/Src/main.c **** 
+ 350:Core/Src/main.c ****   /* USER CODE BEGIN I2C1_Init 1 */
+ 351:Core/Src/main.c **** 
+ 352:Core/Src/main.c ****   /* USER CODE END I2C1_Init 1 */
+ 353:Core/Src/main.c ****   hi2c1.Instance = I2C1;
+ 354:Core/Src/main.c ****   hi2c1.Init.ClockSpeed = 100000;
+ 355:Core/Src/main.c ****   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+ 356:Core/Src/main.c ****   hi2c1.Init.OwnAddress1 = 0;
+ 357:Core/Src/main.c ****   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+ 358:Core/Src/main.c ****   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+ 359:Core/Src/main.c ****   hi2c1.Init.OwnAddress2 = 0;
+ 360:Core/Src/main.c ****   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+ 361:Core/Src/main.c ****   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+ 362:Core/Src/main.c ****   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+ 363:Core/Src/main.c ****   {
+ 364:Core/Src/main.c ****     Error_Handler();
+ 365:Core/Src/main.c ****   }
+ 366:Core/Src/main.c ****   /* USER CODE BEGIN I2C1_Init 2 */
+ 367:Core/Src/main.c **** 
+ 368:Core/Src/main.c ****   /* USER CODE END I2C1_Init 2 */
+ 369:Core/Src/main.c **** 
+ 370:Core/Src/main.c **** }
+ 371:Core/Src/main.c **** 
+ 372:Core/Src/main.c **** /**
+ 373:Core/Src/main.c ****   * @brief USART2 Initialization Function
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 8
+
+
+ 374:Core/Src/main.c ****   * @param None
+ 375:Core/Src/main.c ****   * @retval None
+ 376:Core/Src/main.c ****   */
+ 377:Core/Src/main.c **** static void MX_USART2_UART_Init(void)
+ 378:Core/Src/main.c **** {
+ 379:Core/Src/main.c **** 
+ 380:Core/Src/main.c ****   /* USER CODE BEGIN USART2_Init 0 */
+ 381:Core/Src/main.c **** 
+ 382:Core/Src/main.c ****   /* USER CODE END USART2_Init 0 */
+ 383:Core/Src/main.c **** 
+ 384:Core/Src/main.c ****   /* USER CODE BEGIN USART2_Init 1 */
+ 385:Core/Src/main.c **** 
+ 386:Core/Src/main.c ****   /* USER CODE END USART2_Init 1 */
+ 387:Core/Src/main.c ****   huart2.Instance = USART2;
+ 388:Core/Src/main.c ****   huart2.Init.BaudRate = 115200;
+ 389:Core/Src/main.c ****   huart2.Init.WordLength = UART_WORDLENGTH_8B;
+ 390:Core/Src/main.c ****   huart2.Init.StopBits = UART_STOPBITS_1;
+ 391:Core/Src/main.c ****   huart2.Init.Parity = UART_PARITY_NONE;
+ 392:Core/Src/main.c ****   huart2.Init.Mode = UART_MODE_TX_RX;
+ 393:Core/Src/main.c ****   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 394:Core/Src/main.c ****   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+ 395:Core/Src/main.c ****   if (HAL_UART_Init(&huart2) != HAL_OK)
+ 396:Core/Src/main.c ****   {
+ 397:Core/Src/main.c ****     Error_Handler();
+ 398:Core/Src/main.c ****   }
+ 399:Core/Src/main.c ****   /* USER CODE BEGIN USART2_Init 2 */
+ 400:Core/Src/main.c **** 
+ 401:Core/Src/main.c ****   /* USER CODE END USART2_Init 2 */
+ 402:Core/Src/main.c **** 
+ 403:Core/Src/main.c **** }
+ 404:Core/Src/main.c **** 
+ 405:Core/Src/main.c **** /**
+ 406:Core/Src/main.c ****   * @brief USART6 Initialization Function
+ 407:Core/Src/main.c ****   * @param None
+ 408:Core/Src/main.c ****   * @retval None
+ 409:Core/Src/main.c ****   */
+ 410:Core/Src/main.c **** static void MX_USART6_UART_Init(void)
+ 411:Core/Src/main.c **** {
+ 412:Core/Src/main.c **** 
+ 413:Core/Src/main.c ****   /* USER CODE BEGIN USART6_Init 0 */
+ 414:Core/Src/main.c **** 
+ 415:Core/Src/main.c ****   /* USER CODE END USART6_Init 0 */
+ 416:Core/Src/main.c **** 
+ 417:Core/Src/main.c ****   /* USER CODE BEGIN USART6_Init 1 */
+ 418:Core/Src/main.c **** 
+ 419:Core/Src/main.c ****   /* USER CODE END USART6_Init 1 */
+ 420:Core/Src/main.c ****   huart6.Instance = USART6;
+ 421:Core/Src/main.c ****   huart6.Init.BaudRate = 115200;
+ 422:Core/Src/main.c ****   huart6.Init.WordLength = UART_WORDLENGTH_8B;
+ 423:Core/Src/main.c ****   huart6.Init.StopBits = UART_STOPBITS_1;
+ 424:Core/Src/main.c ****   huart6.Init.Parity = UART_PARITY_NONE;
+ 425:Core/Src/main.c ****   huart6.Init.Mode = UART_MODE_TX_RX;
+ 426:Core/Src/main.c ****   huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 427:Core/Src/main.c ****   huart6.Init.OverSampling = UART_OVERSAMPLING_16;
+ 428:Core/Src/main.c ****   if (HAL_UART_Init(&huart6) != HAL_OK)
+ 429:Core/Src/main.c ****   {
+ 430:Core/Src/main.c ****     Error_Handler();
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 9
+
+
+ 431:Core/Src/main.c ****   }
+ 432:Core/Src/main.c ****   /* USER CODE BEGIN USART6_Init 2 */
+ 433:Core/Src/main.c **** 
+ 434:Core/Src/main.c ****   /* USER CODE END USART6_Init 2 */
+ 435:Core/Src/main.c **** 
+ 436:Core/Src/main.c **** }
+ 437:Core/Src/main.c **** 
+ 438:Core/Src/main.c **** /**
+ 439:Core/Src/main.c ****   * @brief GPIO Initialization Function
+ 440:Core/Src/main.c ****   * @param None
+ 441:Core/Src/main.c ****   * @retval None
+ 442:Core/Src/main.c ****   */
+ 443:Core/Src/main.c **** static void MX_GPIO_Init(void)
+ 444:Core/Src/main.c **** {
+  28              		.loc 1 444 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 16
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33 0000 84B0     		sub	sp, sp, #16
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 16
+ 445:Core/Src/main.c **** /* USER CODE BEGIN MX_GPIO_Init_1 */
+ 446:Core/Src/main.c **** /* USER CODE END MX_GPIO_Init_1 */
+ 447:Core/Src/main.c **** 
+ 448:Core/Src/main.c ****   /* GPIO Ports Clock Enable */
+ 449:Core/Src/main.c ****   __HAL_RCC_GPIOH_CLK_ENABLE();
+  36              		.loc 1 449 3 view .LVU1
+  37              	.LBB4:
+  38              		.loc 1 449 3 view .LVU2
+  39 0002 0022     		movs	r2, #0
+  40 0004 0092     		str	r2, [sp]
+  41              		.loc 1 449 3 view .LVU3
+  42 0006 154B     		ldr	r3, .L3
+  43 0008 196B     		ldr	r1, [r3, #48]
+  44 000a 41F08001 		orr	r1, r1, #128
+  45 000e 1963     		str	r1, [r3, #48]
+  46              		.loc 1 449 3 view .LVU4
+  47 0010 196B     		ldr	r1, [r3, #48]
+  48 0012 01F08001 		and	r1, r1, #128
+  49 0016 0091     		str	r1, [sp]
+  50              		.loc 1 449 3 view .LVU5
+  51 0018 0099     		ldr	r1, [sp]
+  52              	.LBE4:
+  53              		.loc 1 449 3 view .LVU6
+ 450:Core/Src/main.c ****   __HAL_RCC_GPIOA_CLK_ENABLE();
+  54              		.loc 1 450 3 view .LVU7
+  55              	.LBB5:
+  56              		.loc 1 450 3 view .LVU8
+  57 001a 0192     		str	r2, [sp, #4]
+  58              		.loc 1 450 3 view .LVU9
+  59 001c 196B     		ldr	r1, [r3, #48]
+  60 001e 41F00101 		orr	r1, r1, #1
+  61 0022 1963     		str	r1, [r3, #48]
+  62              		.loc 1 450 3 view .LVU10
+  63 0024 196B     		ldr	r1, [r3, #48]
+  64 0026 01F00101 		and	r1, r1, #1
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 10
+
+
+  65 002a 0191     		str	r1, [sp, #4]
+  66              		.loc 1 450 3 view .LVU11
+  67 002c 0199     		ldr	r1, [sp, #4]
+  68              	.LBE5:
+  69              		.loc 1 450 3 view .LVU12
+ 451:Core/Src/main.c ****   __HAL_RCC_GPIOC_CLK_ENABLE();
+  70              		.loc 1 451 3 view .LVU13
+  71              	.LBB6:
+  72              		.loc 1 451 3 view .LVU14
+  73 002e 0292     		str	r2, [sp, #8]
+  74              		.loc 1 451 3 view .LVU15
+  75 0030 196B     		ldr	r1, [r3, #48]
+  76 0032 41F00401 		orr	r1, r1, #4
+  77 0036 1963     		str	r1, [r3, #48]
+  78              		.loc 1 451 3 view .LVU16
+  79 0038 196B     		ldr	r1, [r3, #48]
+  80 003a 01F00401 		and	r1, r1, #4
+  81 003e 0291     		str	r1, [sp, #8]
+  82              		.loc 1 451 3 view .LVU17
+  83 0040 0299     		ldr	r1, [sp, #8]
+  84              	.LBE6:
+  85              		.loc 1 451 3 view .LVU18
+ 452:Core/Src/main.c ****   __HAL_RCC_GPIOB_CLK_ENABLE();
+  86              		.loc 1 452 3 view .LVU19
+  87              	.LBB7:
+  88              		.loc 1 452 3 view .LVU20
+  89 0042 0392     		str	r2, [sp, #12]
+  90              		.loc 1 452 3 view .LVU21
+  91 0044 1A6B     		ldr	r2, [r3, #48]
+  92 0046 42F00202 		orr	r2, r2, #2
+  93 004a 1A63     		str	r2, [r3, #48]
+  94              		.loc 1 452 3 view .LVU22
+  95 004c 1B6B     		ldr	r3, [r3, #48]
+  96 004e 03F00203 		and	r3, r3, #2
+  97 0052 0393     		str	r3, [sp, #12]
+  98              		.loc 1 452 3 view .LVU23
+  99 0054 039B     		ldr	r3, [sp, #12]
+ 100              	.LBE7:
+ 101              		.loc 1 452 3 view .LVU24
+ 453:Core/Src/main.c **** 
+ 454:Core/Src/main.c **** /* USER CODE BEGIN MX_GPIO_Init_2 */
+ 455:Core/Src/main.c **** /* USER CODE END MX_GPIO_Init_2 */
+ 456:Core/Src/main.c **** }
+ 102              		.loc 1 456 1 is_stmt 0 view .LVU25
+ 103 0056 04B0     		add	sp, sp, #16
+ 104              	.LCFI1:
+ 105              		.cfi_def_cfa_offset 0
+ 106              		@ sp needed
+ 107 0058 7047     		bx	lr
+ 108              	.L4:
+ 109 005a 00BF     		.align	2
+ 110              	.L3:
+ 111 005c 00380240 		.word	1073887232
+ 112              		.cfi_endproc
+ 113              	.LFE146:
+ 115              		.section	.text.I2C_ResetBus,"ax",%progbits
+ 116              		.align	1
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 11
+
+
+ 117              		.global	I2C_ResetBus
+ 118              		.syntax unified
+ 119              		.thumb
+ 120              		.thumb_func
+ 122              	I2C_ResetBus:
+ 123              	.LVL0:
+ 124              	.LFB137:
+  98:Core/Src/main.c ****   if (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_BUSY))
+ 125              		.loc 1 98 1 is_stmt 1 view -0
+ 126              		.cfi_startproc
+ 127              		@ args = 0, pretend = 0, frame = 0
+ 128              		@ frame_needed = 0, uses_anonymous_args = 0
+  99:Core/Src/main.c ****   {
+ 129              		.loc 1 99 3 view .LVU27
+  99:Core/Src/main.c ****   {
+ 130              		.loc 1 99 7 is_stmt 0 view .LVU28
+ 131 0000 0368     		ldr	r3, [r0]
+ 132 0002 9B69     		ldr	r3, [r3, #24]
+  99:Core/Src/main.c ****   {
+ 133              		.loc 1 99 6 view .LVU29
+ 134 0004 13F0020F 		tst	r3, #2
+ 135 0008 00D1     		bne	.L11
+ 136 000a 7047     		bx	lr
+ 137              	.L11:
+  98:Core/Src/main.c ****   if (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_BUSY))
+ 138              		.loc 1 98 1 view .LVU30
+ 139 000c 10B5     		push	{r4, lr}
+ 140              	.LCFI2:
+ 141              		.cfi_def_cfa_offset 8
+ 142              		.cfi_offset 4, -8
+ 143              		.cfi_offset 14, -4
+ 144 000e 0446     		mov	r4, r0
+ 101:Core/Src/main.c ****     HAL_Delay(10);        // Chờ một thời gian để ổn định
+ 145              		.loc 1 101 5 is_stmt 1 view .LVU31
+ 146 0010 FFF7FEFF 		bl	HAL_I2C_DeInit
+ 147              	.LVL1:
+ 102:Core/Src/main.c ****     HAL_I2C_Init(hi2c);   // Khởi tạo lại I2C
+ 148              		.loc 1 102 5 view .LVU32
+ 149 0014 0A20     		movs	r0, #10
+ 150 0016 FFF7FEFF 		bl	HAL_Delay
+ 151              	.LVL2:
+ 103:Core/Src/main.c ****   }
+ 152              		.loc 1 103 5 view .LVU33
+ 153 001a 2046     		mov	r0, r4
+ 154 001c FFF7FEFF 		bl	HAL_I2C_Init
+ 155              	.LVL3:
+ 105:Core/Src/main.c **** /*Cảm biến ÁP suất BMP280*/
+ 156              		.loc 1 105 1 is_stmt 0 view .LVU34
+ 157 0020 10BD     		pop	{r4, pc}
+ 105:Core/Src/main.c **** /*Cảm biến ÁP suất BMP280*/
+ 158              		.loc 1 105 1 view .LVU35
+ 159              		.cfi_endproc
+ 160              	.LFE137:
+ 162              		.section	.rodata.SIMTransmit.str1.4,"aMS",%progbits,1
+ 163              		.align	2
+ 164              	.LC0:
+ 165 0000 52657370 		.ascii	"Response: \000"
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 12
+
+
+ 165      6F6E7365 
+ 165      3A2000
+ 166 000b 00       		.align	2
+ 167              	.LC1:
+ 168 000c 0D0A00   		.ascii	"\015\012\000"
+ 169              		.section	.text.SIMTransmit,"ax",%progbits
+ 170              		.align	1
+ 171              		.global	SIMTransmit
+ 172              		.syntax unified
+ 173              		.thumb
+ 174              		.thumb_func
+ 176              	SIMTransmit:
+ 177              	.LVL4:
+ 178              	.LFB138:
+ 109:Core/Src/main.c ****   memset(buffer, 0, sizeof(buffer));                             // Xóa bộ đệm trước khi s
+ 179              		.loc 1 109 1 is_stmt 1 view -0
+ 180              		.cfi_startproc
+ 181              		@ args = 0, pretend = 0, frame = 0
+ 182              		@ frame_needed = 0, uses_anonymous_args = 0
+ 109:Core/Src/main.c ****   memset(buffer, 0, sizeof(buffer));                             // Xóa bộ đệm trước khi s
+ 183              		.loc 1 109 1 is_stmt 0 view .LVU37
+ 184 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 185              	.LCFI3:
+ 186              		.cfi_def_cfa_offset 24
+ 187              		.cfi_offset 3, -24
+ 188              		.cfi_offset 4, -20
+ 189              		.cfi_offset 5, -16
+ 190              		.cfi_offset 6, -12
+ 191              		.cfi_offset 7, -8
+ 192              		.cfi_offset 14, -4
+ 193 0002 0546     		mov	r5, r0
+ 110:Core/Src/main.c ****   HAL_UART_Transmit(&huart2, (uint8_t *)cmd, strlen(cmd), 1000); // Gửi lệnh AT qua UART2
+ 194              		.loc 1 110 3 is_stmt 1 view .LVU38
+ 195 0004 194C     		ldr	r4, .L14
+ 196 0006 6427     		movs	r7, #100
+ 197 0008 3A46     		mov	r2, r7
+ 198 000a 0021     		movs	r1, #0
+ 199 000c 2046     		mov	r0, r4
+ 200              	.LVL5:
+ 110:Core/Src/main.c ****   HAL_UART_Transmit(&huart2, (uint8_t *)cmd, strlen(cmd), 1000); // Gửi lệnh AT qua UART2
+ 201              		.loc 1 110 3 is_stmt 0 view .LVU39
+ 202 000e FFF7FEFF 		bl	memset
+ 203              	.LVL6:
+ 111:Core/Src/main.c ****   HAL_UART_Receive(&huart2, buffer, 100, 1000);                  // Nhận phản hồi từ module
+ 204              		.loc 1 111 3 is_stmt 1 view .LVU40
+ 111:Core/Src/main.c ****   HAL_UART_Receive(&huart2, buffer, 100, 1000);                  // Nhận phản hồi từ module
+ 205              		.loc 1 111 46 is_stmt 0 view .LVU41
+ 206 0012 2846     		mov	r0, r5
+ 207 0014 FFF7FEFF 		bl	strlen
+ 208              	.LVL7:
+ 111:Core/Src/main.c ****   HAL_UART_Receive(&huart2, buffer, 100, 1000);                  // Nhận phản hồi từ module
+ 209              		.loc 1 111 3 view .LVU42
+ 210 0018 154E     		ldr	r6, .L14+4
+ 211 001a 4FF47A73 		mov	r3, #1000
+ 212 001e 82B2     		uxth	r2, r0
+ 213 0020 2946     		mov	r1, r5
+ 214 0022 3046     		mov	r0, r6
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 13
+
+
+ 215 0024 FFF7FEFF 		bl	HAL_UART_Transmit
+ 216              	.LVL8:
+ 112:Core/Src/main.c **** 
+ 217              		.loc 1 112 3 is_stmt 1 view .LVU43
+ 218 0028 4FF47A73 		mov	r3, #1000
+ 219 002c 3A46     		mov	r2, r7
+ 220 002e 2146     		mov	r1, r4
+ 221 0030 3046     		mov	r0, r6
+ 222 0032 FFF7FEFF 		bl	HAL_UART_Receive
+ 223              	.LVL9:
+ 115:Core/Src/main.c ****   HAL_UART_Transmit(&huart6, buffer, strlen((char *)buffer), 1000);
+ 224              		.loc 1 115 3 view .LVU44
+ 225 0036 0F4D     		ldr	r5, .L14+8
+ 226              	.LVL10:
+ 115:Core/Src/main.c ****   HAL_UART_Transmit(&huart6, buffer, strlen((char *)buffer), 1000);
+ 227              		.loc 1 115 3 is_stmt 0 view .LVU45
+ 228 0038 4FF47A73 		mov	r3, #1000
+ 229 003c 0A22     		movs	r2, #10
+ 230 003e 0E49     		ldr	r1, .L14+12
+ 231 0040 2846     		mov	r0, r5
+ 232 0042 FFF7FEFF 		bl	HAL_UART_Transmit
+ 233              	.LVL11:
+ 116:Core/Src/main.c ****   HAL_UART_Transmit(&huart6, (uint8_t *)"\r\n", 2, 1000);
+ 234              		.loc 1 116 3 is_stmt 1 view .LVU46
+ 116:Core/Src/main.c ****   HAL_UART_Transmit(&huart6, (uint8_t *)"\r\n", 2, 1000);
+ 235              		.loc 1 116 38 is_stmt 0 view .LVU47
+ 236 0046 2046     		mov	r0, r4
+ 237 0048 FFF7FEFF 		bl	strlen
+ 238              	.LVL12:
+ 116:Core/Src/main.c ****   HAL_UART_Transmit(&huart6, (uint8_t *)"\r\n", 2, 1000);
+ 239              		.loc 1 116 3 view .LVU48
+ 240 004c 4FF47A73 		mov	r3, #1000
+ 241 0050 82B2     		uxth	r2, r0
+ 242 0052 2146     		mov	r1, r4
+ 243 0054 2846     		mov	r0, r5
+ 244 0056 FFF7FEFF 		bl	HAL_UART_Transmit
+ 245              	.LVL13:
+ 117:Core/Src/main.c **** }
+ 246              		.loc 1 117 3 is_stmt 1 view .LVU49
+ 247 005a 4FF47A73 		mov	r3, #1000
+ 248 005e 0222     		movs	r2, #2
+ 249 0060 0649     		ldr	r1, .L14+16
+ 250 0062 2846     		mov	r0, r5
+ 251 0064 FFF7FEFF 		bl	HAL_UART_Transmit
+ 252              	.LVL14:
+ 118:Core/Src/main.c **** 
+ 253              		.loc 1 118 1 is_stmt 0 view .LVU50
+ 254 0068 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 255              	.L15:
+ 256 006a 00BF     		.align	2
+ 257              	.L14:
+ 258 006c 00000000 		.word	buffer
+ 259 0070 00000000 		.word	huart2
+ 260 0074 00000000 		.word	huart6
+ 261 0078 00000000 		.word	.LC0
+ 262 007c 0C000000 		.word	.LC1
+ 263              		.cfi_endproc
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 14
+
+
+ 264              	.LFE138:
+ 266              		.section	.rodata.checkAPN.str1.4,"aMS",%progbits,1
+ 267              		.align	2
+ 268              	.LC2:
+ 269 0000 41542B43 		.ascii	"AT+CGDCONT?\015\012\000"
+ 269      4744434F 
+ 269      4E543F0D 
+ 269      0A00
+ 270 000e 0000     		.align	2
+ 271              	.LC3:
+ 272 0010 41504E20 		.ascii	"APN duoc cau hinh thanh cong!.\015\012\000"
+ 272      64756F63 
+ 272      20636175 
+ 272      2068696E 
+ 272      68207468 
+ 273 0031 000000   		.align	2
+ 274              	.LC4:
+ 275 0034 41504E20 		.ascii	"APN cau hinh sai...\015\012\000"
+ 275      63617520 
+ 275      68696E68 
+ 275      20736169 
+ 275      2E2E2E0D 
+ 276 004a 0000     		.align	2
+ 277              	.LC5:
+ 278 004c 41542B43 		.ascii	"AT+CGDCONT=1,\"IP\",\"%s\",\"0.0.0.0\",0,0\015\012\000"
+ 278      4744434F 
+ 278      4E543D31 
+ 278      2C224950 
+ 278      222C2225 
+ 279 0073 00       		.align	2
+ 280              	.LC6:
+ 281 0074 41504E20 		.ascii	"APN configuration failed.\015\012\000"
+ 281      636F6E66 
+ 281      69677572 
+ 281      6174696F 
+ 281      6E206661 
+ 282              		.section	.text.checkAPN,"ax",%progbits
+ 283              		.align	1
+ 284              		.global	checkAPN
+ 285              		.syntax unified
+ 286              		.thumb
+ 287              		.thumb_func
+ 289              	checkAPN:
+ 290              	.LFB139:
+ 122:Core/Src/main.c ****   uint8_t APNisOK = 0;
+ 291              		.loc 1 122 1 is_stmt 1 view -0
+ 292              		.cfi_startproc
+ 293              		@ args = 0, pretend = 0, frame = 0
+ 294              		@ frame_needed = 0, uses_anonymous_args = 0
+ 295 0000 38B5     		push	{r3, r4, r5, lr}
+ 296              	.LCFI4:
+ 297              		.cfi_def_cfa_offset 16
+ 298              		.cfi_offset 3, -16
+ 299              		.cfi_offset 4, -12
+ 300              		.cfi_offset 5, -8
+ 301              		.cfi_offset 14, -4
+ 123:Core/Src/main.c ****   previousTick = HAL_GetTick(); // Ghi nhận th�?i gian bắt đầu kiểm tra
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 15
+
+
+ 302              		.loc 1 123 3 view .LVU52
+ 303              	.LVL15:
+ 124:Core/Src/main.c **** 
+ 304              		.loc 1 124 3 view .LVU53
+ 124:Core/Src/main.c **** 
+ 305              		.loc 1 124 18 is_stmt 0 view .LVU54
+ 306 0002 FFF7FEFF 		bl	HAL_GetTick
+ 307              	.LVL16:
+ 124:Core/Src/main.c **** 
+ 308              		.loc 1 124 16 view .LVU55
+ 309 0006 1F4B     		ldr	r3, .L25
+ 310 0008 1860     		str	r0, [r3]
+ 126:Core/Src/main.c ****   {
+ 311              		.loc 1 126 3 is_stmt 1 view .LVU56
+ 123:Core/Src/main.c ****   previousTick = HAL_GetTick(); // Ghi nhận th�?i gian bắt đầu kiểm tra
+ 312              		.loc 1 123 11 is_stmt 0 view .LVU57
+ 313 000a 0025     		movs	r5, #0
+ 126:Core/Src/main.c ****   {
+ 314              		.loc 1 126 9 view .LVU58
+ 315 000c 13E0     		b	.L17
+ 316              	.LVL17:
+ 317              	.L18:
+ 137:Core/Src/main.c ****       sprintf(ATcommand, "AT+CGDCONT=1,\"IP\",\"%s\",\"0.0.0.0\",0,0\r\n", apn); // Lệnh cấu h�
+ 318              		.loc 1 137 7 is_stmt 1 view .LVU59
+ 319 000e 4FF47A73 		mov	r3, #1000
+ 320 0012 1522     		movs	r2, #21
+ 321 0014 1C49     		ldr	r1, .L25+4
+ 322 0016 1D48     		ldr	r0, .L25+8
+ 323 0018 FFF7FEFF 		bl	HAL_UART_Transmit
+ 324              	.LVL18:
+ 138:Core/Src/main.c ****       SIMTransmit(ATcommand);
+ 325              		.loc 1 138 7 view .LVU60
+ 326 001c 1C4C     		ldr	r4, .L25+12
+ 327 001e 1D4A     		ldr	r2, .L25+16
+ 328 0020 1D49     		ldr	r1, .L25+20
+ 329 0022 2046     		mov	r0, r4
+ 330 0024 FFF7FEFF 		bl	sprintf
+ 331              	.LVL19:
+ 139:Core/Src/main.c ****     }
+ 332              		.loc 1 139 7 view .LVU61
+ 333 0028 2046     		mov	r0, r4
+ 334 002a FFF7FEFF 		bl	SIMTransmit
+ 335              	.LVL20:
+ 336              	.L19:
+ 141:Core/Src/main.c ****   }
+ 337              		.loc 1 141 5 view .LVU62
+ 338 002e 4FF47A70 		mov	r0, #1000
+ 339 0032 FFF7FEFF 		bl	HAL_Delay
+ 340              	.LVL21:
+ 341              	.L17:
+ 126:Core/Src/main.c ****   {
+ 342              		.loc 1 126 19 view .LVU63
+ 343 0036 D5B9     		cbnz	r5, .L20
+ 126:Core/Src/main.c ****   {
+ 344              		.loc 1 126 35 is_stmt 0 discriminator 1 view .LVU64
+ 345 0038 124B     		ldr	r3, .L25
+ 346 003a 1C68     		ldr	r4, [r3]
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 16
+
+
+ 347 003c 04F56A54 		add	r4, r4, #14976
+ 348 0040 1834     		adds	r4, r4, #24
+ 126:Core/Src/main.c ****   {
+ 349              		.loc 1 126 47 discriminator 1 view .LVU65
+ 350 0042 FFF7FEFF 		bl	HAL_GetTick
+ 351              	.LVL22:
+ 126:Core/Src/main.c ****   {
+ 352              		.loc 1 126 19 discriminator 1 view .LVU66
+ 353 0046 8442     		cmp	r4, r0
+ 354 0048 11D9     		bls	.L20
+ 128:Core/Src/main.c **** 
+ 355              		.loc 1 128 5 is_stmt 1 view .LVU67
+ 356 004a 1448     		ldr	r0, .L25+24
+ 357 004c FFF7FEFF 		bl	SIMTransmit
+ 358              	.LVL23:
+ 130:Core/Src/main.c ****     {
+ 359              		.loc 1 130 5 view .LVU68
+ 130:Core/Src/main.c ****     {
+ 360              		.loc 1 130 9 is_stmt 0 view .LVU69
+ 361 0050 1049     		ldr	r1, .L25+16
+ 362 0052 1348     		ldr	r0, .L25+28
+ 363 0054 FFF7FEFF 		bl	strstr
+ 364              	.LVL24:
+ 130:Core/Src/main.c ****     {
+ 365              		.loc 1 130 8 view .LVU70
+ 366 0058 0028     		cmp	r0, #0
+ 367 005a D8D0     		beq	.L18
+ 132:Core/Src/main.c ****       HAL_UART_Transmit(&huart6, (uint8_t *)"APN duoc cau hinh thanh cong!.\r\n", strlen("APN duoc 
+ 368              		.loc 1 132 7 is_stmt 1 view .LVU71
+ 369              	.LVL25:
+ 133:Core/Src/main.c ****     }
+ 370              		.loc 1 133 7 view .LVU72
+ 371 005c 4FF47A73 		mov	r3, #1000
+ 372 0060 2022     		movs	r2, #32
+ 373 0062 1049     		ldr	r1, .L25+32
+ 374 0064 0948     		ldr	r0, .L25+8
+ 375 0066 FFF7FEFF 		bl	HAL_UART_Transmit
+ 376              	.LVL26:
+ 132:Core/Src/main.c ****       HAL_UART_Transmit(&huart6, (uint8_t *)"APN duoc cau hinh thanh cong!.\r\n", strlen("APN duoc 
+ 377              		.loc 1 132 15 is_stmt 0 view .LVU73
+ 378 006a 0125     		movs	r5, #1
+ 379 006c DFE7     		b	.L19
+ 380              	.LVL27:
+ 381              	.L20:
+ 144:Core/Src/main.c ****   {
+ 382              		.loc 1 144 3 is_stmt 1 view .LVU74
+ 144:Core/Src/main.c ****   {
+ 383              		.loc 1 144 6 is_stmt 0 view .LVU75
+ 384 006e 05B1     		cbz	r5, .L24
+ 385              	.L16:
+ 148:Core/Src/main.c **** 
+ 386              		.loc 1 148 1 view .LVU76
+ 387 0070 38BD     		pop	{r3, r4, r5, pc}
+ 388              	.LVL28:
+ 389              	.L24:
+ 146:Core/Src/main.c ****   }
+ 390              		.loc 1 146 5 is_stmt 1 view .LVU77
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 17
+
+
+ 391 0072 4FF47A73 		mov	r3, #1000
+ 392 0076 1B22     		movs	r2, #27
+ 393 0078 0B49     		ldr	r1, .L25+36
+ 394 007a 0448     		ldr	r0, .L25+8
+ 395 007c FFF7FEFF 		bl	HAL_UART_Transmit
+ 396              	.LVL29:
+ 148:Core/Src/main.c **** 
+ 397              		.loc 1 148 1 is_stmt 0 view .LVU78
+ 398 0080 F6E7     		b	.L16
+ 399              	.L26:
+ 400 0082 00BF     		.align	2
+ 401              	.L25:
+ 402 0084 00000000 		.word	previousTick
+ 403 0088 34000000 		.word	.LC4
+ 404 008c 00000000 		.word	huart6
+ 405 0090 00000000 		.word	ATcommand
+ 406 0094 00000000 		.word	apn
+ 407 0098 4C000000 		.word	.LC5
+ 408 009c 00000000 		.word	.LC2
+ 409 00a0 00000000 		.word	buffer
+ 410 00a4 10000000 		.word	.LC3
+ 411 00a8 74000000 		.word	.LC6
+ 412              		.cfi_endproc
+ 413              	.LFE139:
+ 415              		.section	.rodata.httpPost.str1.4,"aMS",%progbits,1
+ 416              		.align	2
+ 417              	.LC7:
+ 418 0000 41542B48 		.ascii	"AT+HTTPINIT\015\012\000"
+ 418      54545049 
+ 418      4E49540D 
+ 418      0A00
+ 419 000e 0000     		.align	2
+ 420              	.LC8:
+ 421 0010 41542B48 		.ascii	"AT+HTTPPARA=\"URL\",\"https://%s%s\"\015\012\000"
+ 421      54545050 
+ 421      4152413D 
+ 421      2255524C 
+ 421      222C2268 
+ 422 0033 00       		.align	2
+ 423              	.LC9:
+ 424 0034 41542B48 		.ascii	"AT+HTTPPARA=\"CONTENT\",\"application/x-www-form-ur"
+ 424      54545050 
+ 424      4152413D 
+ 424      22434F4E 
+ 424      54454E54 
+ 425 0064 6C656E63 		.ascii	"lencoded\"\015\012\000"
+ 425      6F646564 
+ 425      220D0A00 
+ 426              		.align	2
+ 427              	.LC10:
+ 428 0070 41542B48 		.ascii	"AT+HTTPDATA=%d,10000\015\012\000"
+ 428      54545044 
+ 428      4154413D 
+ 428      25642C31 
+ 428      30303030 
+ 429 0087 00       		.align	2
+ 430              	.LC11:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 18
+
+
+ 431 0088 41542B48 		.ascii	"AT+HTTPACTION=1\015\012\000"
+ 431      54545041 
+ 431      4354494F 
+ 431      4E3D310D 
+ 431      0A00
+ 432 009a 0000     		.align	2
+ 433              	.LC12:
+ 434 009c 2B485454 		.ascii	"+HTTPACTION: 1,200\000"
+ 434      50414354 
+ 434      494F4E3A 
+ 434      20312C32 
+ 434      303000
+ 435 00af 00       		.align	2
+ 436              	.LC13:
+ 437 00b0 504F5354 		.ascii	"POST success!!!!\015\012\000"
+ 437      20737563 
+ 437      63657373 
+ 437      21212121 
+ 437      0D0A00
+ 438 00c3 00       		.align	2
+ 439              	.LC14:
+ 440 00c4 504F5354 		.ascii	"POST failed.\015\012\000"
+ 440      20666169 
+ 440      6C65642E 
+ 440      0D0A00
+ 441 00d3 00       		.align	2
+ 442              	.LC15:
+ 443 00d4 41542B48 		.ascii	"AT+HTTPTERM\015\012\000"
+ 443      54545054 
+ 443      45524D0D 
+ 443      0A00
+ 444              		.section	.text.httpPost,"ax",%progbits
+ 445              		.align	1
+ 446              		.global	httpPost
+ 447              		.syntax unified
+ 448              		.thumb
+ 449              		.thumb_func
+ 451              	httpPost:
+ 452              	.LFB140:
+ 151:Core/Src/main.c ****   // Cấu hình HTTP
+ 453              		.loc 1 151 1 is_stmt 1 view -0
+ 454              		.cfi_startproc
+ 455              		@ args = 0, pretend = 0, frame = 0
+ 456              		@ frame_needed = 0, uses_anonymous_args = 0
+ 457 0000 38B5     		push	{r3, r4, r5, lr}
+ 458              	.LCFI5:
+ 459              		.cfi_def_cfa_offset 16
+ 460              		.cfi_offset 3, -16
+ 461              		.cfi_offset 4, -12
+ 462              		.cfi_offset 5, -8
+ 463              		.cfi_offset 14, -4
+ 153:Core/Src/main.c ****   HAL_Delay(2000);                // �?ợi một chút sau khi khởi tạo
+ 464              		.loc 1 153 3 view .LVU80
+ 465 0002 2B48     		ldr	r0, .L31
+ 466 0004 FFF7FEFF 		bl	SIMTransmit
+ 467              	.LVL30:
+ 154:Core/Src/main.c **** 
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 19
+
+
+ 468              		.loc 1 154 3 view .LVU81
+ 469 0008 4FF4FA60 		mov	r0, #2000
+ 470 000c FFF7FEFF 		bl	HAL_Delay
+ 471              	.LVL31:
+ 157:Core/Src/main.c ****   SIMTransmit(ATcommand); // Cấu hình URL của server
+ 472              		.loc 1 157 3 view .LVU82
+ 473 0010 284C     		ldr	r4, .L31+4
+ 474 0012 294B     		ldr	r3, .L31+8
+ 475 0014 294A     		ldr	r2, .L31+12
+ 476 0016 2A49     		ldr	r1, .L31+16
+ 477 0018 2046     		mov	r0, r4
+ 478 001a FFF7FEFF 		bl	sprintf
+ 479              	.LVL32:
+ 158:Core/Src/main.c ****   HAL_Delay(2000);
+ 480              		.loc 1 158 3 view .LVU83
+ 481 001e 2046     		mov	r0, r4
+ 482 0020 FFF7FEFF 		bl	SIMTransmit
+ 483              	.LVL33:
+ 159:Core/Src/main.c **** 
+ 484              		.loc 1 159 3 view .LVU84
+ 485 0024 4FF4FA60 		mov	r0, #2000
+ 486 0028 FFF7FEFF 		bl	HAL_Delay
+ 487              	.LVL34:
+ 162:Core/Src/main.c ****   HAL_Delay(2000);
+ 488              		.loc 1 162 3 view .LVU85
+ 489 002c 2548     		ldr	r0, .L31+20
+ 490 002e FFF7FEFF 		bl	SIMTransmit
+ 491              	.LVL35:
+ 163:Core/Src/main.c **** 
+ 492              		.loc 1 163 3 view .LVU86
+ 493 0032 4FF4FA60 		mov	r0, #2000
+ 494 0036 FFF7FEFF 		bl	HAL_Delay
+ 495              	.LVL36:
+ 166:Core/Src/main.c ****   SIMTransmit(ATcommand);
+ 496              		.loc 1 166 3 view .LVU87
+ 497 003a 234D     		ldr	r5, .L31+24
+ 498 003c 2846     		mov	r0, r5
+ 499 003e FFF7FEFF 		bl	strlen
+ 500              	.LVL37:
+ 501 0042 0246     		mov	r2, r0
+ 502 0044 2149     		ldr	r1, .L31+28
+ 503 0046 2046     		mov	r0, r4
+ 504 0048 FFF7FEFF 		bl	sprintf
+ 505              	.LVL38:
+ 167:Core/Src/main.c ****   HAL_Delay(2000);
+ 506              		.loc 1 167 3 view .LVU88
+ 507 004c 2046     		mov	r0, r4
+ 508 004e FFF7FEFF 		bl	SIMTransmit
+ 509              	.LVL39:
+ 168:Core/Src/main.c **** 
+ 510              		.loc 1 168 3 view .LVU89
+ 511 0052 4FF4FA60 		mov	r0, #2000
+ 512 0056 FFF7FEFF 		bl	HAL_Delay
+ 513              	.LVL40:
+ 171:Core/Src/main.c ****   HAL_Delay(2000);
+ 514              		.loc 1 171 3 view .LVU90
+ 515 005a 2846     		mov	r0, r5
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 20
+
+
+ 516 005c FFF7FEFF 		bl	SIMTransmit
+ 517              	.LVL41:
+ 172:Core/Src/main.c **** 
+ 518              		.loc 1 172 3 view .LVU91
+ 519 0060 4FF4FA60 		mov	r0, #2000
+ 520 0064 FFF7FEFF 		bl	HAL_Delay
+ 521              	.LVL42:
+ 175:Core/Src/main.c ****   HAL_Delay(5000);                    // �?ợi phản hồi từ server
+ 522              		.loc 1 175 3 view .LVU92
+ 523 0068 1948     		ldr	r0, .L31+32
+ 524 006a FFF7FEFF 		bl	SIMTransmit
+ 525              	.LVL43:
+ 176:Core/Src/main.c **** 
+ 526              		.loc 1 176 3 view .LVU93
+ 527 006e 41F28830 		movw	r0, #5000
+ 528 0072 FFF7FEFF 		bl	HAL_Delay
+ 529              	.LVL44:
+ 179:Core/Src/main.c ****   {
+ 530              		.loc 1 179 3 view .LVU94
+ 179:Core/Src/main.c ****   {
+ 531              		.loc 1 179 7 is_stmt 0 view .LVU95
+ 532 0076 1749     		ldr	r1, .L31+36
+ 533 0078 1748     		ldr	r0, .L31+40
+ 534 007a FFF7FEFF 		bl	strstr
+ 535              	.LVL45:
+ 179:Core/Src/main.c ****   {
+ 536              		.loc 1 179 6 view .LVU96
+ 537 007e 70B1     		cbz	r0, .L28
+ 181:Core/Src/main.c ****   }
+ 538              		.loc 1 181 5 is_stmt 1 view .LVU97
+ 539 0080 4FF47A73 		mov	r3, #1000
+ 540 0084 0F22     		movs	r2, #15
+ 541 0086 1549     		ldr	r1, .L31+44
+ 542 0088 1548     		ldr	r0, .L31+48
+ 543 008a FFF7FEFF 		bl	HAL_UART_Transmit
+ 544              	.LVL46:
+ 545              	.L29:
+ 189:Core/Src/main.c ****   HAL_Delay(2000);
+ 546              		.loc 1 189 3 view .LVU98
+ 547 008e 1548     		ldr	r0, .L31+52
+ 548 0090 FFF7FEFF 		bl	SIMTransmit
+ 549              	.LVL47:
+ 190:Core/Src/main.c **** }
+ 550              		.loc 1 190 3 view .LVU99
+ 551 0094 4FF4FA60 		mov	r0, #2000
+ 552 0098 FFF7FEFF 		bl	HAL_Delay
+ 553              	.LVL48:
+ 191:Core/Src/main.c **** 
+ 554              		.loc 1 191 1 is_stmt 0 view .LVU100
+ 555 009c 38BD     		pop	{r3, r4, r5, pc}
+ 556              	.L28:
+ 185:Core/Src/main.c ****   }
+ 557              		.loc 1 185 5 is_stmt 1 view .LVU101
+ 558 009e 4FF47A73 		mov	r3, #1000
+ 559 00a2 0E22     		movs	r2, #14
+ 560 00a4 1049     		ldr	r1, .L31+56
+ 561 00a6 0E48     		ldr	r0, .L31+48
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 21
+
+
+ 562 00a8 FFF7FEFF 		bl	HAL_UART_Transmit
+ 563              	.LVL49:
+ 564 00ac EFE7     		b	.L29
+ 565              	.L32:
+ 566 00ae 00BF     		.align	2
+ 567              	.L31:
+ 568 00b0 00000000 		.word	.LC7
+ 569 00b4 00000000 		.word	ATcommand
+ 570 00b8 00000000 		.word	resource
+ 571 00bc 00000000 		.word	server
+ 572 00c0 10000000 		.word	.LC8
+ 573 00c4 34000000 		.word	.LC9
+ 574 00c8 00000000 		.word	content
+ 575 00cc 70000000 		.word	.LC10
+ 576 00d0 88000000 		.word	.LC11
+ 577 00d4 9C000000 		.word	.LC12
+ 578 00d8 00000000 		.word	buffer
+ 579 00dc B0000000 		.word	.LC13
+ 580 00e0 00000000 		.word	huart6
+ 581 00e4 D4000000 		.word	.LC15
+ 582 00e8 C4000000 		.word	.LC14
+ 583              		.cfi_endproc
+ 584              	.LFE140:
+ 586              		.section	.text.Error_Handler,"ax",%progbits
+ 587              		.align	1
+ 588              		.global	Error_Handler
+ 589              		.syntax unified
+ 590              		.thumb
+ 591              		.thumb_func
+ 593              	Error_Handler:
+ 594              	.LFB147:
+ 457:Core/Src/main.c **** 
+ 458:Core/Src/main.c **** /* USER CODE BEGIN 4 */
+ 459:Core/Src/main.c **** 
+ 460:Core/Src/main.c **** /* USER CODE END 4 */
+ 461:Core/Src/main.c **** 
+ 462:Core/Src/main.c **** /**
+ 463:Core/Src/main.c ****   * @brief  This function is executed in case of error occurrence.
+ 464:Core/Src/main.c ****   * @retval None
+ 465:Core/Src/main.c ****   */
+ 466:Core/Src/main.c **** void Error_Handler(void)
+ 467:Core/Src/main.c **** {
+ 595              		.loc 1 467 1 view -0
+ 596              		.cfi_startproc
+ 597              		@ Volatile: function does not return.
+ 598              		@ args = 0, pretend = 0, frame = 0
+ 599              		@ frame_needed = 0, uses_anonymous_args = 0
+ 600              		@ link register save eliminated.
+ 468:Core/Src/main.c ****   /* USER CODE BEGIN Error_Handler_Debug */
+ 469:Core/Src/main.c ****   /* User can add his own implementation to report the HAL error return state */
+ 470:Core/Src/main.c ****   __disable_irq();
+ 601              		.loc 1 470 3 view .LVU103
+ 602              	.LBB8:
+ 603              	.LBI8:
+ 604              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
+   1:Drivers/CMSIS/Include/cmsis_gcc.h **** /**************************************************************************//**
+   2:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 22
+
+
+   3:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @version  V5.4.1
+   5:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @date     27. May 2021
+   6:Drivers/CMSIS/Include/cmsis_gcc.h ****  ******************************************************************************/
+   7:Drivers/CMSIS/Include/cmsis_gcc.h **** /*
+   8:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2021 Arm Limited. All rights reserved.
+   9:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  10:Drivers/CMSIS/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  12:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:Drivers/CMSIS/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:Drivers/CMSIS/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  16:Drivers/CMSIS/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  18:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:Drivers/CMSIS/Include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:Drivers/CMSIS/Include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:Drivers/CMSIS/Include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:Drivers/CMSIS/Include/cmsis_gcc.h ****  * limitations under the License.
+  23:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+  24:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  25:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  28:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+  32:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  34:Drivers/CMSIS/Include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __has_builtin
+  36:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  38:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  39:Drivers/CMSIS/Include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  40:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ASM
+  41:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  43:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __INLINE
+  44:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  46:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  49:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE
+  50:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  51:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  52:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  55:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __USED
+  56:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  58:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __WEAK
+  59:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 23
+
+
+  60:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  61:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED
+  62:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  63:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  64:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  67:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  70:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  72:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:Drivers/CMSIS/Include/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+  75:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  78:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  80:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  86:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  89:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  94:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  97:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 102:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 108:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 109:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 110:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 112:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 113:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 115:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 116:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __COMPILER_BARRIER
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 24
+
+
+ 117:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __COMPILER_BARRIER()                   __ASM volatile("":::"memory")
+ 118:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 119:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 120:Drivers/CMSIS/Include/cmsis_gcc.h **** /* #########################  Startup and Lowlevel Init  ######################## */
+ 121:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 122:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __PROGRAM_START
+ 123:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 124:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 125:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Initializes data and bss sections
+ 126:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details This default implementations initialized all data and additional bss
+ 127:Drivers/CMSIS/Include/cmsis_gcc.h ****            sections relying on .copy.table and .zero.table specified properly
+ 128:Drivers/CMSIS/Include/cmsis_gcc.h ****            in the used linker script.
+ 129:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 130:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 131:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE __NO_RETURN void __cmsis_start(void)
+ 132:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 133:Drivers/CMSIS/Include/cmsis_gcc.h ****   extern void _start(void) __NO_RETURN;
+ 134:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 135:Drivers/CMSIS/Include/cmsis_gcc.h ****   typedef struct {
+ 136:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t const* src;
+ 137:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t* dest;
+ 138:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t  wlen;
+ 139:Drivers/CMSIS/Include/cmsis_gcc.h ****   } __copy_table_t;
+ 140:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 141:Drivers/CMSIS/Include/cmsis_gcc.h ****   typedef struct {
+ 142:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t* dest;
+ 143:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t  wlen;
+ 144:Drivers/CMSIS/Include/cmsis_gcc.h ****   } __zero_table_t;
+ 145:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 146:Drivers/CMSIS/Include/cmsis_gcc.h ****   extern const __copy_table_t __copy_table_start__;
+ 147:Drivers/CMSIS/Include/cmsis_gcc.h ****   extern const __copy_table_t __copy_table_end__;
+ 148:Drivers/CMSIS/Include/cmsis_gcc.h ****   extern const __zero_table_t __zero_table_start__;
+ 149:Drivers/CMSIS/Include/cmsis_gcc.h ****   extern const __zero_table_t __zero_table_end__;
+ 150:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 151:Drivers/CMSIS/Include/cmsis_gcc.h ****   for (__copy_table_t const* pTable = &__copy_table_start__; pTable < &__copy_table_end__; ++pTable
+ 152:Drivers/CMSIS/Include/cmsis_gcc.h ****     for(uint32_t i=0u; i<pTable->wlen; ++i) {
+ 153:Drivers/CMSIS/Include/cmsis_gcc.h ****       pTable->dest[i] = pTable->src[i];
+ 154:Drivers/CMSIS/Include/cmsis_gcc.h ****     }
+ 155:Drivers/CMSIS/Include/cmsis_gcc.h ****   }
+ 156:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 157:Drivers/CMSIS/Include/cmsis_gcc.h ****   for (__zero_table_t const* pTable = &__zero_table_start__; pTable < &__zero_table_end__; ++pTable
+ 158:Drivers/CMSIS/Include/cmsis_gcc.h ****     for(uint32_t i=0u; i<pTable->wlen; ++i) {
+ 159:Drivers/CMSIS/Include/cmsis_gcc.h ****       pTable->dest[i] = 0u;
+ 160:Drivers/CMSIS/Include/cmsis_gcc.h ****     }
+ 161:Drivers/CMSIS/Include/cmsis_gcc.h ****   }
+ 162:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 163:Drivers/CMSIS/Include/cmsis_gcc.h ****   _start();
+ 164:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 165:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 166:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __PROGRAM_START           __cmsis_start
+ 167:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 168:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 169:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __INITIAL_SP
+ 170:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __INITIAL_SP              __StackTop
+ 171:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 172:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 173:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __STACK_LIMIT
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 25
+
+
+ 174:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __STACK_LIMIT             __StackLimit
+ 175:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 176:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 177:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __VECTOR_TABLE
+ 178:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __VECTOR_TABLE            __Vectors
+ 179:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 180:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 181:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __VECTOR_TABLE_ATTRIBUTE
+ 182:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __VECTOR_TABLE_ATTRIBUTE  __attribute__((used, section(".vectors")))
+ 183:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 184:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 185:Drivers/CMSIS/Include/cmsis_gcc.h **** #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
+ 186:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __STACK_SEAL
+ 187:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __STACK_SEAL              __StackSeal
+ 188:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 189:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 190:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __TZ_STACK_SEAL_SIZE
+ 191:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __TZ_STACK_SEAL_SIZE      8U
+ 192:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 193:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 194:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __TZ_STACK_SEAL_VALUE
+ 195:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __TZ_STACK_SEAL_VALUE     0xFEF5EDA5FEF5EDA5ULL
+ 196:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 197:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 198:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 199:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __TZ_set_STACKSEAL_S (uint32_t* stackTop) {
+ 200:Drivers/CMSIS/Include/cmsis_gcc.h ****   *((uint64_t *)stackTop) = __TZ_STACK_SEAL_VALUE;
+ 201:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 202:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 203:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 204:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 205:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ##########################  Core Instruction Access  ######################### */
+ 206:Drivers/CMSIS/Include/cmsis_gcc.h **** /** \defgroup CMSIS_Core_InstructionInterface CMSIS Core Instruction Interface
+ 207:Drivers/CMSIS/Include/cmsis_gcc.h ****   Access to dedicated instructions
+ 208:Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
+ 209:Drivers/CMSIS/Include/cmsis_gcc.h **** */
+ 210:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 211:Drivers/CMSIS/Include/cmsis_gcc.h **** /* Define macros for porting to both thumb1 and thumb2.
+ 212:Drivers/CMSIS/Include/cmsis_gcc.h ****  * For thumb1, use low register (r0-r7), specified by constraint "l"
+ 213:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Otherwise, use general registers, specified by constraint "r" */
+ 214:Drivers/CMSIS/Include/cmsis_gcc.h **** #if defined (__thumb__) && !defined (__thumb2__)
+ 215:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_OUT_REG(r) "=l" (r)
+ 216:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_RW_REG(r) "+l" (r)
+ 217:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_USE_REG(r) "l" (r)
+ 218:Drivers/CMSIS/Include/cmsis_gcc.h **** #else
+ 219:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_OUT_REG(r) "=r" (r)
+ 220:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_RW_REG(r) "+r" (r)
+ 221:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_USE_REG(r) "r" (r)
+ 222:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 223:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 224:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 225:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   No Operation
+ 226:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details No Operation does nothing. This instruction can be used for code alignment purposes.
+ 227:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 228:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __NOP()                             __ASM volatile ("nop")
+ 229:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 230:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 26
+
+
+ 231:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Wait For Interrupt
+ 232:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Wait For Interrupt is a hint instruction that suspends execution until one of a number o
+ 233:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 234:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __WFI()                             __ASM volatile ("wfi":::"memory")
+ 235:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 236:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 237:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 238:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Wait For Event
+ 239:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Wait For Event is a hint instruction that permits the processor to enter
+ 240:Drivers/CMSIS/Include/cmsis_gcc.h ****            a low-power state until one of a number of events occurs.
+ 241:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 242:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __WFE()                             __ASM volatile ("wfe":::"memory")
+ 243:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 244:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 245:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 246:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Send Event
+ 247:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Send Event is a hint instruction. It causes an event to be signaled to the CPU.
+ 248:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 249:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __SEV()                             __ASM volatile ("sev")
+ 250:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 251:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 252:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 253:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Instruction Synchronization Barrier
+ 254:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Instruction Synchronization Barrier flushes the pipeline in the processor,
+ 255:Drivers/CMSIS/Include/cmsis_gcc.h ****            so that all instructions following the ISB are fetched from cache or memory,
+ 256:Drivers/CMSIS/Include/cmsis_gcc.h ****            after the instruction has been completed.
+ 257:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 258:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __ISB(void)
+ 259:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 260:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("isb 0xF":::"memory");
+ 261:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 262:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 263:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 264:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 265:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Data Synchronization Barrier
+ 266:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Acts as a special kind of Data Memory Barrier.
+ 267:Drivers/CMSIS/Include/cmsis_gcc.h ****            It completes when all explicit memory accesses before this instruction complete.
+ 268:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 269:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __DSB(void)
+ 270:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 271:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("dsb 0xF":::"memory");
+ 272:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 273:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 274:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 275:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 276:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Data Memory Barrier
+ 277:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Ensures the apparent order of the explicit memory operations before
+ 278:Drivers/CMSIS/Include/cmsis_gcc.h ****            and after the instruction, without ensuring their completion.
+ 279:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 280:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __DMB(void)
+ 281:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 282:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("dmb 0xF":::"memory");
+ 283:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 284:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 285:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 286:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 287:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Reverse byte order (32 bit)
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 27
+
+
+ 288:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Reverses the byte order in unsigned integer value. For example, 0x12345678 becomes 0x785
+ 289:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    value  Value to reverse
+ 290:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Reversed value
+ 291:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 292:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __REV(uint32_t value)
+ 293:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 294:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
+ 295:Drivers/CMSIS/Include/cmsis_gcc.h ****   return __builtin_bswap32(value);
+ 296:Drivers/CMSIS/Include/cmsis_gcc.h **** #else
+ 297:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 298:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 299:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM ("rev %0, %1" : __CMSIS_GCC_OUT_REG (result) : __CMSIS_GCC_USE_REG (value) );
+ 300:Drivers/CMSIS/Include/cmsis_gcc.h ****   return result;
+ 301:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 302:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 303:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 304:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 305:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 306:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Reverse byte order (16 bit)
+ 307:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Reverses the byte order within each halfword of a word. For example, 0x12345678 becomes 
+ 308:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    value  Value to reverse
+ 309:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Reversed value
+ 310:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 311:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __REV16(uint32_t value)
+ 312:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 313:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 314:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 315:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM ("rev16 %0, %1" : __CMSIS_GCC_OUT_REG (result) : __CMSIS_GCC_USE_REG (value) );
+ 316:Drivers/CMSIS/Include/cmsis_gcc.h ****   return result;
+ 317:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 318:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 319:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 320:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 321:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Reverse byte order (16 bit)
+ 322:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Reverses the byte order in a 16-bit value and returns the signed 16-bit result. For exam
+ 323:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    value  Value to reverse
+ 324:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Reversed value
+ 325:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 326:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE int16_t __REVSH(int16_t value)
+ 327:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 328:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+ 329:Drivers/CMSIS/Include/cmsis_gcc.h ****   return (int16_t)__builtin_bswap16(value);
+ 330:Drivers/CMSIS/Include/cmsis_gcc.h **** #else
+ 331:Drivers/CMSIS/Include/cmsis_gcc.h ****   int16_t result;
+ 332:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 333:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM ("revsh %0, %1" : __CMSIS_GCC_OUT_REG (result) : __CMSIS_GCC_USE_REG (value) );
+ 334:Drivers/CMSIS/Include/cmsis_gcc.h ****   return result;
+ 335:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 336:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 337:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 338:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 339:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 340:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Rotate Right in unsigned value (32 bit)
+ 341:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Rotate Right (immediate) provides the value of the contents of a register rotated by a v
+ 342:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    op1  Value to rotate
+ 343:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    op2  Number of Bits to rotate
+ 344:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Rotated value
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 28
+
+
+ 345:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 346:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __ROR(uint32_t op1, uint32_t op2)
+ 347:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 348:Drivers/CMSIS/Include/cmsis_gcc.h ****   op2 %= 32U;
+ 349:Drivers/CMSIS/Include/cmsis_gcc.h ****   if (op2 == 0U)
+ 350:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
+ 351:Drivers/CMSIS/Include/cmsis_gcc.h ****     return op1;
+ 352:Drivers/CMSIS/Include/cmsis_gcc.h ****   }
+ 353:Drivers/CMSIS/Include/cmsis_gcc.h ****   return (op1 >> op2) | (op1 << (32U - op2));
+ 354:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 355:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 356:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 357:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 358:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Breakpoint
+ 359:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Causes the processor to enter Debug state.
+ 360:Drivers/CMSIS/Include/cmsis_gcc.h ****            Debug tools can use this to investigate system state when the instruction at a particula
+ 361:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    value  is ignored by the processor.
+ 362:Drivers/CMSIS/Include/cmsis_gcc.h ****                  If required, a debugger can use it to store additional information about the break
+ 363:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 364:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __BKPT(value)                       __ASM volatile ("bkpt "#value)
+ 365:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 366:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 367:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 368:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Reverse bit order of value
+ 369:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Reverses the bit order of the given value.
+ 370:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    value  Value to reverse
+ 371:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Reversed value
+ 372:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 373:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __RBIT(uint32_t value)
+ 374:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 375:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 376:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 377:Drivers/CMSIS/Include/cmsis_gcc.h **** #if ((defined (__ARM_ARCH_7M__      ) && (__ARM_ARCH_7M__      == 1)) || \
+ 378:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_7EM__     ) && (__ARM_ARCH_7EM__     == 1)) || \
+ 379:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1))    )
+ 380:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM ("rbit %0, %1" : "=r" (result) : "r" (value) );
+ 381:Drivers/CMSIS/Include/cmsis_gcc.h **** #else
+ 382:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t s = (4U /*sizeof(v)*/ * 8U) - 1U; /* extra shift needed at end */
+ 383:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 384:Drivers/CMSIS/Include/cmsis_gcc.h ****   result = value;                      /* r will be reversed bits of v; first get LSB of v */
+ 385:Drivers/CMSIS/Include/cmsis_gcc.h ****   for (value >>= 1U; value != 0U; value >>= 1U)
+ 386:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
+ 387:Drivers/CMSIS/Include/cmsis_gcc.h ****     result <<= 1U;
+ 388:Drivers/CMSIS/Include/cmsis_gcc.h ****     result |= value & 1U;
+ 389:Drivers/CMSIS/Include/cmsis_gcc.h ****     s--;
+ 390:Drivers/CMSIS/Include/cmsis_gcc.h ****   }
+ 391:Drivers/CMSIS/Include/cmsis_gcc.h ****   result <<= s;                        /* shift when v's highest bits are zero */
+ 392:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 393:Drivers/CMSIS/Include/cmsis_gcc.h ****   return result;
+ 394:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 395:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 396:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 397:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 398:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Count leading zeros
+ 399:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Counts the number of leading zeros of a data value.
+ 400:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to count the leading zeros
+ 401:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return             number of leading zeros in value
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 29
+
+
+ 402:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 403:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint8_t __CLZ(uint32_t value)
+ 404:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 405:Drivers/CMSIS/Include/cmsis_gcc.h ****   /* Even though __builtin_clz produces a CLZ instruction on ARM, formally
+ 406:Drivers/CMSIS/Include/cmsis_gcc.h ****      __builtin_clz(0) is undefined behaviour, so handle this case specially.
+ 407:Drivers/CMSIS/Include/cmsis_gcc.h ****      This guarantees ARM-compatible results if happening to compile on a non-ARM
+ 408:Drivers/CMSIS/Include/cmsis_gcc.h ****      target, and ensures the compiler doesn't decide to activate any
+ 409:Drivers/CMSIS/Include/cmsis_gcc.h ****      optimisations using the logic "value was passed to __builtin_clz, so it
+ 410:Drivers/CMSIS/Include/cmsis_gcc.h ****      is non-zero".
+ 411:Drivers/CMSIS/Include/cmsis_gcc.h ****      ARM GCC 7.3 and possibly earlier will optimise this test away, leaving a
+ 412:Drivers/CMSIS/Include/cmsis_gcc.h ****      single CLZ instruction.
+ 413:Drivers/CMSIS/Include/cmsis_gcc.h ****    */
+ 414:Drivers/CMSIS/Include/cmsis_gcc.h ****   if (value == 0U)
+ 415:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
+ 416:Drivers/CMSIS/Include/cmsis_gcc.h ****     return 32U;
+ 417:Drivers/CMSIS/Include/cmsis_gcc.h ****   }
+ 418:Drivers/CMSIS/Include/cmsis_gcc.h ****   return __builtin_clz(value);
+ 419:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 420:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 421:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 422:Drivers/CMSIS/Include/cmsis_gcc.h **** #if ((defined (__ARM_ARCH_7M__      ) && (__ARM_ARCH_7M__      == 1)) || \
+ 423:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_7EM__     ) && (__ARM_ARCH_7EM__     == 1)) || \
+ 424:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)) || \
+ 425:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_8M_BASE__ ) && (__ARM_ARCH_8M_BASE__ == 1))    )
+ 426:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 427:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   LDR Exclusive (8 bit)
+ 428:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a exclusive LDR instruction for 8 bit value.
+ 429:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 430:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return             value of type uint8_t at (*ptr)
+ 431:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 432:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint8_t __LDREXB(volatile uint8_t *addr)
+ 433:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 434:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 435:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 436:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+ 437:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrexb %0, %1" : "=r" (result) : "Q" (*addr) );
+ 438:Drivers/CMSIS/Include/cmsis_gcc.h **** #else
+ 439:Drivers/CMSIS/Include/cmsis_gcc.h ****     /* Prior to GCC 4.8, "Q" will be expanded to [rx, #0] which is not
+ 440:Drivers/CMSIS/Include/cmsis_gcc.h ****        accepted by assembler. So has to use following less efficient pattern.
+ 441:Drivers/CMSIS/Include/cmsis_gcc.h ****     */
+ 442:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrexb %0, [%1]" : "=r" (result) : "r" (addr) : "memory" );
+ 443:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 444:Drivers/CMSIS/Include/cmsis_gcc.h ****    return ((uint8_t) result);    /* Add explicit type cast here */
+ 445:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 446:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 447:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 448:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 449:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   LDR Exclusive (16 bit)
+ 450:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a exclusive LDR instruction for 16 bit values.
+ 451:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 452:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return        value of type uint16_t at (*ptr)
+ 453:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 454:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint16_t __LDREXH(volatile uint16_t *addr)
+ 455:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 456:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 457:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 458:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 30
+
+
+ 459:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrexh %0, %1" : "=r" (result) : "Q" (*addr) );
+ 460:Drivers/CMSIS/Include/cmsis_gcc.h **** #else
+ 461:Drivers/CMSIS/Include/cmsis_gcc.h ****     /* Prior to GCC 4.8, "Q" will be expanded to [rx, #0] which is not
+ 462:Drivers/CMSIS/Include/cmsis_gcc.h ****        accepted by assembler. So has to use following less efficient pattern.
+ 463:Drivers/CMSIS/Include/cmsis_gcc.h ****     */
+ 464:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrexh %0, [%1]" : "=r" (result) : "r" (addr) : "memory" );
+ 465:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 466:Drivers/CMSIS/Include/cmsis_gcc.h ****    return ((uint16_t) result);    /* Add explicit type cast here */
+ 467:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 468:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 469:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 470:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 471:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   LDR Exclusive (32 bit)
+ 472:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a exclusive LDR instruction for 32 bit values.
+ 473:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 474:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return        value of type uint32_t at (*ptr)
+ 475:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 476:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __LDREXW(volatile uint32_t *addr)
+ 477:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 478:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 479:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 480:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrex %0, %1" : "=r" (result) : "Q" (*addr) );
+ 481:Drivers/CMSIS/Include/cmsis_gcc.h ****    return(result);
+ 482:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 483:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 484:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 485:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 486:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   STR Exclusive (8 bit)
+ 487:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a exclusive STR instruction for 8 bit values.
+ 488:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 489:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 490:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          0  Function succeeded
+ 491:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          1  Function failed
+ 492:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 493:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __STREXB(uint8_t value, volatile uint8_t *addr)
+ 494:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 495:Drivers/CMSIS/Include/cmsis_gcc.h ****    uint32_t result;
+ 496:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 497:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("strexb %0, %2, %1" : "=&r" (result), "=Q" (*addr) : "r" ((uint32_t)value) );
+ 498:Drivers/CMSIS/Include/cmsis_gcc.h ****    return(result);
+ 499:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 500:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 501:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 502:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 503:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   STR Exclusive (16 bit)
+ 504:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a exclusive STR instruction for 16 bit values.
+ 505:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 506:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 507:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          0  Function succeeded
+ 508:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          1  Function failed
+ 509:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 510:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __STREXH(uint16_t value, volatile uint16_t *addr)
+ 511:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 512:Drivers/CMSIS/Include/cmsis_gcc.h ****    uint32_t result;
+ 513:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 514:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("strexh %0, %2, %1" : "=&r" (result), "=Q" (*addr) : "r" ((uint32_t)value) );
+ 515:Drivers/CMSIS/Include/cmsis_gcc.h ****    return(result);
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 31
+
+
+ 516:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 517:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 518:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 519:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 520:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   STR Exclusive (32 bit)
+ 521:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a exclusive STR instruction for 32 bit values.
+ 522:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 523:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 524:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          0  Function succeeded
+ 525:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          1  Function failed
+ 526:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 527:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __STREXW(uint32_t value, volatile uint32_t *addr)
+ 528:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 529:Drivers/CMSIS/Include/cmsis_gcc.h ****    uint32_t result;
+ 530:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 531:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("strex %0, %2, %1" : "=&r" (result), "=Q" (*addr) : "r" (value) );
+ 532:Drivers/CMSIS/Include/cmsis_gcc.h ****    return(result);
+ 533:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 534:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 535:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 536:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 537:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Remove the exclusive lock
+ 538:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Removes the exclusive lock which is created by LDREX.
+ 539:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 540:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __CLREX(void)
+ 541:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 542:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("clrex" ::: "memory");
+ 543:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 544:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 545:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif /* ((defined (__ARM_ARCH_7M__      ) && (__ARM_ARCH_7M__      == 1)) || \
+ 546:Drivers/CMSIS/Include/cmsis_gcc.h ****            (defined (__ARM_ARCH_7EM__     ) && (__ARM_ARCH_7EM__     == 1)) || \
+ 547:Drivers/CMSIS/Include/cmsis_gcc.h ****            (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)) || \
+ 548:Drivers/CMSIS/Include/cmsis_gcc.h ****            (defined (__ARM_ARCH_8M_BASE__ ) && (__ARM_ARCH_8M_BASE__ == 1))    ) */
+ 549:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 550:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 551:Drivers/CMSIS/Include/cmsis_gcc.h **** #if ((defined (__ARM_ARCH_7M__      ) && (__ARM_ARCH_7M__      == 1)) || \
+ 552:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_7EM__     ) && (__ARM_ARCH_7EM__     == 1)) || \
+ 553:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1))    )
+ 554:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 555:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Signed Saturate
+ 556:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Saturates a signed value.
+ 557:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  ARG1  Value to be saturated
+ 558:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  ARG2  Bit position to saturate to (1..32)
+ 559:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return             Saturated value
+ 560:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 561:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __SSAT(ARG1, ARG2) \
+ 562:Drivers/CMSIS/Include/cmsis_gcc.h **** __extension__ \
+ 563:Drivers/CMSIS/Include/cmsis_gcc.h **** ({                          \
+ 564:Drivers/CMSIS/Include/cmsis_gcc.h ****   int32_t __RES, __ARG1 = (ARG1); \
+ 565:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("ssat %0, %1, %2" : "=r" (__RES) :  "I" (ARG2), "r" (__ARG1) : "cc" ); \
+ 566:Drivers/CMSIS/Include/cmsis_gcc.h ****   __RES; \
+ 567:Drivers/CMSIS/Include/cmsis_gcc.h ****  })
+ 568:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 569:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 570:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 571:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Unsigned Saturate
+ 572:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Saturates an unsigned value.
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 32
+
+
+ 573:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  ARG1  Value to be saturated
+ 574:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  ARG2  Bit position to saturate to (0..31)
+ 575:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return             Saturated value
+ 576:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 577:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __USAT(ARG1, ARG2) \
+ 578:Drivers/CMSIS/Include/cmsis_gcc.h **** __extension__ \
+ 579:Drivers/CMSIS/Include/cmsis_gcc.h **** ({                          \
+ 580:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t __RES, __ARG1 = (ARG1); \
+ 581:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("usat %0, %1, %2" : "=r" (__RES) :  "I" (ARG2), "r" (__ARG1) : "cc" ); \
+ 582:Drivers/CMSIS/Include/cmsis_gcc.h ****   __RES; \
+ 583:Drivers/CMSIS/Include/cmsis_gcc.h ****  })
+ 584:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 585:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 586:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 587:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Rotate Right with Extend (32 bit)
+ 588:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Moves each bit of a bitstring right by one bit.
+ 589:Drivers/CMSIS/Include/cmsis_gcc.h ****            The carry input is shifted in at the left end of the bitstring.
+ 590:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    value  Value to rotate
+ 591:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Rotated value
+ 592:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 593:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __RRX(uint32_t value)
+ 594:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 595:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 596:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 597:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("rrx %0, %1" : __CMSIS_GCC_OUT_REG (result) : __CMSIS_GCC_USE_REG (value) );
+ 598:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 599:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 600:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 601:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 602:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 603:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   LDRT Unprivileged (8 bit)
+ 604:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a Unprivileged LDRT instruction for 8 bit value.
+ 605:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 606:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return             value of type uint8_t at (*ptr)
+ 607:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 608:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint8_t __LDRBT(volatile uint8_t *ptr)
+ 609:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 610:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 611:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 612:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+ 613:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrbt %0, %1" : "=r" (result) : "Q" (*ptr) );
+ 614:Drivers/CMSIS/Include/cmsis_gcc.h **** #else
+ 615:Drivers/CMSIS/Include/cmsis_gcc.h ****     /* Prior to GCC 4.8, "Q" will be expanded to [rx, #0] which is not
+ 616:Drivers/CMSIS/Include/cmsis_gcc.h ****        accepted by assembler. So has to use following less efficient pattern.
+ 617:Drivers/CMSIS/Include/cmsis_gcc.h ****     */
+ 618:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrbt %0, [%1]" : "=r" (result) : "r" (ptr) : "memory" );
+ 619:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 620:Drivers/CMSIS/Include/cmsis_gcc.h ****    return ((uint8_t) result);    /* Add explicit type cast here */
+ 621:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 622:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 623:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 624:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 625:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   LDRT Unprivileged (16 bit)
+ 626:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a Unprivileged LDRT instruction for 16 bit values.
+ 627:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 628:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return        value of type uint16_t at (*ptr)
+ 629:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 33
+
+
+ 630:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint16_t __LDRHT(volatile uint16_t *ptr)
+ 631:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 632:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 633:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 634:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+ 635:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrht %0, %1" : "=r" (result) : "Q" (*ptr) );
+ 636:Drivers/CMSIS/Include/cmsis_gcc.h **** #else
+ 637:Drivers/CMSIS/Include/cmsis_gcc.h ****     /* Prior to GCC 4.8, "Q" will be expanded to [rx, #0] which is not
+ 638:Drivers/CMSIS/Include/cmsis_gcc.h ****        accepted by assembler. So has to use following less efficient pattern.
+ 639:Drivers/CMSIS/Include/cmsis_gcc.h ****     */
+ 640:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrht %0, [%1]" : "=r" (result) : "r" (ptr) : "memory" );
+ 641:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 642:Drivers/CMSIS/Include/cmsis_gcc.h ****    return ((uint16_t) result);    /* Add explicit type cast here */
+ 643:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 644:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 645:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 646:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 647:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   LDRT Unprivileged (32 bit)
+ 648:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a Unprivileged LDRT instruction for 32 bit values.
+ 649:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 650:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return        value of type uint32_t at (*ptr)
+ 651:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 652:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __LDRT(volatile uint32_t *ptr)
+ 653:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 654:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 655:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 656:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrt %0, %1" : "=r" (result) : "Q" (*ptr) );
+ 657:Drivers/CMSIS/Include/cmsis_gcc.h ****    return(result);
+ 658:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 659:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 660:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 661:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 662:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   STRT Unprivileged (8 bit)
+ 663:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a Unprivileged STRT instruction for 8 bit values.
+ 664:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 665:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 666:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 667:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __STRBT(uint8_t value, volatile uint8_t *ptr)
+ 668:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 669:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("strbt %1, %0" : "=Q" (*ptr) : "r" ((uint32_t)value) );
+ 670:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 671:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 672:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 673:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 674:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   STRT Unprivileged (16 bit)
+ 675:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a Unprivileged STRT instruction for 16 bit values.
+ 676:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 677:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 678:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 679:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __STRHT(uint16_t value, volatile uint16_t *ptr)
+ 680:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 681:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("strht %1, %0" : "=Q" (*ptr) : "r" ((uint32_t)value) );
+ 682:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 683:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 684:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 685:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 686:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   STRT Unprivileged (32 bit)
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 34
+
+
+ 687:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a Unprivileged STRT instruction for 32 bit values.
+ 688:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 689:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 690:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 691:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __STRT(uint32_t value, volatile uint32_t *ptr)
+ 692:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 693:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("strt %1, %0" : "=Q" (*ptr) : "r" (value) );
+ 694:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 695:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 696:Drivers/CMSIS/Include/cmsis_gcc.h **** #else  /* ((defined (__ARM_ARCH_7M__      ) && (__ARM_ARCH_7M__      == 1)) || \
+ 697:Drivers/CMSIS/Include/cmsis_gcc.h ****            (defined (__ARM_ARCH_7EM__     ) && (__ARM_ARCH_7EM__     == 1)) || \
+ 698:Drivers/CMSIS/Include/cmsis_gcc.h ****            (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1))    ) */
+ 699:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 700:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 701:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Signed Saturate
+ 702:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Saturates a signed value.
+ 703:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to be saturated
+ 704:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    sat  Bit position to saturate to (1..32)
+ 705:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return             Saturated value
+ 706:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 707:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE int32_t __SSAT(int32_t val, uint32_t sat)
+ 708:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 709:Drivers/CMSIS/Include/cmsis_gcc.h ****   if ((sat >= 1U) && (sat <= 32U))
+ 710:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
+ 711:Drivers/CMSIS/Include/cmsis_gcc.h ****     const int32_t max = (int32_t)((1U << (sat - 1U)) - 1U);
+ 712:Drivers/CMSIS/Include/cmsis_gcc.h ****     const int32_t min = -1 - max ;
+ 713:Drivers/CMSIS/Include/cmsis_gcc.h ****     if (val > max)
+ 714:Drivers/CMSIS/Include/cmsis_gcc.h ****     {
+ 715:Drivers/CMSIS/Include/cmsis_gcc.h ****       return max;
+ 716:Drivers/CMSIS/Include/cmsis_gcc.h ****     }
+ 717:Drivers/CMSIS/Include/cmsis_gcc.h ****     else if (val < min)
+ 718:Drivers/CMSIS/Include/cmsis_gcc.h ****     {
+ 719:Drivers/CMSIS/Include/cmsis_gcc.h ****       return min;
+ 720:Drivers/CMSIS/Include/cmsis_gcc.h ****     }
+ 721:Drivers/CMSIS/Include/cmsis_gcc.h ****   }
+ 722:Drivers/CMSIS/Include/cmsis_gcc.h ****   return val;
+ 723:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 724:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 725:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 726:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Unsigned Saturate
+ 727:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Saturates an unsigned value.
+ 728:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to be saturated
+ 729:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    sat  Bit position to saturate to (0..31)
+ 730:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return             Saturated value
+ 731:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 732:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __USAT(int32_t val, uint32_t sat)
+ 733:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 734:Drivers/CMSIS/Include/cmsis_gcc.h ****   if (sat <= 31U)
+ 735:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
+ 736:Drivers/CMSIS/Include/cmsis_gcc.h ****     const uint32_t max = ((1U << sat) - 1U);
+ 737:Drivers/CMSIS/Include/cmsis_gcc.h ****     if (val > (int32_t)max)
+ 738:Drivers/CMSIS/Include/cmsis_gcc.h ****     {
+ 739:Drivers/CMSIS/Include/cmsis_gcc.h ****       return max;
+ 740:Drivers/CMSIS/Include/cmsis_gcc.h ****     }
+ 741:Drivers/CMSIS/Include/cmsis_gcc.h ****     else if (val < 0)
+ 742:Drivers/CMSIS/Include/cmsis_gcc.h ****     {
+ 743:Drivers/CMSIS/Include/cmsis_gcc.h ****       return 0U;
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 35
+
+
+ 744:Drivers/CMSIS/Include/cmsis_gcc.h ****     }
+ 745:Drivers/CMSIS/Include/cmsis_gcc.h ****   }
+ 746:Drivers/CMSIS/Include/cmsis_gcc.h ****   return (uint32_t)val;
+ 747:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 748:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 749:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif /* ((defined (__ARM_ARCH_7M__      ) && (__ARM_ARCH_7M__      == 1)) || \
+ 750:Drivers/CMSIS/Include/cmsis_gcc.h ****            (defined (__ARM_ARCH_7EM__     ) && (__ARM_ARCH_7EM__     == 1)) || \
+ 751:Drivers/CMSIS/Include/cmsis_gcc.h ****            (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1))    ) */
+ 752:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 753:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 754:Drivers/CMSIS/Include/cmsis_gcc.h **** #if ((defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)) || \
+ 755:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_8M_BASE__ ) && (__ARM_ARCH_8M_BASE__ == 1))    )
+ 756:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 757:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Load-Acquire (8 bit)
+ 758:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a LDAB instruction for 8 bit value.
+ 759:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 760:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return             value of type uint8_t at (*ptr)
+ 761:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 762:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint8_t __LDAB(volatile uint8_t *ptr)
+ 763:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 764:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 765:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 766:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldab %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
+ 767:Drivers/CMSIS/Include/cmsis_gcc.h ****    return ((uint8_t) result);
+ 768:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 769:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 770:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 771:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 772:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Load-Acquire (16 bit)
+ 773:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a LDAH instruction for 16 bit values.
+ 774:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 775:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return        value of type uint16_t at (*ptr)
+ 776:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 777:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint16_t __LDAH(volatile uint16_t *ptr)
+ 778:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 779:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 780:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 781:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldah %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
+ 782:Drivers/CMSIS/Include/cmsis_gcc.h ****    return ((uint16_t) result);
+ 783:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 784:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 785:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 786:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 787:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Load-Acquire (32 bit)
+ 788:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a LDA instruction for 32 bit values.
+ 789:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 790:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return        value of type uint32_t at (*ptr)
+ 791:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 792:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __LDA(volatile uint32_t *ptr)
+ 793:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 794:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 795:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 796:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("lda %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
+ 797:Drivers/CMSIS/Include/cmsis_gcc.h ****    return(result);
+ 798:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 799:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 800:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 36
+
+
+ 801:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 802:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Store-Release (8 bit)
+ 803:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a STLB instruction for 8 bit values.
+ 804:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 805:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 806:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 807:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __STLB(uint8_t value, volatile uint8_t *ptr)
+ 808:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 809:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("stlb %1, %0" : "=Q" (*ptr) : "r" ((uint32_t)value) : "memory" );
+ 810:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 811:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 812:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 813:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 814:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Store-Release (16 bit)
+ 815:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a STLH instruction for 16 bit values.
+ 816:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 817:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 818:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 819:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __STLH(uint16_t value, volatile uint16_t *ptr)
+ 820:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 821:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("stlh %1, %0" : "=Q" (*ptr) : "r" ((uint32_t)value) : "memory" );
+ 822:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 823:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 824:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 825:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 826:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Store-Release (32 bit)
+ 827:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a STL instruction for 32 bit values.
+ 828:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 829:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 830:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 831:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __STL(uint32_t value, volatile uint32_t *ptr)
+ 832:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 833:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("stl %1, %0" : "=Q" (*ptr) : "r" ((uint32_t)value) : "memory" );
+ 834:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 835:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 836:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 837:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 838:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Load-Acquire Exclusive (8 bit)
+ 839:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a LDAB exclusive instruction for 8 bit value.
+ 840:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 841:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return             value of type uint8_t at (*ptr)
+ 842:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 843:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint8_t __LDAEXB(volatile uint8_t *ptr)
+ 844:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 845:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 846:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 847:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldaexb %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
+ 848:Drivers/CMSIS/Include/cmsis_gcc.h ****    return ((uint8_t) result);
+ 849:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 850:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 851:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 852:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 853:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Load-Acquire Exclusive (16 bit)
+ 854:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a LDAH exclusive instruction for 16 bit values.
+ 855:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 856:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return        value of type uint16_t at (*ptr)
+ 857:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 37
+
+
+ 858:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint16_t __LDAEXH(volatile uint16_t *ptr)
+ 859:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 860:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 861:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 862:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldaexh %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
+ 863:Drivers/CMSIS/Include/cmsis_gcc.h ****    return ((uint16_t) result);
+ 864:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 865:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 866:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 867:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 868:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Load-Acquire Exclusive (32 bit)
+ 869:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a LDA exclusive instruction for 32 bit values.
+ 870:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
+ 871:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return        value of type uint32_t at (*ptr)
+ 872:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 873:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __LDAEX(volatile uint32_t *ptr)
+ 874:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 875:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
+ 876:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 877:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldaex %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
+ 878:Drivers/CMSIS/Include/cmsis_gcc.h ****    return(result);
+ 879:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 880:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 881:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 882:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 883:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Store-Release Exclusive (8 bit)
+ 884:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a STLB exclusive instruction for 8 bit values.
+ 885:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 886:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 887:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          0  Function succeeded
+ 888:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          1  Function failed
+ 889:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 890:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __STLEXB(uint8_t value, volatile uint8_t *ptr)
+ 891:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 892:Drivers/CMSIS/Include/cmsis_gcc.h ****    uint32_t result;
+ 893:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 894:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("stlexb %0, %2, %1" : "=&r" (result), "=Q" (*ptr) : "r" ((uint32_t)value) : "mem
+ 895:Drivers/CMSIS/Include/cmsis_gcc.h ****    return(result);
+ 896:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 897:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 898:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 899:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 900:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Store-Release Exclusive (16 bit)
+ 901:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a STLH exclusive instruction for 16 bit values.
+ 902:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 903:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 904:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          0  Function succeeded
+ 905:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          1  Function failed
+ 906:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 907:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __STLEXH(uint16_t value, volatile uint16_t *ptr)
+ 908:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 909:Drivers/CMSIS/Include/cmsis_gcc.h ****    uint32_t result;
+ 910:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 911:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("stlexh %0, %2, %1" : "=&r" (result), "=Q" (*ptr) : "r" ((uint32_t)value) : "mem
+ 912:Drivers/CMSIS/Include/cmsis_gcc.h ****    return(result);
+ 913:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 914:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 38
+
+
+ 915:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 916:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 917:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Store-Release Exclusive (32 bit)
+ 918:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a STL exclusive instruction for 32 bit values.
+ 919:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
+ 920:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
+ 921:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          0  Function succeeded
+ 922:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          1  Function failed
+ 923:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 924:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __STLEX(uint32_t value, volatile uint32_t *ptr)
+ 925:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 926:Drivers/CMSIS/Include/cmsis_gcc.h ****    uint32_t result;
+ 927:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 928:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("stlex %0, %2, %1" : "=&r" (result), "=Q" (*ptr) : "r" ((uint32_t)value) : "memo
+ 929:Drivers/CMSIS/Include/cmsis_gcc.h ****    return(result);
+ 930:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 931:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 932:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif /* ((defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)) || \
+ 933:Drivers/CMSIS/Include/cmsis_gcc.h ****            (defined (__ARM_ARCH_8M_BASE__ ) && (__ARM_ARCH_8M_BASE__ == 1))    ) */
+ 934:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 935:Drivers/CMSIS/Include/cmsis_gcc.h **** /*@}*/ /* end of group CMSIS_Core_InstructionInterface */
+ 936:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 937:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 938:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 939:Drivers/CMSIS/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 940:Drivers/CMSIS/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 941:Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
+ 942:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 943:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 944:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 945:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 946:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing special-purpose register PRIMASK.
+ 947:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 948:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 949:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 950:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 951:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+ 952:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 953:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 954:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 955:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 956:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Disable IRQ Interrupts
+ 957:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Disables IRQ interrupts by setting special-purpose register PRIMASK.
+ 958:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 959:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 960:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
+ 605              		.loc 2 960 27 view .LVU104
+ 606              	.LBB9:
+ 961:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 962:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
+ 607              		.loc 2 962 3 view .LVU105
+ 608              		.syntax unified
+ 609              	@ 962 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 610 0000 72B6     		cpsid i
+ 611              	@ 0 "" 2
+ 612              		.thumb
+ 613              		.syntax unified
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 39
+
+
+ 614              	.L34:
+ 615              	.LBE9:
+ 616              	.LBE8:
+ 471:Core/Src/main.c ****   while (1)
+ 617              		.loc 1 471 3 discriminator 1 view .LVU106
+ 472:Core/Src/main.c ****   {
+ 473:Core/Src/main.c ****   }
+ 618              		.loc 1 473 3 discriminator 1 view .LVU107
+ 471:Core/Src/main.c ****   while (1)
+ 619              		.loc 1 471 9 discriminator 1 view .LVU108
+ 620 0002 FEE7     		b	.L34
+ 621              		.cfi_endproc
+ 622              	.LFE147:
+ 624              		.section	.text.MX_USART2_UART_Init,"ax",%progbits
+ 625              		.align	1
+ 626              		.syntax unified
+ 627              		.thumb
+ 628              		.thumb_func
+ 630              	MX_USART2_UART_Init:
+ 631              	.LFB144:
+ 378:Core/Src/main.c **** 
+ 632              		.loc 1 378 1 view -0
+ 633              		.cfi_startproc
+ 634              		@ args = 0, pretend = 0, frame = 0
+ 635              		@ frame_needed = 0, uses_anonymous_args = 0
+ 636 0000 08B5     		push	{r3, lr}
+ 637              	.LCFI6:
+ 638              		.cfi_def_cfa_offset 8
+ 639              		.cfi_offset 3, -8
+ 640              		.cfi_offset 14, -4
+ 387:Core/Src/main.c ****   huart2.Init.BaudRate = 115200;
+ 641              		.loc 1 387 3 view .LVU110
+ 387:Core/Src/main.c ****   huart2.Init.BaudRate = 115200;
+ 642              		.loc 1 387 19 is_stmt 0 view .LVU111
+ 643 0002 0A48     		ldr	r0, .L39
+ 644 0004 0A4B     		ldr	r3, .L39+4
+ 645 0006 0360     		str	r3, [r0]
+ 388:Core/Src/main.c ****   huart2.Init.WordLength = UART_WORDLENGTH_8B;
+ 646              		.loc 1 388 3 is_stmt 1 view .LVU112
+ 388:Core/Src/main.c ****   huart2.Init.WordLength = UART_WORDLENGTH_8B;
+ 647              		.loc 1 388 24 is_stmt 0 view .LVU113
+ 648 0008 4FF4E133 		mov	r3, #115200
+ 649 000c 4360     		str	r3, [r0, #4]
+ 389:Core/Src/main.c ****   huart2.Init.StopBits = UART_STOPBITS_1;
+ 650              		.loc 1 389 3 is_stmt 1 view .LVU114
+ 389:Core/Src/main.c ****   huart2.Init.StopBits = UART_STOPBITS_1;
+ 651              		.loc 1 389 26 is_stmt 0 view .LVU115
+ 652 000e 0023     		movs	r3, #0
+ 653 0010 8360     		str	r3, [r0, #8]
+ 390:Core/Src/main.c ****   huart2.Init.Parity = UART_PARITY_NONE;
+ 654              		.loc 1 390 3 is_stmt 1 view .LVU116
+ 390:Core/Src/main.c ****   huart2.Init.Parity = UART_PARITY_NONE;
+ 655              		.loc 1 390 24 is_stmt 0 view .LVU117
+ 656 0012 C360     		str	r3, [r0, #12]
+ 391:Core/Src/main.c ****   huart2.Init.Mode = UART_MODE_TX_RX;
+ 657              		.loc 1 391 3 is_stmt 1 view .LVU118
+ 391:Core/Src/main.c ****   huart2.Init.Mode = UART_MODE_TX_RX;
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 40
+
+
+ 658              		.loc 1 391 22 is_stmt 0 view .LVU119
+ 659 0014 0361     		str	r3, [r0, #16]
+ 392:Core/Src/main.c ****   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 660              		.loc 1 392 3 is_stmt 1 view .LVU120
+ 392:Core/Src/main.c ****   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 661              		.loc 1 392 20 is_stmt 0 view .LVU121
+ 662 0016 0C22     		movs	r2, #12
+ 663 0018 4261     		str	r2, [r0, #20]
+ 393:Core/Src/main.c ****   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+ 664              		.loc 1 393 3 is_stmt 1 view .LVU122
+ 393:Core/Src/main.c ****   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+ 665              		.loc 1 393 25 is_stmt 0 view .LVU123
+ 666 001a 8361     		str	r3, [r0, #24]
+ 394:Core/Src/main.c ****   if (HAL_UART_Init(&huart2) != HAL_OK)
+ 667              		.loc 1 394 3 is_stmt 1 view .LVU124
+ 394:Core/Src/main.c ****   if (HAL_UART_Init(&huart2) != HAL_OK)
+ 668              		.loc 1 394 28 is_stmt 0 view .LVU125
+ 669 001c C361     		str	r3, [r0, #28]
+ 395:Core/Src/main.c ****   {
+ 670              		.loc 1 395 3 is_stmt 1 view .LVU126
+ 395:Core/Src/main.c ****   {
+ 671              		.loc 1 395 7 is_stmt 0 view .LVU127
+ 672 001e FFF7FEFF 		bl	HAL_UART_Init
+ 673              	.LVL50:
+ 395:Core/Src/main.c ****   {
+ 674              		.loc 1 395 6 view .LVU128
+ 675 0022 00B9     		cbnz	r0, .L38
+ 403:Core/Src/main.c **** 
+ 676              		.loc 1 403 1 view .LVU129
+ 677 0024 08BD     		pop	{r3, pc}
+ 678              	.L38:
+ 397:Core/Src/main.c ****   }
+ 679              		.loc 1 397 5 is_stmt 1 view .LVU130
+ 680 0026 FFF7FEFF 		bl	Error_Handler
+ 681              	.LVL51:
+ 682              	.L40:
+ 683 002a 00BF     		.align	2
+ 684              	.L39:
+ 685 002c 00000000 		.word	huart2
+ 686 0030 00440040 		.word	1073759232
+ 687              		.cfi_endproc
+ 688              	.LFE144:
+ 690              		.section	.text.MX_USART6_UART_Init,"ax",%progbits
+ 691              		.align	1
+ 692              		.syntax unified
+ 693              		.thumb
+ 694              		.thumb_func
+ 696              	MX_USART6_UART_Init:
+ 697              	.LFB145:
+ 411:Core/Src/main.c **** 
+ 698              		.loc 1 411 1 view -0
+ 699              		.cfi_startproc
+ 700              		@ args = 0, pretend = 0, frame = 0
+ 701              		@ frame_needed = 0, uses_anonymous_args = 0
+ 702 0000 08B5     		push	{r3, lr}
+ 703              	.LCFI7:
+ 704              		.cfi_def_cfa_offset 8
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 41
+
+
+ 705              		.cfi_offset 3, -8
+ 706              		.cfi_offset 14, -4
+ 420:Core/Src/main.c ****   huart6.Init.BaudRate = 115200;
+ 707              		.loc 1 420 3 view .LVU132
+ 420:Core/Src/main.c ****   huart6.Init.BaudRate = 115200;
+ 708              		.loc 1 420 19 is_stmt 0 view .LVU133
+ 709 0002 0A48     		ldr	r0, .L45
+ 710 0004 0A4B     		ldr	r3, .L45+4
+ 711 0006 0360     		str	r3, [r0]
+ 421:Core/Src/main.c ****   huart6.Init.WordLength = UART_WORDLENGTH_8B;
+ 712              		.loc 1 421 3 is_stmt 1 view .LVU134
+ 421:Core/Src/main.c ****   huart6.Init.WordLength = UART_WORDLENGTH_8B;
+ 713              		.loc 1 421 24 is_stmt 0 view .LVU135
+ 714 0008 4FF4E133 		mov	r3, #115200
+ 715 000c 4360     		str	r3, [r0, #4]
+ 422:Core/Src/main.c ****   huart6.Init.StopBits = UART_STOPBITS_1;
+ 716              		.loc 1 422 3 is_stmt 1 view .LVU136
+ 422:Core/Src/main.c ****   huart6.Init.StopBits = UART_STOPBITS_1;
+ 717              		.loc 1 422 26 is_stmt 0 view .LVU137
+ 718 000e 0023     		movs	r3, #0
+ 719 0010 8360     		str	r3, [r0, #8]
+ 423:Core/Src/main.c ****   huart6.Init.Parity = UART_PARITY_NONE;
+ 720              		.loc 1 423 3 is_stmt 1 view .LVU138
+ 423:Core/Src/main.c ****   huart6.Init.Parity = UART_PARITY_NONE;
+ 721              		.loc 1 423 24 is_stmt 0 view .LVU139
+ 722 0012 C360     		str	r3, [r0, #12]
+ 424:Core/Src/main.c ****   huart6.Init.Mode = UART_MODE_TX_RX;
+ 723              		.loc 1 424 3 is_stmt 1 view .LVU140
+ 424:Core/Src/main.c ****   huart6.Init.Mode = UART_MODE_TX_RX;
+ 724              		.loc 1 424 22 is_stmt 0 view .LVU141
+ 725 0014 0361     		str	r3, [r0, #16]
+ 425:Core/Src/main.c ****   huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 726              		.loc 1 425 3 is_stmt 1 view .LVU142
+ 425:Core/Src/main.c ****   huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+ 727              		.loc 1 425 20 is_stmt 0 view .LVU143
+ 728 0016 0C22     		movs	r2, #12
+ 729 0018 4261     		str	r2, [r0, #20]
+ 426:Core/Src/main.c ****   huart6.Init.OverSampling = UART_OVERSAMPLING_16;
+ 730              		.loc 1 426 3 is_stmt 1 view .LVU144
+ 426:Core/Src/main.c ****   huart6.Init.OverSampling = UART_OVERSAMPLING_16;
+ 731              		.loc 1 426 25 is_stmt 0 view .LVU145
+ 732 001a 8361     		str	r3, [r0, #24]
+ 427:Core/Src/main.c ****   if (HAL_UART_Init(&huart6) != HAL_OK)
+ 733              		.loc 1 427 3 is_stmt 1 view .LVU146
+ 427:Core/Src/main.c ****   if (HAL_UART_Init(&huart6) != HAL_OK)
+ 734              		.loc 1 427 28 is_stmt 0 view .LVU147
+ 735 001c C361     		str	r3, [r0, #28]
+ 428:Core/Src/main.c ****   {
+ 736              		.loc 1 428 3 is_stmt 1 view .LVU148
+ 428:Core/Src/main.c ****   {
+ 737              		.loc 1 428 7 is_stmt 0 view .LVU149
+ 738 001e FFF7FEFF 		bl	HAL_UART_Init
+ 739              	.LVL52:
+ 428:Core/Src/main.c ****   {
+ 740              		.loc 1 428 6 view .LVU150
+ 741 0022 00B9     		cbnz	r0, .L44
+ 436:Core/Src/main.c **** 
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 42
+
+
+ 742              		.loc 1 436 1 view .LVU151
+ 743 0024 08BD     		pop	{r3, pc}
+ 744              	.L44:
+ 430:Core/Src/main.c ****   }
+ 745              		.loc 1 430 5 is_stmt 1 view .LVU152
+ 746 0026 FFF7FEFF 		bl	Error_Handler
+ 747              	.LVL53:
+ 748              	.L46:
+ 749 002a 00BF     		.align	2
+ 750              	.L45:
+ 751 002c 00000000 		.word	huart6
+ 752 0030 00140140 		.word	1073812480
+ 753              		.cfi_endproc
+ 754              	.LFE145:
+ 756              		.section	.text.MX_I2C1_Init,"ax",%progbits
+ 757              		.align	1
+ 758              		.syntax unified
+ 759              		.thumb
+ 760              		.thumb_func
+ 762              	MX_I2C1_Init:
+ 763              	.LFB143:
+ 344:Core/Src/main.c **** 
+ 764              		.loc 1 344 1 view -0
+ 765              		.cfi_startproc
+ 766              		@ args = 0, pretend = 0, frame = 0
+ 767              		@ frame_needed = 0, uses_anonymous_args = 0
+ 768 0000 08B5     		push	{r3, lr}
+ 769              	.LCFI8:
+ 770              		.cfi_def_cfa_offset 8
+ 771              		.cfi_offset 3, -8
+ 772              		.cfi_offset 14, -4
+ 353:Core/Src/main.c ****   hi2c1.Init.ClockSpeed = 100000;
+ 773              		.loc 1 353 3 view .LVU154
+ 353:Core/Src/main.c ****   hi2c1.Init.ClockSpeed = 100000;
+ 774              		.loc 1 353 18 is_stmt 0 view .LVU155
+ 775 0002 0A48     		ldr	r0, .L51
+ 776 0004 0A4B     		ldr	r3, .L51+4
+ 777 0006 0360     		str	r3, [r0]
+ 354:Core/Src/main.c ****   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+ 778              		.loc 1 354 3 is_stmt 1 view .LVU156
+ 354:Core/Src/main.c ****   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+ 779              		.loc 1 354 25 is_stmt 0 view .LVU157
+ 780 0008 0A4B     		ldr	r3, .L51+8
+ 781 000a 4360     		str	r3, [r0, #4]
+ 355:Core/Src/main.c ****   hi2c1.Init.OwnAddress1 = 0;
+ 782              		.loc 1 355 3 is_stmt 1 view .LVU158
+ 355:Core/Src/main.c ****   hi2c1.Init.OwnAddress1 = 0;
+ 783              		.loc 1 355 24 is_stmt 0 view .LVU159
+ 784 000c 0023     		movs	r3, #0
+ 785 000e 8360     		str	r3, [r0, #8]
+ 356:Core/Src/main.c ****   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+ 786              		.loc 1 356 3 is_stmt 1 view .LVU160
+ 356:Core/Src/main.c ****   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+ 787              		.loc 1 356 26 is_stmt 0 view .LVU161
+ 788 0010 C360     		str	r3, [r0, #12]
+ 357:Core/Src/main.c ****   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+ 789              		.loc 1 357 3 is_stmt 1 view .LVU162
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 43
+
+
+ 357:Core/Src/main.c ****   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+ 790              		.loc 1 357 29 is_stmt 0 view .LVU163
+ 791 0012 4FF48042 		mov	r2, #16384
+ 792 0016 0261     		str	r2, [r0, #16]
+ 358:Core/Src/main.c ****   hi2c1.Init.OwnAddress2 = 0;
+ 793              		.loc 1 358 3 is_stmt 1 view .LVU164
+ 358:Core/Src/main.c ****   hi2c1.Init.OwnAddress2 = 0;
+ 794              		.loc 1 358 30 is_stmt 0 view .LVU165
+ 795 0018 4361     		str	r3, [r0, #20]
+ 359:Core/Src/main.c ****   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+ 796              		.loc 1 359 3 is_stmt 1 view .LVU166
+ 359:Core/Src/main.c ****   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+ 797              		.loc 1 359 26 is_stmt 0 view .LVU167
+ 798 001a 8361     		str	r3, [r0, #24]
+ 360:Core/Src/main.c ****   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+ 799              		.loc 1 360 3 is_stmt 1 view .LVU168
+ 360:Core/Src/main.c ****   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+ 800              		.loc 1 360 30 is_stmt 0 view .LVU169
+ 801 001c C361     		str	r3, [r0, #28]
+ 361:Core/Src/main.c ****   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+ 802              		.loc 1 361 3 is_stmt 1 view .LVU170
+ 361:Core/Src/main.c ****   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+ 803              		.loc 1 361 28 is_stmt 0 view .LVU171
+ 804 001e 0362     		str	r3, [r0, #32]
+ 362:Core/Src/main.c ****   {
+ 805              		.loc 1 362 3 is_stmt 1 view .LVU172
+ 362:Core/Src/main.c ****   {
+ 806              		.loc 1 362 7 is_stmt 0 view .LVU173
+ 807 0020 FFF7FEFF 		bl	HAL_I2C_Init
+ 808              	.LVL54:
+ 362:Core/Src/main.c ****   {
+ 809              		.loc 1 362 6 view .LVU174
+ 810 0024 00B9     		cbnz	r0, .L50
+ 370:Core/Src/main.c **** 
+ 811              		.loc 1 370 1 view .LVU175
+ 812 0026 08BD     		pop	{r3, pc}
+ 813              	.L50:
+ 364:Core/Src/main.c ****   }
+ 814              		.loc 1 364 5 is_stmt 1 view .LVU176
+ 815 0028 FFF7FEFF 		bl	Error_Handler
+ 816              	.LVL55:
+ 817              	.L52:
+ 818              		.align	2
+ 819              	.L51:
+ 820 002c 00000000 		.word	hi2c1
+ 821 0030 00540040 		.word	1073763328
+ 822 0034 A0860100 		.word	100000
+ 823              		.cfi_endproc
+ 824              	.LFE143:
+ 826              		.section	.text.SystemClock_Config,"ax",%progbits
+ 827              		.align	1
+ 828              		.global	SystemClock_Config
+ 829              		.syntax unified
+ 830              		.thumb
+ 831              		.thumb_func
+ 833              	SystemClock_Config:
+ 834              	.LFB142:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 44
+
+
+ 297:Core/Src/main.c ****   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+ 835              		.loc 1 297 1 view -0
+ 836              		.cfi_startproc
+ 837              		@ args = 0, pretend = 0, frame = 80
+ 838              		@ frame_needed = 0, uses_anonymous_args = 0
+ 839 0000 00B5     		push	{lr}
+ 840              	.LCFI9:
+ 841              		.cfi_def_cfa_offset 4
+ 842              		.cfi_offset 14, -4
+ 843 0002 95B0     		sub	sp, sp, #84
+ 844              	.LCFI10:
+ 845              		.cfi_def_cfa_offset 88
+ 298:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 846              		.loc 1 298 3 view .LVU178
+ 298:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 847              		.loc 1 298 22 is_stmt 0 view .LVU179
+ 848 0004 3022     		movs	r2, #48
+ 849 0006 0021     		movs	r1, #0
+ 850 0008 08A8     		add	r0, sp, #32
+ 851 000a FFF7FEFF 		bl	memset
+ 852              	.LVL56:
+ 299:Core/Src/main.c **** 
+ 853              		.loc 1 299 3 is_stmt 1 view .LVU180
+ 299:Core/Src/main.c **** 
+ 854              		.loc 1 299 22 is_stmt 0 view .LVU181
+ 855 000e 0023     		movs	r3, #0
+ 856 0010 0393     		str	r3, [sp, #12]
+ 857 0012 0493     		str	r3, [sp, #16]
+ 858 0014 0593     		str	r3, [sp, #20]
+ 859 0016 0693     		str	r3, [sp, #24]
+ 860 0018 0793     		str	r3, [sp, #28]
+ 303:Core/Src/main.c ****   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+ 861              		.loc 1 303 3 is_stmt 1 view .LVU182
+ 862              	.LBB10:
+ 303:Core/Src/main.c ****   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+ 863              		.loc 1 303 3 view .LVU183
+ 864 001a 0193     		str	r3, [sp, #4]
+ 303:Core/Src/main.c ****   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+ 865              		.loc 1 303 3 view .LVU184
+ 866 001c 1E4A     		ldr	r2, .L59
+ 867 001e 116C     		ldr	r1, [r2, #64]
+ 868 0020 41F08051 		orr	r1, r1, #268435456
+ 869 0024 1164     		str	r1, [r2, #64]
+ 303:Core/Src/main.c ****   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+ 870              		.loc 1 303 3 view .LVU185
+ 871 0026 126C     		ldr	r2, [r2, #64]
+ 872 0028 02F08052 		and	r2, r2, #268435456
+ 873 002c 0192     		str	r2, [sp, #4]
+ 303:Core/Src/main.c ****   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+ 874              		.loc 1 303 3 view .LVU186
+ 875 002e 019A     		ldr	r2, [sp, #4]
+ 876              	.LBE10:
+ 303:Core/Src/main.c ****   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+ 877              		.loc 1 303 3 view .LVU187
+ 304:Core/Src/main.c **** 
+ 878              		.loc 1 304 3 view .LVU188
+ 879              	.LBB11:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 45
+
+
+ 304:Core/Src/main.c **** 
+ 880              		.loc 1 304 3 view .LVU189
+ 881 0030 0293     		str	r3, [sp, #8]
+ 304:Core/Src/main.c **** 
+ 882              		.loc 1 304 3 view .LVU190
+ 883 0032 1A4A     		ldr	r2, .L59+4
+ 884 0034 1168     		ldr	r1, [r2]
+ 885 0036 41F48041 		orr	r1, r1, #16384
+ 886 003a 1160     		str	r1, [r2]
+ 304:Core/Src/main.c **** 
+ 887              		.loc 1 304 3 view .LVU191
+ 888 003c 1268     		ldr	r2, [r2]
+ 889 003e 02F48042 		and	r2, r2, #16384
+ 890 0042 0292     		str	r2, [sp, #8]
+ 304:Core/Src/main.c **** 
+ 891              		.loc 1 304 3 view .LVU192
+ 892 0044 029A     		ldr	r2, [sp, #8]
+ 893              	.LBE11:
+ 304:Core/Src/main.c **** 
+ 894              		.loc 1 304 3 view .LVU193
+ 309:Core/Src/main.c ****   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+ 895              		.loc 1 309 3 view .LVU194
+ 309:Core/Src/main.c ****   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+ 896              		.loc 1 309 36 is_stmt 0 view .LVU195
+ 897 0046 0222     		movs	r2, #2
+ 898 0048 0892     		str	r2, [sp, #32]
+ 310:Core/Src/main.c ****   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+ 899              		.loc 1 310 3 is_stmt 1 view .LVU196
+ 310:Core/Src/main.c ****   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+ 900              		.loc 1 310 30 is_stmt 0 view .LVU197
+ 901 004a 0121     		movs	r1, #1
+ 902 004c 0B91     		str	r1, [sp, #44]
+ 311:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+ 903              		.loc 1 311 3 is_stmt 1 view .LVU198
+ 311:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+ 904              		.loc 1 311 41 is_stmt 0 view .LVU199
+ 905 004e 1021     		movs	r1, #16
+ 906 0050 0C91     		str	r1, [sp, #48]
+ 312:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+ 907              		.loc 1 312 3 is_stmt 1 view .LVU200
+ 312:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+ 908              		.loc 1 312 34 is_stmt 0 view .LVU201
+ 909 0052 0E92     		str	r2, [sp, #56]
+ 313:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLM = 8;
+ 910              		.loc 1 313 3 is_stmt 1 view .LVU202
+ 313:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLM = 8;
+ 911              		.loc 1 313 35 is_stmt 0 view .LVU203
+ 912 0054 0F93     		str	r3, [sp, #60]
+ 314:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLN = 72;
+ 913              		.loc 1 314 3 is_stmt 1 view .LVU204
+ 314:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLN = 72;
+ 914              		.loc 1 314 30 is_stmt 0 view .LVU205
+ 915 0056 0823     		movs	r3, #8
+ 916 0058 1093     		str	r3, [sp, #64]
+ 315:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+ 917              		.loc 1 315 3 is_stmt 1 view .LVU206
+ 315:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 46
+
+
+ 918              		.loc 1 315 30 is_stmt 0 view .LVU207
+ 919 005a 4823     		movs	r3, #72
+ 920 005c 1193     		str	r3, [sp, #68]
+ 316:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLQ = 4;
+ 921              		.loc 1 316 3 is_stmt 1 view .LVU208
+ 316:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLQ = 4;
+ 922              		.loc 1 316 30 is_stmt 0 view .LVU209
+ 923 005e 1292     		str	r2, [sp, #72]
+ 317:Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 924              		.loc 1 317 3 is_stmt 1 view .LVU210
+ 317:Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 925              		.loc 1 317 30 is_stmt 0 view .LVU211
+ 926 0060 0423     		movs	r3, #4
+ 927 0062 1393     		str	r3, [sp, #76]
+ 318:Core/Src/main.c ****   {
+ 928              		.loc 1 318 3 is_stmt 1 view .LVU212
+ 318:Core/Src/main.c ****   {
+ 929              		.loc 1 318 7 is_stmt 0 view .LVU213
+ 930 0064 08A8     		add	r0, sp, #32
+ 931 0066 FFF7FEFF 		bl	HAL_RCC_OscConfig
+ 932              	.LVL57:
+ 318:Core/Src/main.c ****   {
+ 933              		.loc 1 318 6 view .LVU214
+ 934 006a 80B9     		cbnz	r0, .L57
+ 325:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+ 935              		.loc 1 325 3 is_stmt 1 view .LVU215
+ 325:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+ 936              		.loc 1 325 31 is_stmt 0 view .LVU216
+ 937 006c 0F23     		movs	r3, #15
+ 938 006e 0393     		str	r3, [sp, #12]
+ 327:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 939              		.loc 1 327 3 is_stmt 1 view .LVU217
+ 327:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 940              		.loc 1 327 34 is_stmt 0 view .LVU218
+ 941 0070 0221     		movs	r1, #2
+ 942 0072 0491     		str	r1, [sp, #16]
+ 328:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+ 943              		.loc 1 328 3 is_stmt 1 view .LVU219
+ 328:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+ 944              		.loc 1 328 35 is_stmt 0 view .LVU220
+ 945 0074 0023     		movs	r3, #0
+ 946 0076 0593     		str	r3, [sp, #20]
+ 329:Core/Src/main.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 947              		.loc 1 329 3 is_stmt 1 view .LVU221
+ 329:Core/Src/main.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 948              		.loc 1 329 36 is_stmt 0 view .LVU222
+ 949 0078 4FF48052 		mov	r2, #4096
+ 950 007c 0692     		str	r2, [sp, #24]
+ 330:Core/Src/main.c **** 
+ 951              		.loc 1 330 3 is_stmt 1 view .LVU223
+ 330:Core/Src/main.c **** 
+ 952              		.loc 1 330 36 is_stmt 0 view .LVU224
+ 953 007e 0793     		str	r3, [sp, #28]
+ 332:Core/Src/main.c ****   {
+ 954              		.loc 1 332 3 is_stmt 1 view .LVU225
+ 332:Core/Src/main.c ****   {
+ 955              		.loc 1 332 7 is_stmt 0 view .LVU226
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 47
+
+
+ 956 0080 03A8     		add	r0, sp, #12
+ 957 0082 FFF7FEFF 		bl	HAL_RCC_ClockConfig
+ 958              	.LVL58:
+ 332:Core/Src/main.c ****   {
+ 959              		.loc 1 332 6 view .LVU227
+ 960 0086 20B9     		cbnz	r0, .L58
+ 336:Core/Src/main.c **** 
+ 961              		.loc 1 336 1 view .LVU228
+ 962 0088 15B0     		add	sp, sp, #84
+ 963              	.LCFI11:
+ 964              		.cfi_remember_state
+ 965              		.cfi_def_cfa_offset 4
+ 966              		@ sp needed
+ 967 008a 5DF804FB 		ldr	pc, [sp], #4
+ 968              	.L57:
+ 969              	.LCFI12:
+ 970              		.cfi_restore_state
+ 320:Core/Src/main.c ****   }
+ 971              		.loc 1 320 5 is_stmt 1 view .LVU229
+ 972 008e FFF7FEFF 		bl	Error_Handler
+ 973              	.LVL59:
+ 974              	.L58:
+ 334:Core/Src/main.c ****   }
+ 975              		.loc 1 334 5 view .LVU230
+ 976 0092 FFF7FEFF 		bl	Error_Handler
+ 977              	.LVL60:
+ 978              	.L60:
+ 979 0096 00BF     		.align	2
+ 980              	.L59:
+ 981 0098 00380240 		.word	1073887232
+ 982 009c 00700040 		.word	1073770496
+ 983              		.cfi_endproc
+ 984              	.LFE142:
+ 986              		.global	__aeabi_f2d
+ 987              		.section	.rodata.main.str1.4,"aMS",%progbits,1
+ 988              		.align	2
+ 989              	.LC16:
+ 990 0000 74656D70 		.ascii	"temperature=%.2f&humidity=%.2f&dust=%d&airperssure="
+ 990      65726174 
+ 990      7572653D 
+ 990      252E3266 
+ 990      2668756D 
+ 991 0033 252E3266 		.ascii	"%.2f&nodeid=%s&longitude=%d&latitude=%d\000"
+ 991      266E6F64 
+ 991      6569643D 
+ 991      2573266C 
+ 991      6F6E6769 
+ 992              		.section	.text.main,"ax",%progbits
+ 993              		.align	1
+ 994              		.global	main
+ 995              		.syntax unified
+ 996              		.thumb
+ 997              		.thumb_func
+ 999              	main:
+ 1000              	.LFB141:
+ 200:Core/Src/main.c **** 
+ 1001              		.loc 1 200 1 view -0
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 48
+
+
+ 1002              		.cfi_startproc
+ 1003              		@ Volatile: function does not return.
+ 1004              		@ args = 0, pretend = 0, frame = 0
+ 1005              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1006 0000 00B5     		push	{lr}
+ 1007              	.LCFI13:
+ 1008              		.cfi_def_cfa_offset 4
+ 1009              		.cfi_offset 14, -4
+ 1010 0002 8BB0     		sub	sp, sp, #44
+ 1011              	.LCFI14:
+ 1012              		.cfi_def_cfa_offset 48
+ 209:Core/Src/main.c **** 
+ 1013              		.loc 1 209 3 view .LVU232
+ 1014 0004 FFF7FEFF 		bl	HAL_Init
+ 1015              	.LVL61:
+ 216:Core/Src/main.c **** 
+ 1016              		.loc 1 216 3 view .LVU233
+ 1017 0008 FFF7FEFF 		bl	SystemClock_Config
+ 1018              	.LVL62:
+ 223:Core/Src/main.c ****   MX_USART2_UART_Init();
+ 1019              		.loc 1 223 3 view .LVU234
+ 1020 000c FFF7FEFF 		bl	MX_GPIO_Init
+ 1021              	.LVL63:
+ 224:Core/Src/main.c ****   MX_USART6_UART_Init();
+ 1022              		.loc 1 224 3 view .LVU235
+ 1023 0010 FFF7FEFF 		bl	MX_USART2_UART_Init
+ 1024              	.LVL64:
+ 225:Core/Src/main.c ****   MX_I2C1_Init();
+ 1025              		.loc 1 225 3 view .LVU236
+ 1026 0014 FFF7FEFF 		bl	MX_USART6_UART_Init
+ 1027              	.LVL65:
+ 226:Core/Src/main.c ****   /* USER CODE BEGIN 2 */
+ 1028              		.loc 1 226 3 view .LVU237
+ 1029 0018 FFF7FEFF 		bl	MX_I2C1_Init
+ 1030              	.LVL66:
+ 228:Core/Src/main.c ****   // Kiểm tra và reset bus I2C nếu có lỗi
+ 1031              		.loc 1 228 3 view .LVU238
+ 1032 001c 3A4C     		ldr	r4, .L69
+ 1033 001e 2146     		mov	r1, r4
+ 1034 0020 4420     		movs	r0, #68
+ 1035 0022 FFF7FEFF 		bl	SHT31_Config
+ 1036              	.LVL67:
+ 230:Core/Src/main.c ****   // Đảm bảo rằng I2C không còn bận trước khi tiếp tục
+ 1037              		.loc 1 230 3 view .LVU239
+ 1038 0026 2046     		mov	r0, r4
+ 1039 0028 FFF7FEFF 		bl	I2C_ResetBus
+ 1040              	.LVL68:
+ 232:Core/Src/main.c ****   {
+ 1041              		.loc 1 232 3 view .LVU240
+ 232:Core/Src/main.c ****   {
+ 1042              		.loc 1 232 9 is_stmt 0 view .LVU241
+ 1043 002c 02E0     		b	.L62
+ 1044              	.L63:
+ 235:Core/Src/main.c ****   }
+ 1045              		.loc 1 235 5 is_stmt 1 view .LVU242
+ 1046 002e 0120     		movs	r0, #1
+ 1047 0030 FFF7FEFF 		bl	HAL_Delay
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 49
+
+
+ 1048              	.LVL69:
+ 1049              	.L62:
+ 232:Core/Src/main.c ****   {
+ 1050              		.loc 1 232 22 view .LVU243
+ 232:Core/Src/main.c ****   {
+ 1051              		.loc 1 232 15 is_stmt 0 view .LVU244
+ 1052 0034 344B     		ldr	r3, .L69
+ 1053 0036 93F83D30 		ldrb	r3, [r3, #61]	@ zero_extendqisi2
+ 1054 003a DBB2     		uxtb	r3, r3
+ 232:Core/Src/main.c ****   {
+ 1055              		.loc 1 232 22 view .LVU245
+ 1056 003c 202B     		cmp	r3, #32
+ 1057 003e F6D1     		bne	.L63
+ 238:Core/Src/main.c ****   bmp280.addr = BMP280_I2C_ADDRESS_0; // hoặc BME280_I2C_ADDRESS_1
+ 1058              		.loc 1 238 3 is_stmt 1 view .LVU246
+ 238:Core/Src/main.c ****   bmp280.addr = BMP280_I2C_ADDRESS_0; // hoặc BME280_I2C_ADDRESS_1
+ 1059              		.loc 1 238 14 is_stmt 0 view .LVU247
+ 1060 0040 324C     		ldr	r4, .L69+4
+ 1061 0042 314B     		ldr	r3, .L69
+ 1062 0044 E361     		str	r3, [r4, #28]
+ 239:Core/Src/main.c **** 
+ 1063              		.loc 1 239 3 is_stmt 1 view .LVU248
+ 239:Core/Src/main.c **** 
+ 1064              		.loc 1 239 15 is_stmt 0 view .LVU249
+ 1065 0046 7623     		movs	r3, #118
+ 1066 0048 2383     		strh	r3, [r4, #24]	@ movhi
+ 242:Core/Src/main.c **** 
+ 1067              		.loc 1 242 3 is_stmt 1 view .LVU250
+ 1068 004a 314D     		ldr	r5, .L69+8
+ 1069 004c 2846     		mov	r0, r5
+ 1070 004e FFF7FEFF 		bl	bmp280_init_default_params
+ 1071              	.LVL70:
+ 245:Core/Src/main.c ****   {
+ 1072              		.loc 1 245 3 view .LVU251
+ 245:Core/Src/main.c ****   {
+ 1073              		.loc 1 245 8 is_stmt 0 view .LVU252
+ 1074 0052 2946     		mov	r1, r5
+ 1075 0054 2046     		mov	r0, r4
+ 1076 0056 FFF7FEFF 		bl	bmp280_init
+ 1077              	.LVL71:
+ 245:Core/Src/main.c ****   {
+ 1078              		.loc 1 245 6 view .LVU253
+ 1079 005a 00B9     		cbnz	r0, .L64
+ 1080              	.L65:
+ 248:Core/Src/main.c ****       ;
+ 1081              		.loc 1 248 5 is_stmt 1 discriminator 1 view .LVU254
+ 248:Core/Src/main.c ****       ;
+ 1082              		.loc 1 248 11 discriminator 1 view .LVU255
+ 1083 005c FEE7     		b	.L65
+ 1084              	.L64:
+ 251:Core/Src/main.c ****   checkAPN(); // Kiểm tra APN trước khi sử dụng HTTP POST
+ 1085              		.loc 1 251 3 view .LVU256
+ 1086 005e 4FF4FA60 		mov	r0, #2000
+ 1087 0062 FFF7FEFF 		bl	HAL_Delay
+ 1088              	.LVL72:
+ 252:Core/Src/main.c **** 
+ 1089              		.loc 1 252 3 view .LVU257
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 50
+
+
+ 1090 0066 FFF7FEFF 		bl	checkAPN
+ 1091              	.LVL73:
+ 1092 006a 2DE0     		b	.L67
+ 1093              	.L66:
+ 279:Core/Src/main.c ****     bmp280_read_float(&bmp280, &temperature_BMP280, &airperssure);
+ 1094              		.loc 1 279 5 view .LVU258
+ 1095 006c 4FF4FA60 		mov	r0, #2000
+ 1096 0070 FFF7FEFF 		bl	HAL_Delay
+ 1097              	.LVL74:
+ 280:Core/Src/main.c ****     sprintf(content, "temperature=%.2f&humidity=%.2f&dust=%d&airperssure=%.2f&nodeid=%s&longitude=%
+ 1098              		.loc 1 280 5 view .LVU259
+ 1099 0074 274E     		ldr	r6, .L69+12
+ 1100 0076 3246     		mov	r2, r6
+ 1101 0078 2749     		ldr	r1, .L69+16
+ 1102 007a 2448     		ldr	r0, .L69+4
+ 1103 007c FFF7FEFF 		bl	bmp280_read_float
+ 1104              	.LVL75:
+ 281:Core/Src/main.c ****             temperature, humidity, dust, airperssure, nodeid, longitude, latitude);
+ 1105              		.loc 1 281 5 view .LVU260
+ 1106 0080 264B     		ldr	r3, .L69+20
+ 1107 0082 1868     		ldr	r0, [r3]	@ float
+ 1108 0084 FFF7FEFF 		bl	__aeabi_f2d
+ 1109              	.LVL76:
+ 1110 0088 0446     		mov	r4, r0
+ 1111 008a 0D46     		mov	r5, r1
+ 1112 008c 244B     		ldr	r3, .L69+24
+ 1113 008e 1B88     		ldrh	r3, [r3]
+ 1114 0090 0893     		str	r3, [sp, #32]
+ 1115 0092 244B     		ldr	r3, .L69+28
+ 1116 0094 1B88     		ldrh	r3, [r3]
+ 1117 0096 0793     		str	r3, [sp, #28]
+ 1118 0098 234B     		ldr	r3, .L69+32
+ 1119 009a 0693     		str	r3, [sp, #24]
+ 1120 009c 3068     		ldr	r0, [r6]	@ float
+ 1121 009e FFF7FEFF 		bl	__aeabi_f2d
+ 1122              	.LVL77:
+ 1123 00a2 CDE90401 		strd	r0, [sp, #16]
+ 1124 00a6 214B     		ldr	r3, .L69+36
+ 1125 00a8 1B88     		ldrh	r3, [r3]
+ 1126 00aa 0293     		str	r3, [sp, #8]
+ 1127 00ac 204B     		ldr	r3, .L69+40
+ 1128 00ae 1868     		ldr	r0, [r3]	@ float
+ 1129 00b0 FFF7FEFF 		bl	__aeabi_f2d
+ 1130              	.LVL78:
+ 1131 00b4 CDE90001 		strd	r0, [sp]
+ 1132 00b8 2246     		mov	r2, r4
+ 1133 00ba 2B46     		mov	r3, r5
+ 1134 00bc 1D49     		ldr	r1, .L69+44
+ 1135 00be 1E48     		ldr	r0, .L69+48
+ 1136 00c0 FFF7FEFF 		bl	sprintf
+ 1137              	.LVL79:
+ 286:Core/Src/main.c ****     
+ 1138              		.loc 1 286 5 view .LVU261
+ 1139 00c4 FFF7FEFF 		bl	httpPost
+ 1140              	.LVL80:
+ 259:Core/Src/main.c ****   {
+ 1141              		.loc 1 259 9 view .LVU262
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 51
+
+
+ 1142              	.L67:
+ 259:Core/Src/main.c ****   {
+ 1143              		.loc 1 259 3 view .LVU263
+ 266:Core/Src/main.c ****     airperssure = 30; // random giá trị từ 30 đến 50
+ 1144              		.loc 1 266 5 view .LVU264
+ 266:Core/Src/main.c ****     airperssure = 30; // random giá trị từ 30 đến 50
+ 1145              		.loc 1 266 10 is_stmt 0 view .LVU265
+ 1146 00c8 184B     		ldr	r3, .L69+36
+ 1147 00ca 6522     		movs	r2, #101
+ 1148 00cc 1A80     		strh	r2, [r3]	@ movhi
+ 267:Core/Src/main.c ****     longitude = 100;
+ 1149              		.loc 1 267 5 is_stmt 1 view .LVU266
+ 267:Core/Src/main.c ****     longitude = 100;
+ 1150              		.loc 1 267 17 is_stmt 0 view .LVU267
+ 1151 00ce 114B     		ldr	r3, .L69+12
+ 1152 00d0 1A4A     		ldr	r2, .L69+52
+ 1153 00d2 1A60     		str	r2, [r3]	@ float
+ 268:Core/Src/main.c ****     latitude = 200;
+ 1154              		.loc 1 268 5 is_stmt 1 view .LVU268
+ 268:Core/Src/main.c ****     latitude = 200;
+ 1155              		.loc 1 268 15 is_stmt 0 view .LVU269
+ 1156 00d4 134B     		ldr	r3, .L69+28
+ 1157 00d6 6422     		movs	r2, #100
+ 1158 00d8 1A80     		strh	r2, [r3]	@ movhi
+ 269:Core/Src/main.c ****     // dust = rand() % 101;            // random giá trị từ 0 đến 100
+ 1159              		.loc 1 269 5 is_stmt 1 view .LVU270
+ 269:Core/Src/main.c ****     // dust = rand() % 101;            // random giá trị từ 0 đến 100
+ 1160              		.loc 1 269 14 is_stmt 0 view .LVU271
+ 1161 00da 114B     		ldr	r3, .L69+24
+ 1162 00dc C822     		movs	r2, #200
+ 1163 00de 1A80     		strh	r2, [r3]	@ movhi
+ 274:Core/Src/main.c ****     {
+ 1164              		.loc 1 274 5 is_stmt 1 view .LVU272
+ 274:Core/Src/main.c ****     {
+ 1165              		.loc 1 274 9 is_stmt 0 view .LVU273
+ 1166 00e0 0123     		movs	r3, #1
+ 1167 00e2 0222     		movs	r2, #2
+ 1168 00e4 1946     		mov	r1, r3
+ 1169 00e6 1846     		mov	r0, r3
+ 1170 00e8 FFF7FEFF 		bl	SHT31_GetData
+ 1171              	.LVL81:
+ 274:Core/Src/main.c ****     {
+ 1172              		.loc 1 274 8 view .LVU274
+ 1173 00ec 0028     		cmp	r0, #0
+ 1174 00ee BDD1     		bne	.L66
+ 276:Core/Src/main.c ****       humidity = SHT31_GetHumidity();
+ 1175              		.loc 1 276 7 is_stmt 1 view .LVU275
+ 276:Core/Src/main.c ****       humidity = SHT31_GetHumidity();
+ 1176              		.loc 1 276 21 is_stmt 0 view .LVU276
+ 1177 00f0 FFF7FEFF 		bl	SHT31_GetTemperature
+ 1178              	.LVL82:
+ 276:Core/Src/main.c ****       humidity = SHT31_GetHumidity();
+ 1179              		.loc 1 276 19 view .LVU277
+ 1180 00f4 094B     		ldr	r3, .L69+20
+ 1181 00f6 83ED000A 		vstr.32	s0, [r3]
+ 277:Core/Src/main.c ****     }
+ 1182              		.loc 1 277 7 is_stmt 1 view .LVU278
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 52
+
+
+ 277:Core/Src/main.c ****     }
+ 1183              		.loc 1 277 18 is_stmt 0 view .LVU279
+ 1184 00fa FFF7FEFF 		bl	SHT31_GetHumidity
+ 1185              	.LVL83:
+ 277:Core/Src/main.c ****     }
+ 1186              		.loc 1 277 16 view .LVU280
+ 1187 00fe 0C4B     		ldr	r3, .L69+40
+ 1188 0100 83ED000A 		vstr.32	s0, [r3]
+ 1189 0104 B2E7     		b	.L66
+ 1190              	.L70:
+ 1191 0106 00BF     		.align	2
+ 1192              	.L69:
+ 1193 0108 00000000 		.word	hi2c1
+ 1194 010c 00000000 		.word	bmp280
+ 1195 0110 00000000 		.word	bmp280_params
+ 1196 0114 00000000 		.word	airperssure
+ 1197 0118 00000000 		.word	temperature_BMP280
+ 1198 011c 00000000 		.word	temperature
+ 1199 0120 00000000 		.word	latitude
+ 1200 0124 00000000 		.word	longitude
+ 1201 0128 00000000 		.word	nodeid
+ 1202 012c 00000000 		.word	dust
+ 1203 0130 00000000 		.word	humidity
+ 1204 0134 00000000 		.word	.LC16
+ 1205 0138 00000000 		.word	content
+ 1206 013c 0000F041 		.word	1106247680
+ 1207              		.cfi_endproc
+ 1208              	.LFE141:
+ 1210              		.global	temperature_BMP280
+ 1211              		.section	.bss.temperature_BMP280,"aw",%nobits
+ 1212              		.align	2
+ 1215              	temperature_BMP280:
+ 1216 0000 00000000 		.space	4
+ 1217              		.global	airperssure
+ 1218              		.section	.bss.airperssure,"aw",%nobits
+ 1219              		.align	2
+ 1222              	airperssure:
+ 1223 0000 00000000 		.space	4
+ 1224              		.global	bmp280_params
+ 1225              		.section	.bss.bmp280_params,"aw",%nobits
+ 1226              		.align	2
+ 1229              	bmp280_params:
+ 1230 0000 00000000 		.space	6
+ 1230      0000
+ 1231              		.global	bmp280
+ 1232              		.section	.bss.bmp280,"aw",%nobits
+ 1233              		.align	2
+ 1236              	bmp280:
+ 1237 0000 00000000 		.space	40
+ 1237      00000000 
+ 1237      00000000 
+ 1237      00000000 
+ 1237      00000000 
+ 1238              		.global	nodeid
+ 1239              		.section	.data.nodeid,"aw"
+ 1240              		.align	2
+ 1243              	nodeid:
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 53
+
+
+ 1244 0000 42314546 		.ascii	"B1EFRT6\000"
+ 1244      52543600 
+ 1245 0008 0000     		.space	2
+ 1246              		.global	latitude
+ 1247              		.section	.bss.latitude,"aw",%nobits
+ 1248              		.align	1
+ 1251              	latitude:
+ 1252 0000 0000     		.space	2
+ 1253              		.global	longitude
+ 1254              		.section	.bss.longitude,"aw",%nobits
+ 1255              		.align	1
+ 1258              	longitude:
+ 1259 0000 0000     		.space	2
+ 1260              		.global	dust
+ 1261              		.section	.bss.dust,"aw",%nobits
+ 1262              		.align	1
+ 1265              	dust:
+ 1266 0000 0000     		.space	2
+ 1267              		.global	humidity
+ 1268              		.section	.bss.humidity,"aw",%nobits
+ 1269              		.align	2
+ 1272              	humidity:
+ 1273 0000 00000000 		.space	4
+ 1274              		.global	temperature
+ 1275              		.section	.bss.temperature,"aw",%nobits
+ 1276              		.align	2
+ 1279              	temperature:
+ 1280 0000 00000000 		.space	4
+ 1281              		.global	previousTick
+ 1282              		.section	.bss.previousTick,"aw",%nobits
+ 1283              		.align	2
+ 1286              	previousTick:
+ 1287 0000 00000000 		.space	4
+ 1288              		.global	buffer
+ 1289              		.section	.bss.buffer,"aw",%nobits
+ 1290              		.align	2
+ 1293              	buffer:
+ 1294 0000 00000000 		.space	100
+ 1294      00000000 
+ 1294      00000000 
+ 1294      00000000 
+ 1294      00000000 
+ 1295              		.global	ATcommand
+ 1296              		.section	.bss.ATcommand,"aw",%nobits
+ 1297              		.align	2
+ 1300              	ATcommand:
+ 1301 0000 00000000 		.space	80
+ 1301      00000000 
+ 1301      00000000 
+ 1301      00000000 
+ 1301      00000000 
+ 1302              		.global	content
+ 1303              		.section	.bss.content,"aw",%nobits
+ 1304              		.align	2
+ 1307              	content:
+ 1308 0000 00000000 		.space	256
+ 1308      00000000 
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 54
+
+
+ 1308      00000000 
+ 1308      00000000 
+ 1308      00000000 
+ 1309              		.global	timeOut
+ 1310              		.section	.rodata.timeOut,"a"
+ 1311              		.align	2
+ 1314              	timeOut:
+ 1315 0000 983A0000 		.word	15000
+ 1316              		.global	resource
+ 1317              		.section	.rodata.resource,"a"
+ 1318              		.align	2
+ 1321              	resource:
+ 1322 0000 2F446F41 		.ascii	"/DoAn2.php\000"
+ 1322      6E322E70 
+ 1322      687000
+ 1323              		.global	port
+ 1324              		.section	.rodata.port,"a"
+ 1325              		.align	2
+ 1328              	port:
+ 1329 0000 BB010000 		.word	443
+ 1330              		.global	server
+ 1331              		.section	.rodata.server,"a"
+ 1332              		.align	2
+ 1335              	server:
+ 1336 0000 68757965 		.ascii	"huyed2.assfa.net\000"
+ 1336      64322E61 
+ 1336      73736661 
+ 1336      2E6E6574 
+ 1336      00
+ 1337              		.global	apn
+ 1338              		.section	.rodata.apn,"a"
+ 1339              		.align	2
+ 1342              	apn:
+ 1343 0000 762D696E 		.ascii	"v-internet\000"
+ 1343      7465726E 
+ 1343      657400
+ 1344              		.global	huart6
+ 1345              		.section	.bss.huart6,"aw",%nobits
+ 1346              		.align	2
+ 1349              	huart6:
+ 1350 0000 00000000 		.space	72
+ 1350      00000000 
+ 1350      00000000 
+ 1350      00000000 
+ 1350      00000000 
+ 1351              		.global	huart2
+ 1352              		.section	.bss.huart2,"aw",%nobits
+ 1353              		.align	2
+ 1356              	huart2:
+ 1357 0000 00000000 		.space	72
+ 1357      00000000 
+ 1357      00000000 
+ 1357      00000000 
+ 1357      00000000 
+ 1358              		.global	hi2c1
+ 1359              		.section	.bss.hi2c1,"aw",%nobits
+ 1360              		.align	2
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 55
+
+
+ 1363              	hi2c1:
+ 1364 0000 00000000 		.space	84
+ 1364      00000000 
+ 1364      00000000 
+ 1364      00000000 
+ 1364      00000000 
+ 1365              		.text
+ 1366              	.Letext0:
+ 1367              		.file 3 "C:\\ST\\STM32CubeCLT_1.16.0\\GNU-tools-for-STM32\\bin\\../lib/gcc/arm-none-eabi/12.3.1/..
+ 1368              		.file 4 "C:\\ST\\STM32CubeCLT_1.16.0\\GNU-tools-for-STM32\\bin\\../lib/gcc/arm-none-eabi/12.3.1/..
+ 1369              		.file 5 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 1370              		.file 6 "C:\\ST\\STM32CubeCLT_1.16.0\\GNU-tools-for-STM32\\bin\\../lib/gcc/arm-none-eabi/12.3.1/in
+ 1371              		.file 7 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
+ 1372              		.file 8 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 1373              		.file 9 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h"
+ 1374              		.file 10 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h"
+ 1375              		.file 11 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 1376              		.file 12 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c.h"
+ 1377              		.file 13 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h"
+ 1378              		.file 14 "Core/Inc/SHT.h"
+ 1379              		.file 15 "Core/Inc/bmp280.h"
+ 1380              		.file 16 "C:\\ST\\STM32CubeCLT_1.16.0\\GNU-tools-for-STM32\\bin\\../lib/gcc/arm-none-eabi/12.3.1/.
+ 1381              		.file 17 "C:\\ST\\STM32CubeCLT_1.16.0\\GNU-tools-for-STM32\\bin\\../lib/gcc/arm-none-eabi/12.3.1/.
+ 1382              		.file 18 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
+ 1383              		.file 19 "<built-in>"
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 56
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:21     .text.MX_GPIO_Init:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:26     .text.MX_GPIO_Init:00000000 MX_GPIO_Init
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:111    .text.MX_GPIO_Init:0000005c $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:116    .text.I2C_ResetBus:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:122    .text.I2C_ResetBus:00000000 I2C_ResetBus
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:163    .rodata.SIMTransmit.str1.4:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:170    .text.SIMTransmit:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:176    .text.SIMTransmit:00000000 SIMTransmit
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:258    .text.SIMTransmit:0000006c $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1293   .bss.buffer:00000000 buffer
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1356   .bss.huart2:00000000 huart2
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1349   .bss.huart6:00000000 huart6
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:267    .rodata.checkAPN.str1.4:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:283    .text.checkAPN:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:289    .text.checkAPN:00000000 checkAPN
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:402    .text.checkAPN:00000084 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1286   .bss.previousTick:00000000 previousTick
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1300   .bss.ATcommand:00000000 ATcommand
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1342   .rodata.apn:00000000 apn
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:416    .rodata.httpPost.str1.4:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:445    .text.httpPost:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:451    .text.httpPost:00000000 httpPost
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:568    .text.httpPost:000000b0 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1321   .rodata.resource:00000000 resource
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1335   .rodata.server:00000000 server
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1307   .bss.content:00000000 content
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:587    .text.Error_Handler:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:593    .text.Error_Handler:00000000 Error_Handler
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:625    .text.MX_USART2_UART_Init:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:630    .text.MX_USART2_UART_Init:00000000 MX_USART2_UART_Init
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:685    .text.MX_USART2_UART_Init:0000002c $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:691    .text.MX_USART6_UART_Init:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:696    .text.MX_USART6_UART_Init:00000000 MX_USART6_UART_Init
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:751    .text.MX_USART6_UART_Init:0000002c $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:757    .text.MX_I2C1_Init:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:762    .text.MX_I2C1_Init:00000000 MX_I2C1_Init
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:820    .text.MX_I2C1_Init:0000002c $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1363   .bss.hi2c1:00000000 hi2c1
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:827    .text.SystemClock_Config:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:833    .text.SystemClock_Config:00000000 SystemClock_Config
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:981    .text.SystemClock_Config:00000098 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:988    .rodata.main.str1.4:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:993    .text.main:00000000 $t
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:999    .text.main:00000000 main
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1193   .text.main:00000108 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1236   .bss.bmp280:00000000 bmp280
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1229   .bss.bmp280_params:00000000 bmp280_params
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1222   .bss.airperssure:00000000 airperssure
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1215   .bss.temperature_BMP280:00000000 temperature_BMP280
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1279   .bss.temperature:00000000 temperature
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1251   .bss.latitude:00000000 latitude
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1258   .bss.longitude:00000000 longitude
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1243   .data.nodeid:00000000 nodeid
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1265   .bss.dust:00000000 dust
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1272   .bss.humidity:00000000 humidity
+ARM GAS  C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s 			page 57
+
+
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1212   .bss.temperature_BMP280:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1219   .bss.airperssure:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1226   .bss.bmp280_params:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1233   .bss.bmp280:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1240   .data.nodeid:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1248   .bss.latitude:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1255   .bss.longitude:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1262   .bss.dust:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1269   .bss.humidity:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1276   .bss.temperature:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1283   .bss.previousTick:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1290   .bss.buffer:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1297   .bss.ATcommand:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1304   .bss.content:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1314   .rodata.timeOut:00000000 timeOut
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1311   .rodata.timeOut:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1318   .rodata.resource:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1328   .rodata.port:00000000 port
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1325   .rodata.port:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1332   .rodata.server:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1339   .rodata.apn:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1346   .bss.huart6:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1353   .bss.huart2:00000000 $d
+C:\Users\Dell\AppData\Local\Temp\cc2wjQuW.s:1360   .bss.hi2c1:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_I2C_DeInit
+HAL_Delay
+HAL_I2C_Init
+memset
+strlen
+HAL_UART_Transmit
+HAL_UART_Receive
+HAL_GetTick
+sprintf
+strstr
+HAL_UART_Init
+HAL_RCC_OscConfig
+HAL_RCC_ClockConfig
+__aeabi_f2d
+HAL_Init
+SHT31_Config
+bmp280_init_default_params
+bmp280_init
+bmp280_read_float
+SHT31_GetData
+SHT31_GetTemperature
+SHT31_GetHumidity

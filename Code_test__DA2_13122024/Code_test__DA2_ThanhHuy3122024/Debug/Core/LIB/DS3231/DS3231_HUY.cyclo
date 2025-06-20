@@ -1,0 +1,6 @@
+../Core/LIB/DS3231/DS3231_HUY.c:14:6:rtc_init	1
+../Core/LIB/DS3231/DS3231_HUY.c:20:9:Decimal2BCD	1
+../Core/LIB/DS3231/DS3231_HUY.c:26:9:BCD2Decimal	1
+../Core/LIB/DS3231/DS3231_HUY.c:32:6:set_currently_timer_ds3231	1
+../Core/LIB/DS3231/DS3231_HUY.c:45:6:DS3231_write_time	1
+../Core/LIB/DS3231/DS3231_HUY.c:62:6:DS3231_read_time	1
